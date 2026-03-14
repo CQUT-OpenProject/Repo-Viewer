@@ -66,25 +66,27 @@ export const SearchResultItem: React.FC<SearchResultItemProps> = ({
   onClick,
   onOpenGithub,
   style,
-  ariaAttributes
+  ariaAttributes,
 }) => {
   const { t } = useI18n();
 
   const pathParts = highlightKeyword(item.path, keyword, keywordLower);
   const githubUrl = resolveItemHtmlUrl(item);
 
-  const snippet = ("snippet" in item && typeof (item as { snippet?: unknown }).snippet === "string")
-    ? (item as { snippet?: string }).snippet
-    : undefined;
-  const snippetParts = snippet !== undefined && snippet.length > 0
-    ? highlightKeywords(snippet, keyword, highlightRegex)
-    : null;
+  const snippet =
+    "snippet" in item && typeof (item as { snippet?: unknown }).snippet === "string"
+      ? (item as { snippet?: string }).snippet
+      : undefined;
+  const snippetParts =
+    snippet !== undefined && snippet.length > 0
+      ? highlightKeywords(snippet, keyword, highlightRegex)
+      : null;
 
   const listItemProps = {
     disablePadding: true,
     alignItems: "flex-start" as const,
     ...(style !== undefined ? { style } : {}),
-    ...(ariaAttributes ?? {})
+    ...ariaAttributes,
   };
 
   return (
@@ -94,15 +96,17 @@ export const SearchResultItem: React.FC<SearchResultItemProps> = ({
           display: "flex",
           width: "100%",
           gap: 1,
-          alignItems: "flex-start"
+          alignItems: "flex-start",
         }}
       >
         <ListItemButton
-          onClick={() => { onClick(item); }}
+          onClick={() => {
+            onClick(item);
+          }}
           sx={{
             flex: 1,
             alignItems: "flex-start",
-            borderRadius: g3BorderRadius(G3_PRESETS.fileListItem)
+            borderRadius: g3BorderRadius(G3_PRESETS.fileListItem),
           }}
         >
           <ListItemText
@@ -114,52 +118,58 @@ export const SearchResultItem: React.FC<SearchResultItemProps> = ({
                   color={item.source === "search-index" ? "primary" : "default"}
                   sx={{
                     borderRadius: g3BorderRadius({ radius: 12, smoothness: 0.8 }),
-                    fontSize: isSmallScreen ? '0.7rem' : undefined
+                    fontSize: isSmallScreen ? "0.7rem" : undefined,
                   }}
                 />
                 <Typography variant={isSmallScreen ? "caption" : "body2"} color="text.secondary">
-                  {item.source === "search-index" ? t('search.results.source.index') : t('search.results.source.api')}
+                  {item.source === "search-index"
+                    ? t("search.results.source.index")
+                    : t("search.results.source.api")}
                 </Typography>
               </Stack>
             }
             secondary={
               <Box component="span">
                 <Box component="span">
-                  {pathParts.map((part: { text: string; highlight: boolean }, idx: number) => (
+                  {pathParts.map((part: { text: string; highlight: boolean }, idx: number) =>
                     part.highlight ? (
                       <Box
                         component="span"
                         key={idx}
                         sx={{
                           color: (theme) => theme.palette.primary.main,
-                          fontWeight: 600
+                          fontWeight: 600,
                         }}
                       >
                         {part.text}
                       </Box>
                     ) : (
-                      <Box component="span" key={idx}>{part.text}</Box>
-                    )
-                  ))}
+                      <Box component="span" key={idx}>
+                        {part.text}
+                      </Box>
+                    ),
+                  )}
                 </Box>
                 {snippetParts !== null && snippetParts.length > 0 && (
                   <Box component="span" display="block" mt={0.5}>
-                    {snippetParts.map((part: { text: string; highlight: boolean }, idx: number) => (
+                    {snippetParts.map((part: { text: string; highlight: boolean }, idx: number) =>
                       part.highlight ? (
                         <Box
                           component="span"
                           key={idx}
                           sx={{
                             color: (theme) => theme.palette.primary.main,
-                            fontWeight: 600
+                            fontWeight: 600,
                           }}
                         >
                           {part.text}
                         </Box>
                       ) : (
-                        <Box component="span" key={idx}>{part.text}</Box>
-                      )
-                    ))}
+                        <Box component="span" key={idx}>
+                          {part.text}
+                        </Box>
+                      ),
+                    )}
                   </Box>
                 )}
               </Box>
@@ -170,20 +180,22 @@ export const SearchResultItem: React.FC<SearchResultItemProps> = ({
                 sx: {
                   whiteSpace: "pre-wrap",
                   wordBreak: "break-word",
-                  overflowWrap: "anywhere"
-                }
-              }
+                  overflowWrap: "anywhere",
+                },
+              },
             }}
           />
         </ListItemButton>
         {githubUrl !== undefined && (
-          <Tooltip title={t('search.github.open')} placement="left">
+          <Tooltip title={t("search.github.open")} placement="left">
             <IconButton
-              onClick={() => { onOpenGithub(item); }}
-              aria-label={t('search.github.open')}
+              onClick={() => {
+                onOpenGithub(item);
+              }}
+              aria-label={t("search.github.open")}
               sx={{
                 mt: 1,
-                borderRadius: g3BorderRadius(G3_PRESETS.button)
+                borderRadius: g3BorderRadius(G3_PRESETS.button),
               }}
             >
               <GitHubIcon fontSize="small" />

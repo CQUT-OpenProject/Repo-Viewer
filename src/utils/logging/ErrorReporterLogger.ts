@@ -1,8 +1,14 @@
-import type { Logger, LoggerFactory } from './types';
+import type { Logger, LoggerFactory } from "./types";
 
 export interface ErrorReporter {
-  captureException: (error: Error, context: { logger: string; args: unknown[] }) => void | Promise<void>;
-  captureMessage?: (message: string, context: { logger: string; level: 'warn' | 'error'; args: unknown[] }) => void | Promise<void>;
+  captureException: (
+    error: Error,
+    context: { logger: string; args: unknown[] },
+  ) => void | Promise<void>;
+  captureMessage?: (
+    message: string,
+    context: { logger: string; level: "warn" | "error"; args: unknown[] },
+  ) => void | Promise<void>;
 }
 
 export interface ErrorReporterLoggerOptions {
@@ -13,7 +19,7 @@ export interface ErrorReporterLoggerOptions {
 class ErrorReporterLogger implements Logger {
   constructor(
     private readonly name: string,
-    private readonly options: ErrorReporterLoggerOptions
+    private readonly options: ErrorReporterLoggerOptions,
   ) {}
 
   debug(..._args: unknown[]): void {
@@ -34,12 +40,12 @@ class ErrorReporterLogger implements Logger {
     }
 
     const reporter = this.options.reporter;
-    if (typeof reporter.captureMessage === 'function') {
+    if (typeof reporter.captureMessage === "function") {
       const message = this.stringifyArgs(args);
       void reporter.captureMessage(message, {
         logger: this.name,
-        level: 'warn',
-        args
+        level: "warn",
+        args,
       });
     }
   }
@@ -53,7 +59,7 @@ class ErrorReporterLogger implements Logger {
 
     void reporter.captureException(payload, {
       logger: this.name,
-      args
+      args,
     });
   }
 
@@ -78,7 +84,7 @@ class ErrorReporterLogger implements Logger {
           return arg.message;
         }
 
-        if (typeof arg === 'string') {
+        if (typeof arg === "string") {
           return arg;
         }
 
@@ -100,4 +106,3 @@ export class ErrorReporterLoggerFactory implements LoggerFactory {
     return new ErrorReporterLogger(name, this.options);
   }
 }
-

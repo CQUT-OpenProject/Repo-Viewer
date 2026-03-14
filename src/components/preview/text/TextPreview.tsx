@@ -104,9 +104,12 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = memo(
         };
 
         if (typeof idleCallback.requestIdleCallback === "function") {
-          const handle = idleCallback.requestIdleCallback(() => {
-            runHighlight();
-          }, { timeout: 700 });
+          const handle = idleCallback.requestIdleCallback(
+            () => {
+              runHighlight();
+            },
+            { timeout: 700 },
+          );
 
           return () => {
             cancelled = true;
@@ -208,7 +211,13 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = memo(
 
     const rowHeightCacheKey = useMemo(() => {
       return `${String(wrapText)}-${String(containerSize.width)}-${contentFontSize}-${lineNumberColumnWidth}-${String(normalizedLines.length)}`;
-    }, [wrapText, containerSize.width, contentFontSize, lineNumberColumnWidth, normalizedLines.length]);
+    }, [
+      wrapText,
+      containerSize.width,
+      contentFontSize,
+      lineNumberColumnWidth,
+      normalizedLines.length,
+    ]);
 
     // 自动换行时使用动态行高缓存，避免重新计算整表
     const dynamicRowHeight = useDynamicRowHeight({
@@ -310,12 +319,9 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = memo(
 
     const headerBg = useMemo(
       () => alpha(theme.palette.background.paper, theme.palette.mode === "light" ? 0.8 : 0.35),
-      [theme.palette.background.paper, theme.palette.mode]
+      [theme.palette.background.paper, theme.palette.mode],
     );
-    const borderColor = useMemo(
-      () => alpha(theme.palette.divider, 0.56),
-      [theme.palette.divider]
-    );
+    const borderColor = useMemo(() => alpha(theme.palette.divider, 0.56), [theme.palette.divider]);
 
     // Prism 主题颜色 - 使用 CSS 变量优化性能
     // 使用 useMemo 优化，但依赖 theme.palette.mode 而不是整个 theme 对象
@@ -345,15 +351,15 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = memo(
     const handleCloseOptimized = useCallback(() => {
       if (containerRef.current !== null) {
         const container = containerRef.current;
-        container.textContent = '';
-        container.style.display = 'none';
-        container.style.visibility = 'hidden';
-        container.style.opacity = '0';
+        container.textContent = "";
+        container.style.display = "none";
+        container.style.visibility = "hidden";
+        container.style.opacity = "0";
       }
 
       requestAnimationFrame(() => {
         setTimeout(() => {
-          if (typeof onClose === 'function') {
+          if (typeof onClose === "function") {
             onClose();
           }
         }, 0);
@@ -364,22 +370,22 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = memo(
       const container = containerRef.current;
       if (container !== null) {
         // 更新 Prism 语法高亮的颜色变量
-        container.style.setProperty('--prism-comment', prismTheme.comment);
-        container.style.setProperty('--prism-string', prismTheme.string);
-        container.style.setProperty('--prism-keyword', prismTheme.keyword);
-        container.style.setProperty('--prism-function', prismTheme.function);
-        container.style.setProperty('--prism-number', prismTheme.number);
-        container.style.setProperty('--prism-operator', prismTheme.operator);
-        container.style.setProperty('--prism-punctuation', prismTheme.punctuation);
-        container.style.setProperty('--prism-property', prismTheme.property);
-        container.style.setProperty('--prism-tag', prismTheme.tag);
-        container.style.setProperty('--prism-selector', prismTheme.selector);
-        container.style.setProperty('--prism-boolean', prismTheme.boolean);
-        container.style.setProperty('--prism-variable', prismTheme.variable);
-        container.style.setProperty('--prism-regex', prismTheme.regex);
-        container.style.setProperty('--prism-class-name', prismTheme["class-name"]);
+        container.style.setProperty("--prism-comment", prismTheme.comment);
+        container.style.setProperty("--prism-string", prismTheme.string);
+        container.style.setProperty("--prism-keyword", prismTheme.keyword);
+        container.style.setProperty("--prism-function", prismTheme.function);
+        container.style.setProperty("--prism-number", prismTheme.number);
+        container.style.setProperty("--prism-operator", prismTheme.operator);
+        container.style.setProperty("--prism-punctuation", prismTheme.punctuation);
+        container.style.setProperty("--prism-property", prismTheme.property);
+        container.style.setProperty("--prism-tag", prismTheme.tag);
+        container.style.setProperty("--prism-selector", prismTheme.selector);
+        container.style.setProperty("--prism-boolean", prismTheme.boolean);
+        container.style.setProperty("--prism-variable", prismTheme.variable);
+        container.style.setProperty("--prism-regex", prismTheme.regex);
+        container.style.setProperty("--prism-class-name", prismTheme["class-name"]);
         // 更新文本颜色变量
-        container.style.setProperty('--text-primary', theme.palette.text.primary);
+        container.style.setProperty("--text-primary", theme.palette.text.primary);
       }
     }, [containerRef, prismTheme, theme.palette.text.primary]);
 
@@ -512,9 +518,12 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = memo(
                 "&:active": {
                   boxShadow: theme.shadows[8],
                 },
-                transition: theme.transitions.create(["background-color", "box-shadow", "transform"], {
-                  duration: theme.transitions.duration.short,
-                }),
+                transition: theme.transitions.create(
+                  ["background-color", "box-shadow", "transform"],
+                  {
+                    duration: theme.transitions.duration.short,
+                  },
+                ),
               }}
               data-oid="text-preview-close"
             >
@@ -584,7 +593,8 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = memo(
                 }}
                 data-oid="text-preview-meta"
               >
-                {previewingItem?.path ?? ""} · {t("ui.text.meta.totalLines", { count: lineCount })} · {formattedSize}
+                {previewingItem?.path ?? ""} · {t("ui.text.meta.totalLines", { count: lineCount })}{" "}
+                · {formattedSize}
               </Typography>
             </Box>
 
@@ -640,9 +650,12 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = memo(
                         ? alpha(theme.palette.success.main, 0.16)
                         : alpha(theme.palette.action.hover, 0.4),
                     },
-                    transition: theme.transitions.create(["background-color", "box-shadow", "transform"], {
-                      duration: theme.transitions.duration.shortest,
-                    }),
+                    transition: theme.transitions.create(
+                      ["background-color", "box-shadow", "transform"],
+                      {
+                        duration: theme.transitions.duration.shortest,
+                      },
+                    ),
                   }}
                   data-oid="text-preview-copy"
                 >

@@ -3,14 +3,14 @@ import type {
   ErrorContext,
   ErrorHandlerConfig,
   GitHubError,
-  ComponentError
-} from '@/types/errors';
-import { ErrorLevel, ErrorCategory } from '@/types/errors';
-import { createScopedLogger } from '../../logging/logger';
-import { getDeveloperConfig } from '@/config';
-import { ErrorFactory } from './ErrorFactory';
-import { ErrorLogger } from './ErrorLogger';
-import { ErrorHistory } from './ErrorHistory';
+  ComponentError,
+} from "@/types/errors";
+import { ErrorLevel, ErrorCategory } from "@/types/errors";
+import { createScopedLogger } from "../../logging/logger";
+import { getDeveloperConfig } from "@/config";
+import { ErrorFactory } from "./ErrorFactory";
+import { ErrorLogger } from "./ErrorLogger";
+import { ErrorHistory } from "./ErrorHistory";
 
 /**
  * 错误管理器类
@@ -23,7 +23,7 @@ class ErrorManagerClass {
   private factory: ErrorFactory;
   private errorLogger: ErrorLogger;
   private history: ErrorHistory;
-  private readonly managerLogger = createScopedLogger('ErrorManager');
+  private readonly managerLogger = createScopedLogger("ErrorManager");
 
   private config: ErrorHandlerConfig = {
     enableConsoleLogging: (() => {
@@ -33,7 +33,7 @@ class ErrorManagerClass {
     enableErrorReporting: false, // 生产环境可开启
     maxErrorsPerSession: 50,
     retryAttempts: 3,
-    retryDelay: 1000
+    retryDelay: 1000,
   };
 
   constructor() {
@@ -65,15 +65,15 @@ class ErrorManagerClass {
     } else {
       // 转换普通Error为AppError
       appError = this.factory.createBaseError(
-        error.name.length > 0 ? error.name : 'UnknownError',
-        error.message.length > 0 ? error.message : '未知错误',
+        error.name.length > 0 ? error.name : "UnknownError",
+        error.message.length > 0 ? error.message : "未知错误",
         ErrorLevel.ERROR,
         ErrorCategory.SYSTEM,
         {
           ...context,
           stack: error.stack,
-          originalError: error.constructor.name
-        }
+          originalError: error.constructor.name,
+        },
       ) as AppError;
     }
 
@@ -100,9 +100,16 @@ class ErrorManagerClass {
     endpoint: string,
     method: string,
     rateLimitInfo?: { remaining: number; reset: number },
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ): GitHubError {
-    return this.factory.createGitHubError(message, statusCode, endpoint, method, rateLimitInfo, context);
+    return this.factory.createGitHubError(
+      message,
+      statusCode,
+      endpoint,
+      method,
+      rateLimitInfo,
+      context,
+    );
   }
 
   /**
@@ -112,15 +119,20 @@ class ErrorManagerClass {
     componentName: string,
     message: string,
     props?: Record<string, unknown>,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ): ComponentError {
     return this.factory.createComponentError(componentName, message, props, context);
   }
 
   // 检查是否为AppError
   private isAppError(error: unknown): error is AppError {
-    return error !== null && typeof error === 'object' &&
-           'code' in error && 'category' in error && 'level' in error;
+    return (
+      error !== null &&
+      typeof error === "object" &&
+      "code" in error &&
+      "category" in error &&
+      "level" in error
+    );
   }
 
   // 上报错误（占位实现）
@@ -136,16 +148,15 @@ class ErrorManagerClass {
       // });
 
       if (getDeveloperConfig().mode) {
-        this.managerLogger.info('错误上报 (开发模式):', error);
+        this.managerLogger.info("错误上报 (开发模式):", error);
       }
 
       // 添加 await 以满足 async 函数要求
       await Promise.resolve();
     } catch (reportingError) {
-      this.managerLogger.warn('错误上报失败:', reportingError);
+      this.managerLogger.warn("错误上报失败:", reportingError);
     }
   }
-
 }
 
 /**

@@ -24,9 +24,9 @@ export type UseSEOResult = MetadataContextType & {
 
 /**
  * 使用SEO Hook
- * 
+ *
  * 提供SEO元数据的管理功能，包括设置和重置。
- * 
+ *
  * @returns SEO管理函数和状态
  */
 export const useSEO = (): UseSEOResult => {

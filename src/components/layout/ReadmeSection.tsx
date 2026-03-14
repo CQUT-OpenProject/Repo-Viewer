@@ -1,12 +1,12 @@
-import React, { useCallback } from 'react';
-import { Box, Typography } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
-import { LazyMarkdownPreview } from '@/utils/lazy-loading';
-import { MarkdownPreviewSkeleton } from '@/components/ui/skeletons';
-import type { GitHubContent } from '@/types';
-import { useI18n } from '@/contexts/I18nContext';
-import { useContentContext, usePreviewContext } from '@/contexts/unified';
-import { scroll, logger } from '@/utils';
+import React, { useCallback } from "react";
+import { Box, Typography } from "@mui/material";
+import { motion, AnimatePresence } from "framer-motion";
+import { LazyMarkdownPreview } from "@/utils/lazy-loading";
+import { MarkdownPreviewSkeleton } from "@/components/ui/skeletons";
+import type { GitHubContent } from "@/types";
+import { useI18n } from "@/contexts/I18nContext";
+import { useContentContext, usePreviewContext } from "@/contexts/unified";
+import { scroll, logger } from "@/utils";
 
 /**
  * README预览区域组件属性接口
@@ -43,7 +43,7 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
   isSmallScreen,
   currentBranch,
   readmeFileItem,
-  isTransitioning = false
+  isTransitioning = false,
 }) => {
   const { t } = useI18n();
   const { navigateTo, findFileItemByPath, currentPath } = useContentContext();
@@ -57,8 +57,8 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
   // 获取当前 README 文件所在的目录路径
   const currentReadmeDir = React.useMemo(() => {
     if (readmeFilePath !== undefined && readmeFilePath.length > 0) {
-      const lastSlashIndex = readmeFilePath.lastIndexOf('/');
-      return lastSlashIndex >= 0 ? readmeFilePath.substring(0, lastSlashIndex) : '';
+      const lastSlashIndex = readmeFilePath.lastIndexOf("/");
+      return lastSlashIndex >= 0 ? readmeFilePath.substring(0, lastSlashIndex) : "";
     }
     return currentPath;
   }, [readmeFilePath, currentPath]);
@@ -113,20 +113,20 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
         return;
       }
 
-      const hashIndex = targetPath.indexOf('#');
+      const hashIndex = targetPath.indexOf("#");
       if (hashIndex >= 0) {
         targetPath = targetPath.slice(0, hashIndex);
       }
 
-      const queryIndex = targetPath.indexOf('?');
+      const queryIndex = targetPath.indexOf("?");
       if (queryIndex >= 0) {
         targetPath = targetPath.slice(0, queryIndex);
       }
 
-      const isAbsolutePath = targetPath.startsWith('/');
+      const isAbsolutePath = targetPath.startsWith("/");
 
       // 移除开头的 ./
-      if (targetPath.startsWith('./')) {
+      if (targetPath.startsWith("./")) {
         targetPath = targetPath.substring(2);
       }
 
@@ -134,23 +134,23 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
       const baseParts = isAbsolutePath
         ? []
         : currentReadmeDir.length > 0
-          ? currentReadmeDir.split('/')
+          ? currentReadmeDir.split("/")
           : [];
       if (isAbsolutePath) {
         targetPath = targetPath.substring(1);
       }
-      const targetParts = targetPath.split('/');
+      const targetParts = targetPath.split("/");
 
       const resolvedParts = [...baseParts];
       for (const part of targetParts) {
-        if (part === '..') {
+        if (part === "..") {
           resolvedParts.pop();
-        } else if (part !== '.' && part !== '') {
+        } else if (part !== "." && part !== "") {
           resolvedParts.push(part);
         }
       }
 
-      const resolvedPath = resolvedParts.join('/');
+      const resolvedPath = resolvedParts.join("/");
       logger.debug(`内部链接导航: ${relativePath} -> ${resolvedPath}`);
 
       // 尝试找到对应的文件项
@@ -158,8 +158,8 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
 
       if (fileItem !== undefined) {
         // 如果找到了文件项，根据类型进行处理
-        if (fileItem.type === 'dir') {
-          navigateTo(resolvedPath, 'forward');
+        if (fileItem.type === "dir") {
+          navigateTo(resolvedPath, "forward");
         } else {
           // 文件类型，打开预览
           void selectFile(fileItem);
@@ -170,25 +170,19 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
         const hasExtension = /\.[^/]+$/.test(resolvedPath);
         if (!hasExtension) {
           // 可能是目录，尝试导航
-          navigateTo(resolvedPath, 'forward');
+          navigateTo(resolvedPath, "forward");
         } else {
           // 可能是其他目录中的文件，导航到其父目录
-          const lastSlashIdx = resolvedPath.lastIndexOf('/');
-          const parentPath = lastSlashIdx >= 0 ? resolvedPath.substring(0, lastSlashIdx) : '';
-          navigateTo(parentPath, 'forward');
+          const lastSlashIdx = resolvedPath.lastIndexOf("/");
+          const parentPath = lastSlashIdx >= 0 ? resolvedPath.substring(0, lastSlashIdx) : "";
+          navigateTo(parentPath, "forward");
           logger.info(`文件不在当前目录，导航到父目录: ${parentPath}`);
         }
       }
 
       scheduleScrollToTop();
     },
-    [
-      currentReadmeDir,
-      findFileItemByPath,
-      navigateTo,
-      selectFile,
-      scheduleScrollToTop
-    ]
+    [currentReadmeDir, findFileItemByPath, navigateTo, selectFile, scheduleScrollToTop],
   );
 
   if (!hasReadmeFile) {
@@ -208,10 +202,10 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
             scale: 0.96,
             transition: {
               duration: 0.125,
-              ease: [0.4, 0, 0.2, 1]
-            }
+              ease: [0.4, 0, 0.2, 1],
+            },
           }}
-          style={{ width: '100%' }}
+          style={{ width: "100%" }}
         >
           <Box
             className="readme-container"
@@ -224,52 +218,49 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
             }}
             data-oid="0zc9q5:"
           >
-      <Typography
-        variant="h5"
-        sx={{
-          fontWeight: 600,
-          mb: 2,
-          display: "flex",
-          alignItems: "center",
-          color: "text.primary",
-        }}
-        data-oid="iawc_6m"
-      />
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: 600,
+                mb: 2,
+                display: "flex",
+                alignItems: "center",
+                color: "text.primary",
+              }}
+              data-oid="iawc_6m"
+            />
 
-      {shouldShowReadmeSkeleton ? (
-        <MarkdownPreviewSkeleton
-          isSmallScreen={isSmallScreen}
-          data-oid="readme-skeleton"
-        />
-      ) : hasReadmeContent ? (
-        <LazyMarkdownPreview
-          readmeContent={readmeContent}
-          loadingReadme={false}
-          isSmallScreen={isSmallScreen}
-          lazyLoad={false}
-          currentBranch={currentBranch}
-          previewingItem={readmeFileItem}
-          onInternalLinkClick={handleInternalLinkClick}
-          onRenderComplete={handleReadmeRenderComplete}
-          data-oid="6nohd:r"
-        />
-      ) : readmeLoaded ? (
-        <Typography
-          variant="body2"
-          sx={{
-            color: "text.secondary",
-            px: { xs: 2, sm: 3, md: 4 },
-            py: { xs: 2, sm: 3 },
-            borderRadius: 2,
-            bgcolor: "background.paper",
-            border: "1px solid",
-            borderColor: "divider",
-          }}
-          data-oid="readme-empty"
-        >
-          {t('ui.readme.empty')}
-        </Typography>
-      ) : null}
+            {shouldShowReadmeSkeleton ? (
+              <MarkdownPreviewSkeleton isSmallScreen={isSmallScreen} data-oid="readme-skeleton" />
+            ) : hasReadmeContent ? (
+              <LazyMarkdownPreview
+                readmeContent={readmeContent}
+                loadingReadme={false}
+                isSmallScreen={isSmallScreen}
+                lazyLoad={false}
+                currentBranch={currentBranch}
+                previewingItem={readmeFileItem}
+                onInternalLinkClick={handleInternalLinkClick}
+                onRenderComplete={handleReadmeRenderComplete}
+                data-oid="6nohd:r"
+              />
+            ) : readmeLoaded ? (
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "text.secondary",
+                  px: { xs: 2, sm: 3, md: 4 },
+                  py: { xs: 2, sm: 3 },
+                  borderRadius: 2,
+                  bgcolor: "background.paper",
+                  border: "1px solid",
+                  borderColor: "divider",
+                }}
+                data-oid="readme-empty"
+              >
+                {t("ui.readme.empty")}
+              </Typography>
+            ) : null}
           </Box>
         </motion.div>
       )}

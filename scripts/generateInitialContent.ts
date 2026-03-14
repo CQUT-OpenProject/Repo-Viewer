@@ -40,7 +40,7 @@ const tokens = collectTokens();
 const buildHeaders = (token: string, accept: string): Record<string, string> => {
   const headers: Record<string, string> = {
     Accept: accept,
-    "User-Agent": "Repo-Viewer"
+    "User-Agent": "Repo-Viewer",
   };
 
   if (token.length > 0) {
@@ -57,7 +57,7 @@ const fetchWithTokens = async (url: string, accept: string): Promise<Response> =
   for (const token of candidates) {
     const response = await fetch(url, {
       method: "GET",
-      headers: buildHeaders(token, accept)
+      headers: buildHeaders(token, accept),
     });
     lastResponse = response;
 
@@ -90,7 +90,10 @@ const fetchText = async (url: string): Promise<string> => {
 };
 
 const encodePathSegments = (input: string): string =>
-  input.split("/").map((segment) => encodeURIComponent(segment)).join("/");
+  input
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -114,10 +117,10 @@ const buildOutput = (payload: InitialContentHydrationPayload | null): string => 
   const content = payload ? serialize(payload) : "null";
 
   return [
-    "import type { InitialContentHydrationPayload } from \"@/types\";",
+    'import type { InitialContentHydrationPayload } from "@/types";',
     "",
     `export const initialContentPayload: InitialContentHydrationPayload | null = ${content};`,
-    ""
+    "",
   ].join("\n");
 };
 
@@ -181,30 +184,31 @@ const run = async (): Promise<void> => {
       branch,
       repo: {
         owner,
-        name: repo
+        name: repo,
       },
       directories: [
         {
           path: "",
-          contents: contents as JsonValue[]
-        }
+          contents: contents as JsonValue[],
+        },
       ],
-      files: readmeContent && readmePath.length > 0
-        ? [
-            {
-              path: readmePath,
-              downloadUrl: readmeDownloadUrl,
-              sha: readmeSha,
-              content: readmeContent,
-              encoding: "utf-8"
-            }
-          ]
-        : [],
+      files:
+        readmeContent && readmePath.length > 0
+          ? [
+              {
+                path: readmePath,
+                downloadUrl: readmeDownloadUrl,
+                sha: readmeSha,
+                content: readmeContent,
+                encoding: "utf-8",
+              },
+            ]
+          : [],
       metadata: {
         allowReadmeHydration: true,
         readmePath,
-        readmeSha
-      }
+        readmeSha,
+      },
     };
 
     await writeOutput(payload);

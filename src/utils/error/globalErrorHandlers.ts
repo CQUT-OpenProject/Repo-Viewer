@@ -1,4 +1,4 @@
-import type { ErrorManager } from './core/ErrorManager';
+import type { ErrorManager } from "./core/ErrorManager";
 
 // 错误节流控制
 let errorThrottleTimer: NodeJS.Timeout | null = null;
@@ -26,7 +26,7 @@ export function setupGlobalErrorHandlers(errorManager: typeof ErrorManager): voi
  * 设置 window 错误处理器
  */
 function setupWindowErrorHandler(errorManager: typeof ErrorManager): void {
-  window.addEventListener('error', (event) => {
+  window.addEventListener("error", (event) => {
     // 如果正在节流中，忽略此次错误
     if (errorThrottled) {
       return;
@@ -38,13 +38,13 @@ function setupWindowErrorHandler(errorManager: typeof ErrorManager): void {
     // 处理错误
     const error = event.error instanceof Error ? event.error : new Error(String(event.error));
     errorManager.captureError(error, {
-      component: 'window',
-      action: 'global_error',
+      component: "window",
+      action: "global_error",
       metadata: {
         filename: event.filename,
         lineno: event.lineno,
-        colno: event.colno
-      }
+        colno: event.colno,
+      },
     });
 
     // 清除之前的定时器
@@ -64,7 +64,7 @@ function setupWindowErrorHandler(errorManager: typeof ErrorManager): void {
  * 设置未处理的 Promise 拒绝处理器
  */
 function setupUnhandledRejectionHandler(errorManager: typeof ErrorManager): void {
-  window.addEventListener('unhandledrejection', (event) => {
+  window.addEventListener("unhandledrejection", (event) => {
     // 如果正在节流中，忽略此次错误
     if (promiseRejectionThrottled) {
       return;
@@ -74,10 +74,10 @@ function setupUnhandledRejectionHandler(errorManager: typeof ErrorManager): void
     promiseRejectionThrottled = true;
 
     // 处理错误
-    const errorMessage = typeof event.reason === 'string' ? event.reason : String(event.reason);
+    const errorMessage = typeof event.reason === "string" ? event.reason : String(event.reason);
     errorManager.captureError(new Error(errorMessage), {
-      component: 'window',
-      action: 'unhandled_promise_rejection'
+      component: "window",
+      action: "unhandled_promise_rejection",
     });
 
     // 清除之前的定时器
@@ -112,4 +112,3 @@ export function cleanupGlobalErrorHandlers(): void {
   errorThrottled = false;
   promiseRejectionThrottled = false;
 }
-

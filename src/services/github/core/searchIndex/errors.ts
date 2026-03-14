@@ -1,10 +1,10 @@
 export const enum SearchIndexErrorCode {
-  DISABLED = 'SEARCH_INDEX_DISABLED',
-  MANIFEST_NOT_FOUND = 'SEARCH_INDEX_MANIFEST_NOT_FOUND',
-  MANIFEST_INVALID = 'SEARCH_INDEX_MANIFEST_INVALID',
-  INDEX_FILE_NOT_FOUND = 'SEARCH_INDEX_FILE_NOT_FOUND',
-  INDEX_DOCUMENT_INVALID = 'SEARCH_INDEX_DOCUMENT_INVALID',
-  INDEX_BRANCH_NOT_INDEXED = 'SEARCH_INDEX_BRANCH_NOT_INDEXED'
+  DISABLED = "SEARCH_INDEX_DISABLED",
+  MANIFEST_NOT_FOUND = "SEARCH_INDEX_MANIFEST_NOT_FOUND",
+  MANIFEST_INVALID = "SEARCH_INDEX_MANIFEST_INVALID",
+  INDEX_FILE_NOT_FOUND = "SEARCH_INDEX_FILE_NOT_FOUND",
+  INDEX_DOCUMENT_INVALID = "SEARCH_INDEX_DOCUMENT_INVALID",
+  INDEX_BRANCH_NOT_INDEXED = "SEARCH_INDEX_BRANCH_NOT_INDEXED",
 }
 
 export interface SearchIndexErrorDetails {
@@ -25,14 +25,14 @@ export class SearchIndexError extends Error {
     if (details !== undefined) {
       this.details = details;
     }
-    this.name = 'SearchIndexError';
+    this.name = "SearchIndexError";
   }
 }
 
 export function createSearchIndexError(
   code: SearchIndexErrorCode,
   message: string,
-  details?: SearchIndexErrorDetails
+  details?: SearchIndexErrorDetails,
 ): SearchIndexError {
   return new SearchIndexError(code, message, details);
 }

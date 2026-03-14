@@ -5,7 +5,7 @@
  * 使用MUI的keyframes API定义，可用于styled-components或sx属性。
  */
 
-import { keyframes } from '@mui/system';
+import { keyframes } from "@mui/system";
 
 /**
  * 淡入动画
@@ -34,10 +34,6 @@ export const fadeOutAnimation = keyframes`
     opacity: 0;
   }
 `;
-
-
-
-
 
 /**
  * 缩放进入动画

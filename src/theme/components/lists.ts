@@ -1,6 +1,6 @@
-import type { Theme } from '@mui/material/styles';
-import { alpha } from '@mui/material/styles';
-import { g3BorderRadius, G3_PRESETS } from '../g3Curves';
+import type { Theme } from "@mui/material/styles";
+import { alpha } from "@mui/material/styles";
+import { g3BorderRadius, G3_PRESETS } from "../g3Curves";
 
 /**
  * 列表相关组件样式配置
@@ -10,12 +10,12 @@ export const listStyles = {
     styleOverrides: {
       root: {
         borderRadius: g3BorderRadius(G3_PRESETS.fileListItem),
-        margin: '4px 0',
-        overflow: 'visible',
-        '@media (max-width:600px)': {
-          margin: '2px 0',
-          minHeight: '36px',
-          borderRadius: g3BorderRadius({...G3_PRESETS.fileListItem, radius: 8}),
+        margin: "4px 0",
+        overflow: "visible",
+        "@media (max-width:600px)": {
+          margin: "2px 0",
+          minHeight: "36px",
+          borderRadius: g3BorderRadius({ ...G3_PRESETS.fileListItem, radius: 8 }),
         },
       },
     },
@@ -24,12 +24,15 @@ export const listStyles = {
     styleOverrides: {
       root: ({ theme }: { theme: Theme }) => ({
         borderRadius: g3BorderRadius(G3_PRESETS.fileListItem),
-        transition: 'background-color 0.3s ease',
-        '&:hover': {
-          backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'light' ? 0.08 : 0.16),
+        transition: "background-color 0.3s ease",
+        "&:hover": {
+          backgroundColor: alpha(
+            theme.palette.primary.main,
+            theme.palette.mode === "light" ? 0.08 : 0.16,
+          ),
         },
-        '@media (max-width:600px)': {
-          borderRadius: g3BorderRadius({...G3_PRESETS.fileListItem, radius: 8}),
+        "@media (max-width:600px)": {
+          borderRadius: g3BorderRadius({ ...G3_PRESETS.fileListItem, radius: 8 }),
           py: 0.75,
         },
       }),
@@ -38,11 +41,10 @@ export const listStyles = {
   MuiListItemIcon: {
     styleOverrides: {
       root: {
-        '@media (max-width:600px)': {
-          minWidth: '32px',
+        "@media (max-width:600px)": {
+          minWidth: "32px",
         },
       },
     },
   },
 };
-

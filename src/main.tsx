@@ -35,28 +35,25 @@ if (!allowConsoleOutput) {
   // 使用 microtask 队列异步执行，避免阻塞主线程
   queueMicrotask(() => {
     const noop = (..._args: unknown[]): undefined => undefined;
-    // eslint-disable-next-line no-console
+    // oxlint-disable-next-line no-console
     console.log = noop;
-    // eslint-disable-next-line no-console
+    // oxlint-disable-next-line no-console
     console.info = noop;
-    // eslint-disable-next-line no-console
+    // oxlint-disable-next-line no-console
     console.debug = noop;
-    // eslint-disable-next-line no-console
+    // oxlint-disable-next-line no-console
     console.group = noop as typeof console.group;
-    // eslint-disable-next-line no-console
+    // oxlint-disable-next-line no-console
     console.groupCollapsed = noop as typeof console.groupCollapsed;
-    // eslint-disable-next-line no-console
+    // oxlint-disable-next-line no-console
     console.groupEnd = (): undefined => undefined;
   });
 }
 
-
 // 设置全局错误处理器
 setupGlobalErrorHandlers(ErrorManager);
 
-GitHub.Content.hydrate(
-  initialContentPayload as InitialContentHydrationPayload | null | undefined
-);
+GitHub.Content.hydrate(initialContentPayload as InitialContentHydrationPayload | null | undefined);
 
 // 应用LaTeX渲染优化
 // 在应用加载后设置LaTeX优化监听器
@@ -74,7 +71,7 @@ if (rootElement === null) {
 }
 
 ReactDOM.createRoot(rootElement).render(
-// 开发环境已启用React严格模式以帮助发现潜在的错误，进行刷新后页面抽动属正常现象
+  // 开发环境已启用React严格模式以帮助发现潜在的错误，进行刷新后页面抽动属正常现象
   <React.StrictMode>
     <SEOProvider>
       <ThemeProvider>

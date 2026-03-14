@@ -1,11 +1,11 @@
-import { SearchIndexError, SearchIndexErrorCode } from '@/services/github/core/searchIndex';
+import { SearchIndexError, SearchIndexErrorCode } from "@/services/github/core/searchIndex";
 
-import type { RepoSearchError, RepoSearchMode } from './types';
+import type { RepoSearchError, RepoSearchMode } from "./types";
 
 export function sanitizeBranchList(
   branches: string[],
   availableBranches: Set<string>,
-  branchOrder: Map<string, number>
+  branchOrder: Map<string, number>,
 ): string[] {
   const normalized: string[] = [];
   const seen = new Set<string>();
@@ -39,7 +39,7 @@ export function sanitizeBranchList(
       return 1;
     }
 
-    return a.localeCompare(b, 'zh-CN');
+    return a.localeCompare(b, "zh-CN");
   });
 }
 
@@ -53,7 +53,7 @@ export function sanitizeExtensions(extensions: string[] | string): string[] {
     if (trimmed.length === 0) {
       continue;
     }
-    const extension = trimmed.startsWith('.') ? trimmed.slice(1) : trimmed;
+    const extension = trimmed.startsWith(".") ? trimmed.slice(1) : trimmed;
     if (extension.length === 0 || seen.has(extension)) {
       continue;
     }
@@ -67,44 +67,44 @@ export function sanitizeExtensions(extensions: string[] | string): string[] {
 export function normalizeSearchIndexError(error: unknown): RepoSearchError {
   if (error instanceof SearchIndexError) {
     return {
-      source: 'index',
+      source: "index",
       code: error.code,
       message: error.message,
       details: error.details,
-      raw: error
+      raw: error,
     } satisfies RepoSearchError;
   }
 
-  const message = error instanceof Error ? error.message : 'Unknown search index error';
+  const message = error instanceof Error ? error.message : "Unknown search index error";
   return {
-    source: 'index',
+    source: "index",
     message,
-    raw: error
+    raw: error,
   } satisfies RepoSearchError;
 }
 
 export function normalizeSearchError(error: unknown, mode: RepoSearchMode): RepoSearchError {
   if (error instanceof SearchIndexError) {
     return {
-      source: 'search',
+      source: "search",
       code: error.code,
       message: error.message,
       details: error.details,
-      raw: error
+      raw: error,
     } satisfies RepoSearchError;
   }
 
-  const message = error instanceof Error ? error.message : 'Unknown search error';
+  const message = error instanceof Error ? error.message : "Unknown search error";
   const base: RepoSearchError = {
-    source: 'search',
+    source: "search",
     message,
-    raw: error
+    raw: error,
   };
 
-  if (mode === 'search-index') {
+  if (mode === "search-index") {
     return {
       ...base,
-      code: SearchIndexErrorCode.INDEX_FILE_NOT_FOUND
+      code: SearchIndexErrorCode.INDEX_FILE_NOT_FOUND,
     } satisfies RepoSearchError;
   }
 

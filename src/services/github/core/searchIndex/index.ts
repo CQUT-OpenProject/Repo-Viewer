@@ -15,12 +15,11 @@ export {
   refreshSearchIndex,
   SearchIndexError,
   SearchIndexErrorCode,
-  createSearchIndexError
-} from './service';
+  createSearchIndexError,
+} from "./service";
 
 export type {
   SearchIndexErrorDetails,
   SearchIndexResultItem,
-  SearchIndexSearchOptions
-} from './service';
-
+  SearchIndexSearchOptions,
+} from "./service";

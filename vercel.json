@@ -10,6 +10,6 @@
     }
   ],
   "headers": [],
-  "buildCommand": "npm install && npm run build",
-  "installCommand": "npm install"
+  "buildCommand": "npx --yes -p vite-plus@0.1.11 vp build",
+  "installCommand": "npx --yes -p vite-plus@0.1.11 vp install"
 }

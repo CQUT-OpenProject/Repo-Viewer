@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  Typography,
-  Button,
-  alpha,
-  useTheme,
-} from "@mui/material";
+import { Typography, Button, alpha, useTheme } from "@mui/material";
 import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -19,13 +14,10 @@ interface ImageErrorDisplayProps {
 
 /**
  * 图片错误显示组件
- * 
+ *
  * 当Markdown中的图片加载失败时显示错误信息和重试按钮。
  */
-export const ImageErrorDisplay: React.FC<ImageErrorDisplayProps> = ({
-  imgSrc,
-  onRetry,
-}) => {
+export const ImageErrorDisplay: React.FC<ImageErrorDisplayProps> = ({ imgSrc, onRetry }) => {
   const theme = useTheme();
   const trimmedSrc = imgSrc.trim();
   const displaySrc = trimmedSrc.length > 0 ? imgSrc : "未知图片路径";
@@ -52,12 +44,7 @@ export const ImageErrorDisplay: React.FC<ImageErrorDisplayProps> = ({
         style={{ fontSize: 40, marginBottom: 8 }}
         data-oid="g5glf05"
       />
-      <Typography
-        variant="body2"
-        color="error"
-        gutterBottom
-        data-oid="wwi58v_"
-      >
+      <Typography variant="body2" color="error" gutterBottom data-oid="wwi58v_">
         图片加载失败
       </Typography>
       <Typography

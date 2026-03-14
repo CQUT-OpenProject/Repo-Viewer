@@ -47,15 +47,8 @@ const RowComponent = ({
 
   const item = contents[index];
 
-
   if (item === undefined) {
-    return (
-      <div
-        style={style}
-        {...ariaAttributes}
-        aria-hidden="true"
-      />
-    );
+    return <div style={style} {...ariaAttributes} aria-hidden="true" />;
   }
 
   const isHighlighted = highlightedIndex === index;

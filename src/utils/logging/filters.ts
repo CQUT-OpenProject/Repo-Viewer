@@ -1,14 +1,14 @@
-import type { CoreLogLevel } from './types';
-import type { Config } from '@/config';
+import type { CoreLogLevel } from "./types";
+import type { Config } from "@/config";
 
-const LOG_FILTER_STORAGE_KEY = 'repoViewerLog';
+const LOG_FILTER_STORAGE_KEY = "repoViewerLog";
 
 const LEVEL_PRIORITY: Record<CoreLogLevel, number> = {
   error: 1,
   warn: 2,
   info: 3,
   log: 3,
-  debug: 4
+  debug: 4,
 };
 
 interface Rules {
@@ -18,7 +18,7 @@ interface Rules {
 
 const DEFAULT_RULES: Rules = {
   named: {},
-  defaultLevel: LEVEL_PRIORITY.error
+  defaultLevel: LEVEL_PRIORITY.error,
 };
 
 const parseDirectives = (ruleString: string, fallback: Rules): Rules => {
@@ -26,13 +26,13 @@ const parseDirectives = (ruleString: string, fallback: Rules): Rules => {
     return fallback;
   }
 
-  return ruleString.split(',').reduce<Rules>((rules, directiveRaw) => {
+  return ruleString.split(",").reduce<Rules>((rules, directiveRaw) => {
     const directive = directiveRaw.trim();
     if (directive.length === 0) {
       return rules;
     }
 
-    const [name = '', levelName = ''] = directive.split('=');
+    const [name = "", levelName = ""] = directive.split("=");
     const normalizedName = name.trim();
     const normalizedLevel = levelName.trim();
 
@@ -42,18 +42,18 @@ const parseDirectives = (ruleString: string, fallback: Rules): Rules => {
 
     const resolvedLevel = ((): number | undefined => {
       switch (normalizedLevel) {
-        case '*':
-        case 'debug':
+        case "*":
+        case "debug":
           return LEVEL_PRIORITY.debug;
-        case 'info':
-        case 'log':
+        case "info":
+        case "log":
           return LEVEL_PRIORITY.info;
-        case 'warn':
+        case "warn":
           return LEVEL_PRIORITY.warn;
-        case 'error':
+        case "error":
           return LEVEL_PRIORITY.error;
-        case 'off':
-        case '':
+        case "off":
+        case "":
           return 0;
         default:
           return undefined;
@@ -64,10 +64,10 @@ const parseDirectives = (ruleString: string, fallback: Rules): Rules => {
       return rules;
     }
 
-    if (normalizedName === '*') {
+    if (normalizedName === "*") {
       return {
         ...rules,
-        defaultLevel: resolvedLevel
+        defaultLevel: resolvedLevel,
       };
     }
 
@@ -75,26 +75,26 @@ const parseDirectives = (ruleString: string, fallback: Rules): Rules => {
       ...rules,
       named: {
         ...rules.named,
-        [normalizedName]: resolvedLevel
-      }
+        [normalizedName]: resolvedLevel,
+      },
     };
   }, fallback);
 };
 
 const readLocalStorageRules = (): string => {
   try {
-    if (typeof window === 'undefined') {
-      return '';
+    if (typeof window === "undefined") {
+      return "";
     }
     const value = window.localStorage.getItem(LOG_FILTER_STORAGE_KEY);
-    return value ?? '';
-  } catch (_error) {
+    return value ?? "";
+  } catch {
     // localStorage 可能在隐私模式下不可用或被禁用
-    return '';
+    return "";
   }
 };
 
-const resolveBaseLevel = (config: Config['developer']): number => {
+const resolveBaseLevel = (config: Config["developer"]): number => {
   if (config.mode) {
     return LEVEL_PRIORITY.debug;
   }
@@ -113,18 +113,18 @@ const resolveBaseLevel = (config: Config['developer']): number => {
 
 const ensureRuleDefaults = (rules: Rules, baseLevel: number): Rules => ({
   named: rules.named,
-  defaultLevel: Number.isFinite(rules.defaultLevel) ? rules.defaultLevel : baseLevel
+  defaultLevel: Number.isFinite(rules.defaultLevel) ? rules.defaultLevel : baseLevel,
 });
 
 export const shouldLog = (
   loggerName: string,
   level: CoreLogLevel,
-  config: Config['developer']
+  config: Config["developer"],
 ): boolean => {
   const baseLevel = resolveBaseLevel(config);
   const fallbackRules: Rules = {
     ...DEFAULT_RULES,
-    defaultLevel: baseLevel
+    defaultLevel: baseLevel,
   };
 
   const localRules = parseDirectives(readLocalStorageRules(), fallbackRules);
@@ -134,4 +134,3 @@ export const shouldLog = (
 
   return targetLevel <= maxLevel;
 };
-

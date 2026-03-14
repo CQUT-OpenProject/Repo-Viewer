@@ -1,6 +1,6 @@
-import type { Config } from '../types';
-import { CONFIG_DEFAULTS } from '../constants';
-import { EnvParser } from '../utils/env-parser';
+import type { Config } from "../types";
+import { CONFIG_DEFAULTS } from "../constants";
+import { EnvParser } from "../utils/env-parser";
 
 type EnvSourceValue = string | boolean | null | undefined;
 type EnvSource = Record<string, EnvSourceValue>;
@@ -14,11 +14,11 @@ export class TokenLoader {
   /**
    * 加载所有 Token
    */
-  public loadTokens(env: EnvSource): Config['tokens'] {
+  public loadTokens(env: EnvSource): Config["tokens"] {
     const tokens = new Set<string>();
 
     // 遍历所有前缀，检查不带数字和带数字的版本
-    CONFIG_DEFAULTS.PAT_PREFIXES.forEach(prefix => {
+    CONFIG_DEFAULTS.PAT_PREFIXES.forEach((prefix) => {
       // 检查不带数字的版本
       this.addTokenIfValid(tokens, env, prefix);
 
@@ -31,7 +31,7 @@ export class TokenLoader {
     const uniqueTokens = Array.from(tokens);
     return {
       githubPATs: uniqueTokens,
-      totalCount: uniqueTokens.length
+      totalCount: uniqueTokens.length,
     };
   }
 
@@ -47,7 +47,7 @@ export class TokenLoader {
     const patEnvVars: Record<string, string> = {};
 
     // 遍历所有前缀，检查不带数字和带数字的版本
-    CONFIG_DEFAULTS.PAT_PREFIXES.forEach(prefix => {
+    CONFIG_DEFAULTS.PAT_PREFIXES.forEach((prefix) => {
       // 检查不带数字的版本
       this.addPATToDefineIfValid(patEnvVars, env, prefix);
 
@@ -65,7 +65,7 @@ export class TokenLoader {
    */
   public getEnvString(env: EnvSource, key: string): string | undefined {
     const value = env[key];
-    if (typeof value !== 'string') {
+    if (typeof value !== "string") {
       return undefined;
     }
     const trimmed = value.trim();
@@ -85,7 +85,11 @@ export class TokenLoader {
   /**
    * 添加有效的 PAT 到 Vite define 对象
    */
-  private addPATToDefineIfValid(patEnvVars: Record<string, string>, env: EnvSource, key: string): void {
+  private addPATToDefineIfValid(
+    patEnvVars: Record<string, string>,
+    env: EnvSource,
+    key: string,
+  ): void {
     const token = this.getEnvString(env, key);
     if (token !== undefined && EnvParser.validateToken(token)) {
       patEnvVars[`process.env.${key}`] = JSON.stringify(token);

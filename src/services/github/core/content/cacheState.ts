@@ -1,9 +1,9 @@
-import type { GitHubContent } from '@/types';
-import { logger } from '@/utils';
-import { SmartCache } from '@/utils/cache/SmartCache';
+import type { GitHubContent } from "@/types";
+import { logger } from "@/utils";
+import { SmartCache } from "@/utils/cache/SmartCache";
 
-import { CacheManager } from '../../cache';
-import { generateContentVersion, generateFileVersion } from './cacheKeys';
+import { CacheManager } from "../../cache";
+import { generateContentVersion, generateFileVersion } from "./cacheKeys";
 
 /**
  * 缓存状态管理模块
@@ -19,7 +19,7 @@ const fallbackCache = new SmartCache<string, unknown>({
   maxSize: FALLBACK_CACHE_MAX_SIZE,
   ttl: FALLBACK_CACHE_TTL,
   cleanupThreshold: 0.8,
-  cleanupRatio: 0.2
+  cleanupRatio: 0.2,
 });
 
 let cacheInitialized = false;
@@ -49,7 +49,7 @@ export async function ensureCacheInitialized(): Promise<void> {
   }
 
   if (initializationAttempts >= MAX_INIT_ATTEMPTS) {
-    logger.warn('ContentCache: 已达到最大初始化尝试次数，使用内存降级缓存');
+    logger.warn("ContentCache: 已达到最大初始化尝试次数，使用内存降级缓存");
     cacheInitialized = true;
     cacheAvailable = false;
     return;
@@ -61,20 +61,20 @@ export async function ensureCacheInitialized(): Promise<void> {
     await CacheManager.initialize();
     cacheInitialized = true;
     cacheAvailable = true;
-    logger.info('ContentCache: 缓存系统初始化完成');
+    logger.info("ContentCache: 缓存系统初始化完成");
   } catch (unknownError) {
     const cause = unknownError instanceof Error ? unknownError : new Error(String(unknownError));
     logger.warn(
       `ContentCache: 缓存系统初始化失败（尝试 ${initializationAttempts.toString()}/${MAX_INIT_ATTEMPTS.toString()}），使用内存降级缓存`,
-      cause
+      cause,
     );
 
     cacheInitialized = true;
     cacheAvailable = false;
 
     if (import.meta.env.DEV) {
-      logger.error('缓存初始化失败详情:', cause);
-      logger.info('建议：检查浏览器的 IndexedDB 和 LocalStorage 权限设置');
+      logger.error("缓存初始化失败详情:", cause);
+      logger.info("建议：检查浏览器的 IndexedDB 和 LocalStorage 权限设置");
     }
   }
 }
@@ -86,7 +86,7 @@ export async function ensureCacheInitialized(): Promise<void> {
  * @returns 目录内容数组或空值
  */
 export async function getCachedDirectoryContents(
-  cacheKey: string
+  cacheKey: string,
 ): Promise<GitHubContent[] | null | undefined> {
   if (cacheAvailable) {
     const contentCache = CacheManager.getContentCache();
@@ -124,7 +124,7 @@ export async function storeDirectoryContents(
   cacheKey: string,
   path: string,
   branch: string,
-  contents: GitHubContent[]
+  contents: GitHubContent[],
 ): Promise<void> {
   if (cacheAvailable) {
     const version = generateContentVersion(path, branch, contents);
@@ -144,7 +144,11 @@ export async function storeDirectoryContents(
  * @param content - 文件内容
  * @returns Promise<void>
  */
-export async function storeFileContent(cacheKey: string, fileUrl: string, content: string): Promise<void> {
+export async function storeFileContent(
+  cacheKey: string,
+  fileUrl: string,
+  content: string,
+): Promise<void> {
   if (cacheAvailable) {
     const version = generateFileVersion(fileUrl, content);
     const fileCache = CacheManager.getFileCache();

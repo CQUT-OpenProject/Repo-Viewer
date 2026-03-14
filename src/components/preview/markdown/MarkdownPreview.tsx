@@ -4,14 +4,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
-import {
-  Box,
-  Paper,
-  CircularProgress,
-  useTheme,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
+import { Box, Paper, CircularProgress, useTheme, IconButton, Tooltip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useI18n } from "@/contexts/I18nContext";
 import type { MarkdownPreviewProps } from "./types";
@@ -82,8 +75,7 @@ const MarkdownPreview = memo<ExtendedMarkdownPreviewProps>(
     }, []);
 
     const isLazyLoadEnabled = lazyLoad;
-    const hasReadmeContent =
-      typeof readmeContent === "string" && readmeContent.length > 0;
+    const hasReadmeContent = typeof readmeContent === "string" && readmeContent.length > 0;
     const previewPath = previewingItem?.path ?? "";
 
     const notifyRenderComplete = useCallback((): void => {
@@ -105,7 +97,7 @@ const MarkdownPreview = memo<ExtendedMarkdownPreviewProps>(
       hasReadmeContent,
       isThemeChanging,
       previewPath,
-      readmeContent
+      readmeContent,
     ]);
 
     // 动态加载 katex 样式
@@ -171,12 +163,12 @@ const MarkdownPreview = memo<ExtendedMarkdownPreviewProps>(
         }, 300);
       };
 
-      window.addEventListener('theme:changing', handleThemeChanging);
-      window.addEventListener('theme:changed', handleThemeChanged);
+      window.addEventListener("theme:changing", handleThemeChanging);
+      window.addEventListener("theme:changed", handleThemeChanged);
 
       return () => {
-        window.removeEventListener('theme:changing', handleThemeChanging);
-        window.removeEventListener('theme:changed', handleThemeChanged);
+        window.removeEventListener("theme:changing", handleThemeChanging);
+        window.removeEventListener("theme:changed", handleThemeChanged);
       };
     }, [handleLatexCheck]);
 
@@ -208,7 +200,7 @@ const MarkdownPreview = memo<ExtendedMarkdownPreviewProps>(
           onInternalLinkClick(relativePath);
         }
       },
-      [onInternalLinkClick]
+      [onInternalLinkClick],
     );
 
     useEffect(() => {
@@ -238,16 +230,11 @@ const MarkdownPreview = memo<ExtendedMarkdownPreviewProps>(
         }
         notifyRenderComplete();
       },
-      [notifyRenderComplete]
+      [notifyRenderComplete],
     );
 
     if (loadingReadme) {
-      return (
-        <MarkdownPreviewSkeleton
-          isSmallScreen={isSmallScreen}
-          data-oid="8h5-fe5"
-        />
-      );
+      return <MarkdownPreviewSkeleton isSmallScreen={isSmallScreen} data-oid="8h5-fe5" />;
     }
 
     if (!hasReadmeContent) {
@@ -265,10 +252,10 @@ const MarkdownPreview = memo<ExtendedMarkdownPreviewProps>(
 
         {/* 关闭按钮 */}
         {typeof onClose === "function" ? (
-          <Tooltip title={t('ui.markdown.closePreview')} placement="bottom">
+          <Tooltip title={t("ui.markdown.closePreview")} placement="bottom">
             <IconButton
               onClick={onClose}
-              aria-label={t('ui.markdown.closePreview')}
+              aria-label={t("ui.markdown.closePreview")}
               sx={{
                 position: "fixed",
                 top: { xs: 34, sm: 38 },
@@ -289,7 +276,7 @@ const MarkdownPreview = memo<ExtendedMarkdownPreviewProps>(
                   ["background-color", "box-shadow", "transform"],
                   {
                     duration: theme.transitions.duration.short,
-                  }
+                  },
                 ),
               }}
               data-oid="md-close-btn"

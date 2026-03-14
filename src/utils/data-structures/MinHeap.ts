@@ -1,8 +1,8 @@
 /**
  * 最小堆数据结构
- * 
+ *
  * 用于高效地维护和提取最小值元素。
- * 
+ *
  * @template T - 堆中元素的类型
  */
 export class MinHeap<T> {
@@ -11,7 +11,7 @@ export class MinHeap<T> {
 
   /**
    * 创建最小堆
-   * 
+   *
    * @param compareFn - 比较函数，返回负数表示 a < b，正数表示 a > b，0 表示相等
    */
   constructor(compareFn: (a: T, b: T) => number) {
@@ -20,25 +20,25 @@ export class MinHeap<T> {
 
   /**
    * 从数组构建堆
-   * 
+   *
    * @param items - 要插入的元素数组
    * @param compareFn - 比较函数，返回负数表示 a < b，正数表示 a > b，0 表示相等
    */
   static fromArray<T>(items: T[], compareFn: (a: T, b: T) => number): MinHeap<T> {
     const heap = new MinHeap(compareFn);
     heap.heap = [...items];
-    
+
     // 从最后一个非叶子节点开始堆化
     for (let i = Math.floor(heap.heap.length / 2) - 1; i >= 0; i--) {
       heap.heapifyDown(i);
     }
-    
+
     return heap;
   }
 
   /**
    * 插入元素
-   * 
+   *
    * @param item - 要插入的元素
    */
   push(item: T): void {
@@ -48,7 +48,7 @@ export class MinHeap<T> {
 
   /**
    * 提取最小元素
-   * 
+   *
    * @returns 最小元素，如果堆为空则返回 undefined
    */
   pop(): T | undefined {
@@ -72,7 +72,7 @@ export class MinHeap<T> {
 
   /**
    * 提取最小的 k 个元素
-   * 
+   *
    * @param k - 要提取的元素数量
    * @returns 最小的 k 个元素数组
    */
@@ -106,7 +106,7 @@ export class MinHeap<T> {
 
   /**
    * 向上调整堆（用于插入）
-   * 
+   *
    * @param index - 要调整的元素索引
    */
   private heapifyUp(index: number): void {
@@ -127,7 +127,7 @@ export class MinHeap<T> {
 
   /**
    * 向下调整堆（用于删除）
-   * 
+   *
    * @param index - 要调整的元素索引
    */
   private heapifyDown(index: number): void {
@@ -142,14 +142,22 @@ export class MinHeap<T> {
       const rightValue = this.heap[rightChild];
 
       // 找出父节点和两个子节点中最小的
-      if (leftChild < heapLength && leftValue !== undefined && currentMin !== undefined &&
-          this.compareFn(leftValue, currentMin) < 0) {
+      if (
+        leftChild < heapLength &&
+        leftValue !== undefined &&
+        currentMin !== undefined &&
+        this.compareFn(leftValue, currentMin) < 0
+      ) {
         minIndex = leftChild;
       }
 
       const newMin = this.heap[minIndex];
-      if (rightChild < heapLength && rightValue !== undefined && newMin !== undefined &&
-          this.compareFn(rightValue, newMin) < 0) {
+      if (
+        rightChild < heapLength &&
+        rightValue !== undefined &&
+        newMin !== undefined &&
+        this.compareFn(rightValue, newMin) < 0
+      ) {
         minIndex = rightChild;
       }
 
@@ -167,22 +175,17 @@ export class MinHeap<T> {
       index = minIndex;
     }
   }
-
 }
 
 /**
  * 从数组中获取最小的 k 个元素
- * 
+ *
  * @param items - 元素数组
  * @param k - 要获取的元素数量
  * @param compareFn - 比较函数
  * @returns 最小的 k 个元素数组
  */
-export function getMinK<T>(
-  items: T[],
-  k: number,
-  compareFn: (a: T, b: T) => number
-): T[] {
+export function getMinK<T>(items: T[], k: number, compareFn: (a: T, b: T) => number): T[] {
   if (k >= items.length) {
     return [...items].sort(compareFn);
   }

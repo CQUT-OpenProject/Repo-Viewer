@@ -13,7 +13,8 @@ export interface ColorModeContextType {
 
 const createMissingProviderWarning = (methodName: string): (() => void) => {
   const isProductionEnvironment = (): boolean => {
-    const globalProcess = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process;
+    const globalProcess = (globalThis as { process?: { env?: Record<string, string | undefined> } })
+      .process;
     const env = globalProcess?.env;
     return env?.["NODE_ENV"] === "production";
   };

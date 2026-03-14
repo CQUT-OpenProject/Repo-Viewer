@@ -1,14 +1,14 @@
-import axios from 'axios';
-import { logger } from '@/utils';
-import { shouldUseServerAPI } from '../config';
-import { getAuthHeaders } from './Auth';
+import axios from "axios";
+import { logger } from "@/utils";
+import { shouldUseServerAPI } from "../config";
+import { getAuthHeaders } from "./Auth";
 import {
   GITHUB_API_BASE,
   GITHUB_REPO_OWNER,
   GITHUB_REPO_NAME,
   getDefaultBranch,
-  getCurrentBranch
-} from './Config';
+  getCurrentBranch,
+} from "./Config";
 
 /**
  * GitHub分支API响应项接口
@@ -22,7 +22,7 @@ interface GitHubBranchApiItem {
  * 服务端分支响应接口
  */
 interface ServerBranchResponse {
-  status: 'success' | 'error';
+  status: "success" | "error";
   data: {
     defaultBranch?: string;
     branches: unknown;
@@ -45,16 +45,16 @@ function normalizeBranchNames(items: unknown): string[] {
   }
 
   return items
-    .map(item => {
-      if (item !== null && typeof item === 'object') {
+    .map((item) => {
+      if (item !== null && typeof item === "object") {
         const { name } = item as GitHubBranchApiItem;
-        if (typeof name === 'string' && name.trim().length > 0) {
+        if (typeof name === "string" && name.trim().length > 0) {
           return name.trim();
         }
       }
       return undefined;
     })
-    .filter((name): name is string => typeof name === 'string');
+    .filter((name): name is string => typeof name === "string");
 }
 
 /**
@@ -72,15 +72,15 @@ async function fetchBranchesViaServer(): Promise<string[]> {
 
   while (shouldContinue) {
     const params = new URLSearchParams();
-    params.set('action', 'getBranches');
-    params.set('page', page.toString());
-    params.set('per_page', MAX_PER_PAGE.toString());
+    params.set("action", "getBranches");
+    params.set("page", page.toString());
+    params.set("per_page", MAX_PER_PAGE.toString());
 
     const response = await axios.get<ServerBranchResponse>(`/api/github?${params.toString()}`);
     const payload = response.data;
 
-    if (payload.status !== 'success') {
-      throw new Error('分支列表响应格式错误');
+    if (payload.status !== "success") {
+      throw new Error("分支列表响应格式错误");
     }
 
     const branchNames = normalizeBranchNames(payload.data.branches);
@@ -110,8 +110,8 @@ async function fetchBranchesDirect(): Promise<string[]> {
   while (hasNext) {
     const url = `${GITHUB_API_BASE}/repos/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/branches?per_page=${MAX_PER_PAGE.toString()}&page=${page.toString()}`;
     const response = await fetch(url, {
-      method: 'GET',
-      headers
+      method: "GET",
+      headers,
     });
 
     if (!response.ok) {
@@ -122,7 +122,7 @@ async function fetchBranchesDirect(): Promise<string[]> {
     const branchNames = normalizeBranchNames(raw);
     branches.push(...branchNames);
 
-    const linkHeader = response.headers.get('Link') ?? response.headers.get('link');
+    const linkHeader = response.headers.get("Link") ?? response.headers.get("link");
     if (linkHeader?.includes('rel="next"') ?? false) {
       hasNext = true;
       page += 1;
@@ -155,11 +155,9 @@ export async function getBranches(): Promise<string[]> {
     const currentBranch = getCurrentBranch();
 
     const deduplicated = Array.from(
-      new Set([
-        defaultBranch,
-        currentBranch,
-        ...branches
-      ].filter(branch => branch.trim().length > 0))
+      new Set(
+        [defaultBranch, currentBranch, ...branches].filter((branch) => branch.trim().length > 0),
+      ),
     );
 
     deduplicated.sort((a, b) => a.localeCompare(b));
@@ -177,10 +175,8 @@ export async function getBranches(): Promise<string[]> {
 
     return deduplicated;
   } catch (error) {
-    logger.error('获取分支列表失败:', error);
+    logger.error("获取分支列表失败:", error);
     const fallbackBranch = getCurrentBranch();
     return [fallbackBranch];
   }
 }
-
-

@@ -1,9 +1,9 @@
-import { logger } from '@/utils';
-import type { CacheItemMeta } from './CacheTypes';
+import { logger } from "@/utils";
+import type { CacheItemMeta } from "./CacheTypes";
 
 /**
  * LRU 缓存节点
- * 
+ *
  * @template K - 缓存键类型
  */
 class LRUNode<K extends string> {
@@ -20,9 +20,9 @@ class LRUNode<K extends string> {
 
 /**
  * LRU 缓存结构
- * 
+ *
  * 使用双向链表和哈希表实现。
- * 
+ *
  * @template K - 缓存键类型（必须为 string）
  */
 export class LRUCache<K extends string> {
@@ -37,7 +37,7 @@ export class LRUCache<K extends string> {
 
   /**
    * 获取缓存项
-   * 
+   *
    * @param key - 缓存键
    * @returns 缓存项或 undefined
    */
@@ -49,13 +49,13 @@ export class LRUCache<K extends string> {
 
     // 移动到尾部（标记为最近使用）
     this.moveToTail(node);
-    
+
     return node.item;
   }
 
   /**
    * 设置缓存项
-   * 
+   *
    * @param key - 缓存键
    * @param item - 缓存项元数据
    */
@@ -84,7 +84,7 @@ export class LRUCache<K extends string> {
 
   /**
    * 删除缓存项
-   * 
+   *
    * @param key - 缓存键
    * @returns 是否成功删除
    */
@@ -117,7 +117,7 @@ export class LRUCache<K extends string> {
 
   /**
    * 获取所有条目
-   * 
+   *
    * 按照最近使用顺序返回（从旧到新）
    */
   entries(): [K, CacheItemMeta][] {
@@ -134,7 +134,7 @@ export class LRUCache<K extends string> {
 
   /**
    * 遍历所有条目
-   * 
+   *
    * @param callback - 回调函数
    */
   forEach(callback: (item: CacheItemMeta, key: K) => void): void {
@@ -148,7 +148,7 @@ export class LRUCache<K extends string> {
 
   /**
    * 移动节点到尾部（标记为最近使用）
-   * 
+   *
    * @param node - 要移动的节点
    */
   private moveToTail(node: LRUNode<K>): void {
@@ -159,14 +159,14 @@ export class LRUCache<K extends string> {
 
     // 从当前位置移除
     this.removeNode(node);
-    
+
     // 添加到尾部
     this.addToTail(node);
   }
 
   /**
    * 将节点添加到链表尾部
-   * 
+   *
    * @param node - 要添加的节点
    */
   private addToTail(node: LRUNode<K>): void {
@@ -184,7 +184,7 @@ export class LRUCache<K extends string> {
 
   /**
    * 从链表中移除节点（不删除 map 中的引用）
-   * 
+   *
    * @param node - 要移除的节点
    */
   private removeNode(node: LRUNode<K>): void {

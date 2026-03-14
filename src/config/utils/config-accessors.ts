@@ -1,5 +1,5 @@
-import type { Config } from '../types';
-import { configManager } from '../core/ConfigManager';
+import type { Config } from "../types";
+import { configManager } from "../core/ConfigManager";
 
 /**
  * 获取完整配置对象
@@ -13,63 +13,64 @@ export const getConfig = (): Config => configManager.getConfig();
  *
  * @returns 站点相关配置
  */
-export const getSiteConfig = (): Config['site'] => getConfig().site;
+export const getSiteConfig = (): Config["site"] => getConfig().site;
 
 /**
  * 获取GitHub配置
  *
  * @returns GitHub仓库相关配置
  */
-export const getGithubConfig = (): Config['github'] => getConfig().github;
+export const getGithubConfig = (): Config["github"] => getConfig().github;
 
 /**
  * 获取功能配置
  *
  * @returns 应用功能相关配置
  */
-export const getFeaturesConfig = (): Config['features'] => getConfig().features;
+export const getFeaturesConfig = (): Config["features"] => getConfig().features;
 
 /**
  * 获取搜索索引配置
  *
  * @returns 搜索索引功能配置
  */
-export const getSearchIndexConfig = (): Config['features']['searchIndex'] => getConfig().features.searchIndex;
+export const getSearchIndexConfig = (): Config["features"]["searchIndex"] =>
+  getConfig().features.searchIndex;
 
 /**
  * 获取代理配置
  *
  * @returns 代理相关配置
  */
-export const getProxyConfig = (): Config['proxy'] => getConfig().proxy;
+export const getProxyConfig = (): Config["proxy"] => getConfig().proxy;
 
 /**
  * 获取访问控制配置
  *
  * @returns 访问控制相关配置
  */
-export const getAccessConfig = (): Config['access'] => getConfig().access;
+export const getAccessConfig = (): Config["access"] => getConfig().access;
 
 /**
  * 获取开发者配置
  *
  * @returns 开发者模式相关配置
  */
-export const getDeveloperConfig = (): Config['developer'] => getConfig().developer;
+export const getDeveloperConfig = (): Config["developer"] => getConfig().developer;
 
 /**
  * 获取运行时配置
  *
  * @returns 运行时环境相关配置
  */
-export const getRuntimeConfig = (): Config['runtime'] => getConfig().runtime;
+export const getRuntimeConfig = (): Config["runtime"] => getConfig().runtime;
 
 /**
  * 获取Token配置
  *
  * @returns Token相关配置
  */
-export const getTokensConfig = (): Config['tokens'] => getConfig().tokens;
+export const getTokensConfig = (): Config["tokens"] => getConfig().tokens;
 
 /**
  * 检查是否为开发者模式

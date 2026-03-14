@@ -58,58 +58,58 @@ interface ErrorScenario {
 const getErrorScenario = (
   error: { message: string; code?: SearchIndexErrorCode } | null,
   ready: boolean,
-  t: (key: string, options?: InterpolationOptions) => string
+  t: (key: string, options?: InterpolationOptions) => string,
 ): ErrorScenario | null => {
   if (error !== null) {
     const code = error.code;
     if (code === SearchIndexErrorCode.MANIFEST_NOT_FOUND) {
       return {
-        title: t('search.index.errors.manifestNotFound.title'),
+        title: t("search.index.errors.manifestNotFound.title"),
         description: [
-          t('search.index.errors.manifestNotFound.description1'),
-          t('search.index.errors.manifestNotFound.description2'),
+          t("search.index.errors.manifestNotFound.description1"),
+          t("search.index.errors.manifestNotFound.description2"),
         ],
       };
     }
     if (code === SearchIndexErrorCode.MANIFEST_INVALID) {
       return {
-        title: t('search.index.errors.manifestInvalid.title'),
-        description: [t('search.index.errors.manifestInvalid.description1')],
+        title: t("search.index.errors.manifestInvalid.title"),
+        description: [t("search.index.errors.manifestInvalid.description1")],
       };
     }
     if (code === SearchIndexErrorCode.INDEX_FILE_NOT_FOUND) {
       return {
-        title: t('search.index.errors.fileNotFound.title'),
+        title: t("search.index.errors.fileNotFound.title"),
         description: [
-          t('search.index.errors.fileNotFound.description1'),
-          t('search.index.errors.fileNotFound.description2'),
+          t("search.index.errors.fileNotFound.description1"),
+          t("search.index.errors.fileNotFound.description2"),
         ],
       };
     }
     if (code === SearchIndexErrorCode.INDEX_DOCUMENT_INVALID) {
       return {
-        title: t('search.index.errors.documentInvalid.title'),
+        title: t("search.index.errors.documentInvalid.title"),
         description: [
-          t('search.index.errors.documentInvalid.description1'),
-          t('search.index.errors.documentInvalid.description2'),
+          t("search.index.errors.documentInvalid.description1"),
+          t("search.index.errors.documentInvalid.description2"),
         ],
       };
     }
     return {
-      title: t('search.index.errors.default.title'),
+      title: t("search.index.errors.default.title"),
       description: [
-        t('search.index.errors.default.description1', { message: error.message }),
-        t('search.index.errors.default.description2'),
+        t("search.index.errors.default.description1", { message: error.message }),
+        t("search.index.errors.default.description2"),
       ],
     };
   }
 
   if (!ready) {
     return {
-      title: t('search.index.notReady.title'),
+      title: t("search.index.notReady.title"),
       description: [
-        t('search.index.notReady.description1'),
-        t('search.index.notReady.description2'),
+        t("search.index.notReady.description1"),
+        t("search.index.notReady.description2"),
       ],
     };
   }
@@ -127,14 +127,14 @@ export const IndexStatus: React.FC<IndexStatusProps> = ({
   onRefresh,
 }) => {
   const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const { t } = useI18n();
 
   return useMemo(() => {
     if (!enabled) {
       return (
         <Alert severity="info" variant="outlined">
-          {t('search.index.disabled')}
+          {t("search.index.disabled")}
         </Alert>
       );
     }
@@ -142,7 +142,7 @@ export const IndexStatus: React.FC<IndexStatusProps> = ({
     if (loading) {
       return (
         <Alert severity="info" icon={<CircularProgress size={16} />}>
-          {t('search.index.detecting')}
+          {t("search.index.detecting")}
         </Alert>
       );
     }
@@ -161,16 +161,15 @@ export const IndexStatus: React.FC<IndexStatusProps> = ({
             px: isSmallScreen ? 1.5 : 2,
           }}
         >
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="flex-start"
-            gap={1.5}
-          >
-            <Typography variant={isSmallScreen ? "caption" : "body2"} fontWeight={600} sx={{ flex: 1 }}>
+          <Box display="flex" justifyContent="space-between" alignItems="flex-start" gap={1.5}>
+            <Typography
+              variant={isSmallScreen ? "caption" : "body2"}
+              fontWeight={600}
+              sx={{ flex: 1 }}
+            >
               {scenario.title}
             </Typography>
-            <Tooltip title={t('search.index.refresh')} placement="left">
+            <Tooltip title={t("search.index.refresh")} placement="left">
               <span>
                 <IconButton
                   onClick={onRefresh}
@@ -194,11 +193,21 @@ export const IndexStatus: React.FC<IndexStatusProps> = ({
 
     return (
       <Alert severity="success">
-        {t('search.index.ready', {
+        {t("search.index.ready", {
           time: new Date(lastUpdatedAt ?? FALLBACK_INDEX_TIME).toLocaleString(),
           count: indexedBranches.length,
         })}
       </Alert>
     );
-  }, [enabled, loading, error, ready, indexedBranches.length, lastUpdatedAt, isSmallScreen, onRefresh, t]);
+  }, [
+    enabled,
+    loading,
+    error,
+    ready,
+    indexedBranches.length,
+    lastUpdatedAt,
+    isSmallScreen,
+    onRefresh,
+    t,
+  ]);
 };

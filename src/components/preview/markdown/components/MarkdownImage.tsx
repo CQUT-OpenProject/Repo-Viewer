@@ -12,11 +12,10 @@ import { ImageErrorDisplay } from "./ImageErrorDisplay";
 /**
  * Markdown图片组件属性接口
  */
-interface MarkdownImageProps
-  extends Omit<
-    React.ImgHTMLAttributes<HTMLImageElement>,
-    "src" | "alt" | "style" | "onLoad" | "onError"
-  > {
+interface MarkdownImageProps extends Omit<
+  React.ImgHTMLAttributes<HTMLImageElement>,
+  "src" | "alt" | "style" | "onLoad" | "onError"
+> {
   src?: string;
   alt?: string;
   style?: React.CSSProperties | undefined;
@@ -27,7 +26,7 @@ interface MarkdownImageProps
 
 /**
  * Markdown图片组件
- * 
+ *
  * 处理Markdown中的图片显示，支持代理加载和错误处理。
  */
 export const MarkdownImage: React.FC<MarkdownImageProps> = ({
@@ -42,7 +41,7 @@ export const MarkdownImage: React.FC<MarkdownImageProps> = ({
   const normalizedSrc = typeof src === "string" ? src.trim() : "";
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [isImageFailed, setIsImageFailed] = useState(
-    normalizedSrc.length > 0 && imageState.failedImages.has(normalizedSrc)
+    normalizedSrc.length > 0 && imageState.failedImages.has(normalizedSrc),
   );
 
   const { imgSrc, originalSrc } = transformImageSrc(src, previewingItem, currentBranch);
@@ -52,10 +51,9 @@ export const MarkdownImage: React.FC<MarkdownImageProps> = ({
     sanitizedImgSrc.length > 0
       ? sanitizedImgSrc
       : sanitizedOriginalSrc.length > 0
-      ? sanitizedOriginalSrc
-      : originalSrc;
-  const elementIdSource =
-    stateKey.length > 0 ? stateKey : "fallback-placeholder";
+        ? sanitizedOriginalSrc
+        : originalSrc;
+  const elementIdSource = stateKey.length > 0 ? stateKey : "fallback-placeholder";
   const imgId = `img-${elementIdSource.replace(/[^a-zA-Z0-9]/g, "-")}`;
   const resolvedImgSrc = stateKey.length > 0 ? stateKey : undefined;
 
@@ -110,17 +108,8 @@ export const MarkdownImage: React.FC<MarkdownImageProps> = ({
         handleImageLoad(stateKey, imageState, setIsImageLoaded);
       }}
       onError={(event) => {
-        const newSrc = handleImageError(
-          stateKey,
-          originalSrc,
-          imageState,
-          setIsImageFailed
-        );
-        if (
-          newSrc !== null &&
-          newSrc.trim().length > 0 &&
-          newSrc !== stateKey
-        ) {
+        const newSrc = handleImageError(stateKey, originalSrc, imageState, setIsImageFailed);
+        if (newSrc !== null && newSrc.trim().length > 0 && newSrc !== stateKey) {
           event.currentTarget.src = newSrc;
         }
       }}

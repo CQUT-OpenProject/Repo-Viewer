@@ -3,9 +3,9 @@ import type {
   APIError,
   GitHubError,
   ComponentError,
-  ErrorContext
-} from '@/types/errors';
-import { ErrorLevel, ErrorCategory } from '@/types/errors';
+  ErrorContext,
+} from "@/types/errors";
+import { ErrorLevel, ErrorCategory } from "@/types/errors";
 
 /**
  * 错误工厂类
@@ -39,7 +39,7 @@ export class ErrorFactory {
     message: string,
     level: ErrorLevel,
     category: ErrorCategory,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ): BaseError {
     return {
       code,
@@ -47,8 +47,8 @@ export class ErrorFactory {
       level,
       category,
       timestamp: Date.now(),
-      context: { ...this.getBaseContext(), ...(context ?? {}) },
-      sessionId: this.sessionId
+      context: { ...this.getBaseContext(), ...context },
+      sessionId: this.sessionId,
     };
   }
 
@@ -67,14 +67,14 @@ export class ErrorFactory {
     statusCode: number,
     endpoint: string,
     method: string,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ): APIError {
     const baseError = this.createBaseError(
       `API_ERROR_${statusCode.toString()}`,
       message,
       this.getErrorLevelByStatusCode(statusCode),
       ErrorCategory.API,
-      context
+      context,
     );
 
     return {
@@ -82,7 +82,7 @@ export class ErrorFactory {
       category: ErrorCategory.API,
       statusCode,
       endpoint,
-      method
+      method,
     };
   }
 
@@ -103,21 +103,22 @@ export class ErrorFactory {
     endpoint: string,
     method: string,
     rateLimitInfo?: { remaining: number; reset: number },
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ): GitHubError {
     const apiError = this.createAPIError(message, statusCode, endpoint, method, context);
 
-    const rateLimitProps = rateLimitInfo !== undefined
-      ? {
-          rateLimitRemaining: rateLimitInfo.remaining,
-          rateLimitReset: rateLimitInfo.reset,
-        }
-      : {};
+    const rateLimitProps =
+      rateLimitInfo !== undefined
+        ? {
+            rateLimitRemaining: rateLimitInfo.remaining,
+            rateLimitReset: rateLimitInfo.reset,
+          }
+        : {};
 
     return {
       ...apiError,
       ...rateLimitProps,
-      documentationUrl: 'https://docs.github.com/en/rest'
+      documentationUrl: "https://docs.github.com/en/rest",
     };
   }
 
@@ -134,21 +135,21 @@ export class ErrorFactory {
     componentName: string,
     message: string,
     props?: Record<string, unknown>,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ): ComponentError {
     const baseError = this.createBaseError(
-      'COMPONENT_ERROR',
+      "COMPONENT_ERROR",
       message,
       ErrorLevel.ERROR,
       ErrorCategory.COMPONENT,
-      context
+      context,
     );
 
     return {
       ...baseError,
       category: ErrorCategory.COMPONENT,
       componentName,
-      ...(props !== undefined ? { props } : {})
+      ...(props !== undefined ? { props } : {}),
     };
   }
 

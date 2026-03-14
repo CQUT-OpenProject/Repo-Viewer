@@ -1,6 +1,6 @@
-export type CoreLogLevel = 'debug' | 'info' | 'warn' | 'error' | 'log';
+export type CoreLogLevel = "debug" | "info" | "warn" | "error" | "log";
 
-export type GroupLogLevel = 'group' | 'groupEnd';
+export type GroupLogLevel = "group" | "groupEnd";
 
 export type LogLevel = CoreLogLevel | GroupLogLevel;
 
@@ -23,4 +23,3 @@ export interface LoggerArguments {
   level: LogLevel;
   args: unknown[];
 }
-

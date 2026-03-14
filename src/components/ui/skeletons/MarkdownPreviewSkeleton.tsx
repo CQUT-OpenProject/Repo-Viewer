@@ -1,16 +1,11 @@
 import React from "react";
-import {
-  Box,
-  Skeleton,
-  useTheme,
-  Paper,
-} from "@mui/material";
+import { Box, Skeleton, useTheme, Paper } from "@mui/material";
 import { getSkeletonStyles, getContainerTransitionStyles, useSkeletonVisibility } from "./shared";
 import { responsiveG3Styles, g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 
 /**
  * Markdown预览骨架屏组件
- * 
+ *
  * 在Markdown内容加载时显示的占位骨架屏。
  */
 export const MarkdownPreviewSkeleton: React.FC<{

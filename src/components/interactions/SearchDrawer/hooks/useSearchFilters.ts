@@ -11,7 +11,9 @@ interface UseSearchFiltersProps {
   };
 }
 
-export const useSearchFilters = ({ search }: UseSearchFiltersProps): {
+export const useSearchFilters = ({
+  search,
+}: UseSearchFiltersProps): {
   extensionInput: string;
   setExtensionInput: (value: string) => void;
   filtersExpanded: boolean;
@@ -22,8 +24,8 @@ export const useSearchFilters = ({ search }: UseSearchFiltersProps): {
   toggleFilters: () => void;
   handleResetFilters: () => void;
 } => {
-  const [extensionInput, setExtensionInput] = useState(() => 
-    formatExtensionInput(search.extensionFilter)
+  const [extensionInput, setExtensionInput] = useState(() =>
+    formatExtensionInput(search.extensionFilter),
   );
   const [filtersExpanded, setFiltersExpanded] = useState(false);
 
@@ -32,25 +34,28 @@ export const useSearchFilters = ({ search }: UseSearchFiltersProps): {
     search.setExtensionFilter(parsed);
   }, [extensionInput, search]);
 
-  const handleBranchToggle = useCallback((branch: string): void => {
-    const normalized = branch.trim();
-    if (normalized.length === 0) {
-      return;
-    }
+  const handleBranchToggle = useCallback(
+    (branch: string): void => {
+      const normalized = branch.trim();
+      if (normalized.length === 0) {
+        return;
+      }
 
-    if (search.branchFilter.includes(normalized)) {
-      search.setBranchFilter(search.branchFilter.filter(item => item !== normalized));
-    } else {
-      search.setBranchFilter([...search.branchFilter, normalized]);
-    }
-  }, [search]);
+      if (search.branchFilter.includes(normalized)) {
+        search.setBranchFilter(search.branchFilter.filter((item) => item !== normalized));
+      } else {
+        search.setBranchFilter([...search.branchFilter, normalized]);
+      }
+    },
+    [search],
+  );
 
   const clearBranchFilter = useCallback((): void => {
     search.setBranchFilter([]);
   }, [search]);
 
   const toggleFilters = useCallback(() => {
-    setFiltersExpanded(prev => !prev);
+    setFiltersExpanded((prev) => !prev);
   }, []);
 
   const handleResetFilters = useCallback(() => {
@@ -70,6 +75,6 @@ export const useSearchFilters = ({ search }: UseSearchFiltersProps): {
     handleBranchToggle,
     clearBranchFilter,
     toggleFilters,
-    handleResetFilters
+    handleResetFilters,
   };
 };

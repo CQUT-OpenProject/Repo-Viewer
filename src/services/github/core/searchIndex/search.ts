@@ -67,9 +67,9 @@ function normalizeExtensions(extensions?: string[]): Set<string> | null {
     return null;
   }
   const normalized = extensions
-    .map(ext => ext.trim().toLowerCase())
-    .filter(ext => ext.length > 0)
-    .map(ext => (ext.startsWith(".") ? ext.slice(1) : ext));
+    .map((ext) => ext.trim().toLowerCase())
+    .filter((ext) => ext.length > 0)
+    .map((ext) => (ext.startsWith(".") ? ext.slice(1) : ext));
   return normalized.length > 0 ? new Set(normalized) : null;
 }
 
@@ -110,8 +110,8 @@ function buildSnippet(body: string, keyword: string): string | undefined {
 
   const tokens = keyword
     .split(/\s+/)
-    .map(token => token.trim().toLowerCase())
-    .filter(token => token.length > 0);
+    .map((token) => token.trim().toLowerCase())
+    .filter((token) => token.length > 0);
 
   const lowerBody = normalized.toLowerCase();
   let hitIndex = -1;
@@ -144,7 +144,10 @@ function buildSnippet(body: string, keyword: string): string | undefined {
   return snippet;
 }
 
-function buildGithubUrls(branch: string, filePath: string): { htmlUrl?: string; downloadUrl?: string } {
+function buildGithubUrls(
+  branch: string,
+  filePath: string,
+): { htmlUrl?: string; downloadUrl?: string } {
   const { repoOwner, repoName } = getGithubConfig();
   if (repoOwner.trim() === "" || repoName.trim() === "") {
     return {};
@@ -156,11 +159,13 @@ function buildGithubUrls(branch: string, filePath: string): { htmlUrl?: string; 
   const encodedPath = normalizedPath.split("/").map(encodeURIComponent).join("/");
   return {
     htmlUrl: `https://github.com/${safeOwner}/${safeRepo}/blob/${safeBranch}/${encodedPath}`,
-    downloadUrl: `https://raw.githubusercontent.com/${safeOwner}/${safeRepo}/${safeBranch}/${encodedPath}`
+    downloadUrl: `https://raw.githubusercontent.com/${safeOwner}/${safeRepo}/${safeBranch}/${encodedPath}`,
   };
 }
 
-export async function searchIndex(options: SearchIndexSearchOptions): Promise<SearchIndexResultItem[]> {
+export async function searchIndex(
+  options: SearchIndexSearchOptions,
+): Promise<SearchIndexResultItem[]> {
   const config = getSearchIndexConfig();
   if (!config.enabled) {
     throw createSearchIndexError(SearchIndexErrorCode.DISABLED, "Search index feature is disabled");
@@ -176,28 +181,31 @@ export async function searchIndex(options: SearchIndexSearchOptions): Promise<Se
   if (manifestBranches.length === 0) {
     throw createSearchIndexError(
       SearchIndexErrorCode.INDEX_BRANCH_NOT_INDEXED,
-      "No indexed branches found"
+      "No indexed branches found",
     );
   }
 
-  const requestedBranches = options.branches !== undefined && options.branches.length > 0
-    ? options.branches
-    : [config.defaultBranch];
+  const requestedBranches =
+    options.branches !== undefined && options.branches.length > 0
+      ? options.branches
+      : [config.defaultBranch];
 
   let candidateBranches = requestedBranches
-    .map(branch => branch.trim())
-    .filter(branch => branch.length > 0);
+    .map((branch) => branch.trim())
+    .filter((branch) => branch.length > 0);
 
   if (candidateBranches.length === 0) {
     candidateBranches = manifestBranches;
   }
 
-  const indexedBranches = candidateBranches.filter(branch => manifest.branches[branch] !== undefined);
+  const indexedBranches = candidateBranches.filter(
+    (branch) => manifest.branches[branch] !== undefined,
+  );
   if (indexedBranches.length === 0) {
     throw createSearchIndexError(
       SearchIndexErrorCode.INDEX_BRANCH_NOT_INDEXED,
       "No indexed branches found for search request",
-      { branch: candidateBranches.join(", ") }
+      { branch: candidateBranches.join(", ") },
     );
   }
 
@@ -208,7 +216,10 @@ export async function searchIndex(options: SearchIndexSearchOptions): Promise<Se
 
   const results: SearchIndexResultItem[] = [];
 
-  const collectBranchResults = (branch: string, branchResults: unknown[]): SearchIndexResultItem[] => {
+  const collectBranchResults = (
+    branch: string,
+    branchResults: unknown[],
+  ): SearchIndexResultItem[] => {
     const collected: SearchIndexResultItem[] = [];
     for (const rawResult of branchResults) {
       if (typeof rawResult !== "object" || rawResult === null) {
@@ -241,7 +252,7 @@ export async function searchIndex(options: SearchIndexSearchOptions): Promise<Se
         branch,
         path,
         name,
-        score
+        score,
       };
 
       if (extension.length > 0) {
@@ -264,12 +275,8 @@ export async function searchIndex(options: SearchIndexSearchOptions): Promise<Se
 
   for (const branch of indexedBranches) {
     const searchHandler = await getDocfindSearchHandler(branch, options.signal);
-    const baseLimit = hasFilters
-      ? Math.max(limit, MIN_DOCFIND_LIMIT)
-      : limit;
-    const maxLimit = hasFilters
-      ? Math.max(baseLimit * 10, MAX_DOCFIND_LIMIT)
-      : limit;
+    const baseLimit = hasFilters ? Math.max(limit, MIN_DOCFIND_LIMIT) : limit;
+    const maxLimit = hasFilters ? Math.max(baseLimit * 10, MAX_DOCFIND_LIMIT) : limit;
 
     let fetchLimit = baseLimit;
     let branchResults = await searchHandler(keyword, fetchLimit);
@@ -277,10 +284,10 @@ export async function searchIndex(options: SearchIndexSearchOptions): Promise<Se
 
     // 有过滤条件时扩大取回量，避免过滤后结果不足
     while (
-      hasFilters
-      && branchItems.length < limit
-      && fetchLimit < maxLimit
-      && branchResults.length >= fetchLimit
+      hasFilters &&
+      branchItems.length < limit &&
+      fetchLimit < maxLimit &&
+      branchResults.length >= fetchLimit
     ) {
       const nextLimit = Math.min(fetchLimit * DOCFIND_LIMIT_GROWTH, maxLimit);
       if (nextLimit === fetchLimit) {

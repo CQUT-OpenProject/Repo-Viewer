@@ -50,10 +50,14 @@ const FileList = React.memo<FileListProps>(
     hasReadmePreview = false,
     isPreviewActive = false,
   }) => {
-    const { isScrolling, scrollSpeed, handleScroll: handleScrollEvent } = useOptimizedScroll({
+    const {
+      isScrolling,
+      scrollSpeed,
+      handleScroll: handleScrollEvent,
+    } = useOptimizedScroll({
       maxSamples: 5,
       scrollEndDelay: 1000,
-      fastScrollThreshold: 0.3
+      fastScrollThreshold: 0.3,
     });
 
     const [listApi, setListApi] = useListCallbackRef(null);
@@ -77,25 +81,28 @@ const FileList = React.memo<FileListProps>(
     /**
      * 滚动到指定索引的文件
      */
-    const handleScrollToIndex = useCallback((index: number) => {
-      if (listApi !== null) {
-        listApi.scrollToRow({
-          index,
-          align: "start",
-          behavior: "smooth",
-        });
+    const handleScrollToIndex = useCallback(
+      (index: number) => {
+        if (listApi !== null) {
+          listApi.scrollToRow({
+            index,
+            align: "start",
+            behavior: "smooth",
+          });
 
-        setHighlightedIndex(index);
+          setHighlightedIndex(index);
 
-        if (highlightTimeoutRef.current !== null) {
-          clearTimeout(highlightTimeoutRef.current);
+          if (highlightTimeoutRef.current !== null) {
+            clearTimeout(highlightTimeoutRef.current);
+          }
+
+          highlightTimeoutRef.current = setTimeout(() => {
+            setHighlightedIndex(null);
+          }, 1500);
         }
-
-        highlightTimeoutRef.current = setTimeout(() => {
-          setHighlightedIndex(null);
-        }, 1500);
-      }
-    }, [listApi]);
+      },
+      [listApi],
+    );
 
     // 清理定时器
     React.useEffect(() => {
@@ -121,8 +128,7 @@ const FileList = React.memo<FileListProps>(
     }, [isSmallScreen]);
 
     // 判断是否为少量文件
-    const hasFewItems =
-      contents.length <= LIST_HEIGHT_CONFIG.veryFewItemsThreshold;
+    const hasFewItems = contents.length <= LIST_HEIGHT_CONFIG.veryFewItemsThreshold;
 
     // 确定容器内边距
     const containerPadding = hasFewItems
@@ -137,15 +143,23 @@ const FileList = React.memo<FileListProps>(
     });
 
     const layoutMetrics = useMemo(
-      (): FileListLayoutMetrics => calculateLayoutMetrics({
-        fileCount: contents.length,
+      (): FileListLayoutMetrics =>
+        calculateLayoutMetrics({
+          fileCount: contents.length,
+          rowHeight,
+          isSmallScreen,
+          hasReadmePreview,
+          hoverExtraSpace,
+          viewportHeight,
+        }),
+      [
+        contents.length,
         rowHeight,
         isSmallScreen,
         hasReadmePreview,
         hoverExtraSpace,
         viewportHeight,
-      }),
-      [contents.length, rowHeight, isSmallScreen, hasReadmePreview, hoverExtraSpace, viewportHeight],
+      ],
     );
     const { height: availableHeight, needsScrolling } = layoutMetrics;
 
@@ -308,7 +322,7 @@ const FileList = React.memo<FileListProps>(
     return (
       <Box
         sx={{
-          position: 'relative',
+          position: "relative",
         }}
       >
         <Box
@@ -353,17 +367,17 @@ const FileList = React.memo<FileListProps>(
         {/* 右侧悬停触发区域 */}
         <Box
           sx={{
-            position: 'absolute',
+            position: "absolute",
             right: { xs: -32, sm: -36 },
             top: 0,
             bottom: 0,
             width: { xs: 60, sm: 64 },
             zIndex: 5,
-            cursor: 'default',
+            cursor: "default",
             // 预览时禁用指针事件
-            pointerEvents: isPreviewActive ? 'none' : 'auto',
+            pointerEvents: isPreviewActive ? "none" : "auto",
             // 预览时完全隐藏（不占用空间）
-            display: isPreviewActive ? 'none' : 'block',
+            display: isPreviewActive ? "none" : "block",
           }}
           onMouseEnter={() => {
             setShowAlphabetIndex(true);

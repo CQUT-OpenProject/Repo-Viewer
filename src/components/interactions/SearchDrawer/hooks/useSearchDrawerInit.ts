@@ -27,7 +27,7 @@ export const useSearchDrawerInit = ({
   search,
   setPathPrefix,
   setExtensionInput,
-  setFiltersExpanded
+  setFiltersExpanded,
 }: UseSearchDrawerInitProps): void => {
   const previousOpenRef = useRef(false);
 
@@ -39,16 +39,16 @@ export const useSearchDrawerInit = ({
       search.initializeIndex();
 
       // 重置所有筛选条件
-      search.setKeyword('');
+      search.setKeyword("");
       search.setBranchFilter([]);
       search.setExtensionFilter([]);
-      setExtensionInput('');
+      setExtensionInput("");
       search.clearResults();
       setFiltersExpanded(false);
 
       // 自动填充当前路径
       const trimmedCurrentPath = currentPath.trim();
-      setPathPrefix(trimmedCurrentPath.length > 0 ? trimmedCurrentPath : '');
+      setPathPrefix(trimmedCurrentPath.length > 0 ? trimmedCurrentPath : "");
 
       // 聚焦搜索框
       setTimeout(() => {
@@ -60,4 +60,3 @@ export const useSearchDrawerInit = ({
     previousOpenRef.current = open;
   }, [open, currentPath, setPathPrefix, search, setExtensionInput, setFiltersExpanded]);
 };
-

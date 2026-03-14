@@ -11,13 +11,10 @@
  * @module services/github/core/search/service
  */
 
-import type { GitHubContent } from '@/types';
+import type { GitHubContent } from "@/types";
 
-import { searchWithGitHubApi } from './githubApi';
-import {
-  searchFiles,
-  searchMultipleBranchesWithTreesApi
-} from './local';
+import { searchWithGitHubApi } from "./githubApi";
+import { searchFiles, searchMultipleBranchesWithTreesApi } from "./local";
 
 export { searchWithGitHubApi, searchFiles, searchMultipleBranchesWithTreesApi };
 
@@ -27,4 +24,3 @@ export { searchWithGitHubApi, searchFiles, searchMultipleBranchesWithTreesApi };
  * 表示跨多个分支的搜索结果，每个分支包含其匹配的文件列表。
  */
 export type SearchTreesResult = { branch: string; results: GitHubContent[] }[];
-

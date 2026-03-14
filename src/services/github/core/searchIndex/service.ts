@@ -13,26 +13,22 @@
  * @module services/github/core/searchIndex/service
  */
 
-import { getSearchIndexConfig } from '@/config';
+import { getSearchIndexConfig } from "@/config";
 
-import type { SearchIndexManifest } from '../../schemas';
+import type { SearchIndexManifest } from "../../schemas";
 import {
   fetchManifest,
   invalidateSearchIndexCache as clearSearchIndexCache,
   prefetchSearchIndexForBranch as prefetchBranch,
-  refreshSearchIndexManifest
-} from './fetchers';
+  refreshSearchIndexManifest,
+} from "./fetchers";
 import {
   createSearchIndexError,
   SearchIndexError,
   SearchIndexErrorCode,
-  type SearchIndexErrorDetails
-} from './errors';
-import {
-  searchIndex,
-  type SearchIndexResultItem,
-  type SearchIndexSearchOptions
-} from './search';
+  type SearchIndexErrorDetails,
+} from "./errors";
+import { searchIndex, type SearchIndexResultItem, type SearchIndexSearchOptions } from "./search";
 
 export { searchIndex, SearchIndexError, SearchIndexErrorCode, createSearchIndexError };
 export type { SearchIndexErrorDetails, SearchIndexResultItem, SearchIndexSearchOptions };
@@ -73,7 +69,7 @@ export function isSearchIndexEnabled(): boolean {
 export async function ensureSearchIndexReady(signal?: AbortSignal): Promise<void> {
   const config = getSearchIndexConfig();
   if (!config.enabled) {
-    throw createSearchIndexError(SearchIndexErrorCode.DISABLED, 'Search index feature is disabled');
+    throw createSearchIndexError(SearchIndexErrorCode.DISABLED, "Search index feature is disabled");
   }
 
   await fetchManifest(signal);
@@ -101,7 +97,10 @@ export async function getIndexedBranches(signal?: AbortSignal): Promise<string[]
  * @param signal - 可选的AbortSignal，用于取消请求
  * @returns 如果预取成功返回true，否则返回false
  */
-export async function prefetchSearchIndexForBranch(branch: string, signal?: AbortSignal): Promise<boolean> {
+export async function prefetchSearchIndexForBranch(
+  branch: string,
+  signal?: AbortSignal,
+): Promise<boolean> {
   return prefetchBranch(branch, signal);
 }
 

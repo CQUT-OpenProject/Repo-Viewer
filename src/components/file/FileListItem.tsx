@@ -52,14 +52,12 @@ interface FileListItemProps {
  *
  * 优化渲染性能：只在必要的 props 变化时才重新渲染。
  */
-function arePropsEqual(
-  prevProps: FileListItemProps,
-  nextProps: FileListItemProps
-): boolean {
+function arePropsEqual(prevProps: FileListItemProps, nextProps: FileListItemProps): boolean {
   // 使用 sha 来判断 item 是否变化（更可靠）
-  const itemUnchanged = prevProps.item.sha === nextProps.item.sha &&
-                        prevProps.item.name === nextProps.item.name &&
-                        prevProps.item.type === nextProps.item.type;
+  const itemUnchanged =
+    prevProps.item.sha === nextProps.item.sha &&
+    prevProps.item.name === nextProps.item.name &&
+    prevProps.item.type === nextProps.item.type;
 
   // 检查下载状态
   const downloadStateUnchanged =
@@ -88,13 +86,15 @@ function arePropsEqual(
   const visibilityUnchanged = prevProps.isVisible === nextProps.isVisible;
 
   // 所有关键 props 都未变化时返回 true（不重新渲染）
-  return itemUnchanged &&
-         downloadStateUnchanged &&
-         pathUnchanged &&
-         callbacksUnchanged &&
-         contentsLengthUnchanged &&
-         highlightUnchanged &&
-         visibilityUnchanged;
+  return (
+    itemUnchanged &&
+    downloadStateUnchanged &&
+    pathUnchanged &&
+    callbacksUnchanged &&
+    contentsLengthUnchanged &&
+    highlightUnchanged &&
+    visibilityUnchanged
+  );
 }
 
 /**
@@ -142,7 +142,7 @@ const FileListItem = memo<FileListItemProps>(
         return FolderIcon;
       }
 
-      const extension = item.name.split('.').pop()?.toLowerCase();
+      const extension = item.name.split(".").pop()?.toLowerCase();
       if (typeof extension === "string" && extension.length > 0) {
         const icon = fileExtensionIcons[extension];
         if (icon !== undefined) {
@@ -179,13 +179,7 @@ const FileListItem = memo<FileListItemProps>(
           );
         }
       }
-    }, [
-      currentPath,
-      item.type,
-      item.name,
-      isMainFolder,
-      shouldHideDownloadButton,
-    ]);
+    }, [currentPath, item.type, item.name, isMainFolder, shouldHideDownloadButton]);
 
     // 判断是否禁用涟漪效果（针对大列表优化）
     const { disableRipple, disableTouchRipple } = React.useMemo(() => {
@@ -226,7 +220,7 @@ const FileListItem = memo<FileListItemProps>(
 
     const handleDownloadMouseEnter = React.useCallback(() => {
       if (isItemDownloading) {
-        setHoverCount(prev => {
+        setHoverCount((prev) => {
           const newCount = prev + 1;
           // 只有第二次及以后的悬停才显示取消图标
           if (newCount >= 2) {
@@ -256,20 +250,23 @@ const FileListItem = memo<FileListItemProps>(
             opacity: 1,
             pointerEvents: "auto",
           },
-          "& .MuiListItemButton-root.Mui-focusVisible ~ .MuiListItemSecondaryAction-root .file-download-action": {
-            opacity: 1,
-            pointerEvents: "auto",
-          },
+          "& .MuiListItemButton-root.Mui-focusVisible ~ .MuiListItemSecondaryAction-root .file-download-action":
+            {
+              opacity: 1,
+              pointerEvents: "auto",
+            },
         }}
         secondaryAction={
           !shouldHideDownloadButton ? (
             <Tooltip
               title={
                 isItemDownloading
-                  ? (hoverCount >= 2 ? t('ui.download.cancel') : "")
+                  ? hoverCount >= 2
+                    ? t("ui.download.cancel")
+                    : ""
                   : item.type === "file"
-                    ? t('ui.download.file', { name: item.name })
-                    : t('ui.download.folder', { name: item.name })
+                    ? t("ui.download.file", { name: item.name })
+                    : t("ui.download.folder", { name: item.name })
               }
               disableInteractive
               placement="left"
@@ -304,12 +301,12 @@ const FileListItem = memo<FileListItemProps>(
                   transform: "translateY(-50%)",
                   zIndex: 2,
                   opacity: {
-                    xs: 1,  // 移动端默认显示
-                    sm: isItemDownloading ? 1 : 0,  // 桌面端悬停显示
+                    xs: 1, // 移动端默认显示
+                    sm: isItemDownloading ? 1 : 0, // 桌面端悬停显示
                   },
                   pointerEvents: {
-                    xs: "auto",  // 移动端始终可点击
-                    sm: isItemDownloading ? "auto" : "none",  // 桌面端悬停可点击
+                    xs: "auto", // 移动端始终可点击
+                    sm: isItemDownloading ? "auto" : "none", // 桌面端悬停可点击
                   },
                   transition: "opacity 0.2s ease-in-out",
                 }}
@@ -318,9 +315,7 @@ const FileListItem = memo<FileListItemProps>(
                 data-oid="p5-7:mp"
               >
                 <IconButton
-                  className={
-                    isItemDownloading ? "cancel-button" : "download-button"
-                  }
+                  className={isItemDownloading ? "cancel-button" : "download-button"}
                   edge="end"
                   aria-label={
                     isItemDownloading
@@ -331,7 +326,9 @@ const FileListItem = memo<FileListItemProps>(
                   }
                   onClick={
                     isItemDownloading
-                      ? (isHoveringDownload ? onCancelDownload : undefined)
+                      ? isHoveringDownload
+                        ? onCancelDownload
+                        : undefined
                       : item.type === "file"
                         ? handleFileDownloadClick
                         : handleFileFolderDownloadClick
@@ -345,10 +342,7 @@ const FileListItem = memo<FileListItemProps>(
                   data-oid="bwl9ig-"
                 >
                   {isItemDownloading ? (
-                    <Box
-                      sx={{ position: "relative", display: "inline-flex" }}
-                      data-oid="02vmy6b"
-                    >
+                    <Box sx={{ position: "relative", display: "inline-flex" }} data-oid="02vmy6b">
                       <CircularProgress
                         size={20}
                         variant={
@@ -483,7 +477,7 @@ const FileListItem = memo<FileListItemProps>(
       </ListItem>
     );
   },
-  arePropsEqual  // 使用自定义比较函数
+  arePropsEqual, // 使用自定义比较函数
 );
 
 FileListItem.displayName = "FileListItem";

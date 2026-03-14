@@ -12,7 +12,9 @@ interface UseFallbackDialogProps {
   };
 }
 
-export const useFallbackDialog = ({ search }: UseFallbackDialogProps): {
+export const useFallbackDialog = ({
+  search,
+}: UseFallbackDialogProps): {
   fallbackDialogOpen: boolean;
   openFallbackPrompt: () => void;
   handleFallbackDialogClose: () => void;
@@ -26,12 +28,11 @@ export const useFallbackDialog = ({ search }: UseFallbackDialogProps): {
     }
     const { mode, items } = search.searchResult;
     const keyword = search.keyword.trim();
-    return mode === 'search-index' && items.length === 0 && keyword.length > 0;
+    return mode === "search-index" && items.length === 0 && keyword.length > 0;
   }, [search.searchLoading, search.searchResult, search.keyword]);
 
-  const fallbackDialogOpen = shouldPrompt &&
-    currentResultId !== null &&
-    currentResultId !== dismissedResultId;
+  const fallbackDialogOpen =
+    shouldPrompt && currentResultId !== null && currentResultId !== dismissedResultId;
 
   const openFallbackPrompt = useCallback(() => {
     if (currentResultId !== null) {
@@ -48,6 +49,6 @@ export const useFallbackDialog = ({ search }: UseFallbackDialogProps): {
   return {
     fallbackDialogOpen,
     openFallbackPrompt,
-    handleFallbackDialogClose
+    handleFallbackDialogClose,
   };
 };

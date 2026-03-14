@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import type { TouchEvent } from 'react';
+import { useState, useEffect } from "react";
+import type { TouchEvent } from "react";
 
 interface TouchStart {
   x: number;
@@ -123,7 +123,7 @@ export function useTouchNavigation({
     const velocity = Math.abs(dragOffset) / duration; // 速度（像素/毫秒）
 
     // 快速滑动或者超过阈值
-    if ((Math.abs(dragOffset) > threshold) || (velocity > 0.5 && Math.abs(dragOffset) > 30)) {
+    if (Math.abs(dragOffset) > threshold || (velocity > 0.5 && Math.abs(dragOffset) > 30)) {
       if (dragOffset > 0 && hasPrevious && onPrevious !== undefined) {
         // 向右拖动，上一张
         onPrevious();

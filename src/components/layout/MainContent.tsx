@@ -1,28 +1,22 @@
 import React, { useMemo, useCallback, useEffect } from "react";
-import {
-  Container,
-  useTheme,
-  useMediaQuery,
-  Box,
-  Portal,
-} from "@mui/material";
+import { Container, useTheme, useMediaQuery, Box, Portal } from "@mui/material";
 import BreadcrumbNavigation from "@/components/layout/BreadcrumbNavigation";
 import FileList from "@/components/file/FileList";
 import FilePreviewPage from "@/components/layout/FilePreviewPage";
 import { preloadPreviewComponents } from "@/utils/lazy-loading";
 import ErrorDisplay from "@/components/ui/ErrorDisplay";
-import {
-  useContentContext,
-  usePreviewContext,
-  useDownloadContext,
-} from "@/contexts/unified";
+import { useContentContext, usePreviewContext, useDownloadContext } from "@/contexts/unified";
 import { FileListSkeleton } from "@/components/ui/skeletons";
 import DynamicSEO from "@/components/seo/DynamicSEO";
 import ScrollToTopFab from "@/components/interactions/ScrollToTopFab";
 import EmptyState from "@/components/ui/EmptyState";
 import ReadmeSection from "@/components/layout/ReadmeSection";
 import PreviewOverlay from "@/components/layout/PreviewOverlay";
-import { useImageNavigation, useBreadcrumbLayout, usePreviewFromUrl } from "@/components/layout/hooks";
+import {
+  useImageNavigation,
+  useBreadcrumbLayout,
+  usePreviewFromUrl,
+} from "@/components/layout/hooks";
 import type { NavigationDirection } from "@/contexts/unified";
 import type { BreadcrumbSegment, GitHubContent } from "@/types";
 
@@ -60,27 +54,18 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
     currentBranch,
   } = useContentContext();
 
-  const {
-    previewState,
-    selectFile,
-    closePreview,
-  } = usePreviewContext();
+  const { previewState, selectFile, closePreview } = usePreviewContext();
 
-  const {
-    downloadState,
-    downloadFile,
-    downloadFolder,
-    cancelDownload,
-  } = useDownloadContext();
+  const { downloadState, downloadFile, downloadFolder, cancelDownload } = useDownloadContext();
 
   // 获取当前目录中的 README 文件，用于统一 Markdown 渲染逻辑
   const readmeFileItem = useMemo<GitHubContent | null>(() => {
     const target = contents.find((item) => {
-      if (item.type !== 'file') {
+      if (item.type !== "file") {
         return false;
       }
       const fileName = item.name.toLowerCase();
-      return ['readme.md', 'readme.markdown', 'readme.mdown'].includes(fileName);
+      return ["readme.md", "readme.markdown", "readme.mdown"].includes(fileName);
     });
 
     return target ?? null;
@@ -105,12 +90,12 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
   // 获取当前目录中的所有图片文件
   const imageFiles = useMemo(() => {
     return contents.filter((item) => {
-      if (item.type !== 'file') {
+      if (item.type !== "file") {
         return false;
       }
       const fileName = item.name.toLowerCase();
-      return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'].some(ext =>
-        fileName.endsWith(`.${ext}`)
+      return ["jpg", "jpeg", "png", "gif", "bmp", "svg", "webp"].some((ext) =>
+        fileName.endsWith(`.${ext}`),
       );
     });
   }, [contents]);
@@ -120,11 +105,11 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
     hasPrevious: hasPreviousImage,
     hasNext: hasNextImage,
     handlePreviousImage,
-    handleNextImage
+    handleNextImage,
   } = useImageNavigation({
     imageFiles,
     currentPreviewingImage: previewState.previewingImageItem,
-    onSelectFile: selectFile
+    onSelectFile: selectFile,
   });
 
   const showPreviewPage =
@@ -137,17 +122,17 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
     const segments: BreadcrumbSegment[] = [{ name: "Home", path: "" }];
 
     const normalizedPath = currentPath.trim();
-    if (normalizedPath === '') {
+    if (normalizedPath === "") {
       return segments;
     }
 
     const pathParts = normalizedPath.split("/").filter(Boolean);
 
     pathParts.reduce((accPath, part) => {
-      const segmentPath = accPath !== '' ? `${accPath}/${part}` : part;
+      const segmentPath = accPath !== "" ? `${accPath}/${part}` : part;
       segments.push({ name: part, path: segmentPath });
       return segmentPath;
-    }, '');
+    }, "");
 
     return segments;
   }, [currentPath]);
@@ -158,59 +143,65 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
   // 使用面包屑布局 Hook
   const { breadcrumbsMaxItems, breadcrumbsContainerRef } = useBreadcrumbLayout({
     breadcrumbSegments,
-    isSmallScreen
+    isSmallScreen,
   });
 
   // 处理面包屑点击
-  const handleBreadcrumbClick = useCallback((
-    path: string,
-    direction: NavigationDirection = "backward",
-  ): void => {
-    // 如果有正在预览的文件，直接关闭预览
-    const previewingItem = previewState.previewingItem ?? previewState.previewingImageItem;
-    if (previewingItem !== null) {
-      closePreview();
-    }
+  const handleBreadcrumbClick = useCallback(
+    (path: string, direction: NavigationDirection = "backward"): void => {
+      // 如果有正在预览的文件，直接关闭预览
+      const previewingItem = previewState.previewingItem ?? previewState.previewingImageItem;
+      if (previewingItem !== null) {
+        closePreview();
+      }
 
-    navigateTo(path, direction);
-  }, [navigateTo, previewState.previewingItem, previewState.previewingImageItem, closePreview]);
+      navigateTo(path, direction);
+    },
+    [navigateTo, previewState.previewingItem, previewState.previewingImageItem, closePreview],
+  );
 
   // 处理文件/文件夹点击
-  const handleItemClick = useCallback((item: GitHubContent): void => {
-    if (item.type === "dir") {
-      navigateTo(item.path, "forward");
-      return;
-    }
+  const handleItemClick = useCallback(
+    (item: GitHubContent): void => {
+      if (item.type === "dir") {
+        navigateTo(item.path, "forward");
+        return;
+      }
 
-    void selectFile(item);
-  }, [navigateTo, selectFile]);
+      void selectFile(item);
+    },
+    [navigateTo, selectFile],
+  );
 
   // 处理下载点击
-  const handleDownloadClick = useCallback((
-    e: React.MouseEvent,
-    item: GitHubContent,
-  ): void => {
-    e.preventDefault();
-    e.stopPropagation();
-    void downloadFile(item);
-  }, [downloadFile]);
+  const handleDownloadClick = useCallback(
+    (e: React.MouseEvent, item: GitHubContent): void => {
+      e.preventDefault();
+      e.stopPropagation();
+      void downloadFile(item);
+    },
+    [downloadFile],
+  );
 
   // 处理文件夹下载点击
-  const handleFolderDownloadClick = useCallback((
-    e: React.MouseEvent,
-    item: GitHubContent,
-  ): void => {
-    e.preventDefault();
-    e.stopPropagation();
-    void downloadFolder(item.path, item.name);
-  }, [downloadFolder]);
+  const handleFolderDownloadClick = useCallback(
+    (e: React.MouseEvent, item: GitHubContent): void => {
+      e.preventDefault();
+      e.stopPropagation();
+      void downloadFolder(item.path, item.name);
+    },
+    [downloadFolder],
+  );
 
   // 处理取消下载点击
-  const handleCancelDownload = useCallback((e: React.MouseEvent): void => {
-    e.preventDefault();
-    e.stopPropagation();
-    cancelDownload();
-  }, [cancelDownload]);
+  const handleCancelDownload = useCallback(
+    (e: React.MouseEvent): void => {
+      e.preventDefault();
+      e.stopPropagation();
+      cancelDownload();
+    },
+    [cancelDownload],
+  );
 
   // 使用 URL 预览加载 Hook
   usePreviewFromUrl({
@@ -219,7 +210,7 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
     error,
     previewingItem: previewState.previewingItem,
     previewingImageItem: previewState.previewingImageItem,
-    onSelectFile: selectFile
+    onSelectFile: selectFile,
   });
 
   // 在内容加载完成后预加载预览组件
@@ -261,49 +252,62 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
 
     // 否则使用当前目录信息
     return {
-      title: currentPath.trim().length > 0
-        ? currentPath.split("/").pop() ?? "根目录"
-        : "根目录",
+      title: currentPath.trim().length > 0 ? (currentPath.split("/").pop() ?? "根目录") : "根目录",
       filePath: currentPath,
       isDirectory: true,
       fileType: "",
     };
-  }, [
-    currentPath,
-    previewState.previewingItem,
-    previewState.previewingImageItem,
-  ]);
+  }, [currentPath, previewState.previewingItem, previewState.previewingImageItem]);
 
   // 获取顶部栏面包屑容器
-  const toolbarBreadcrumbContainer = typeof document !== "undefined"
-    ? document.getElementById('toolbar-breadcrumb-container')
-    : null;
+  const toolbarBreadcrumbContainer =
+    typeof document !== "undefined"
+      ? document.getElementById("toolbar-breadcrumb-container")
+      : null;
 
   // 渲染面包屑导航组件
-  const breadcrumbNavigation = useMemo(() => (
-    <BreadcrumbNavigation
-      breadcrumbSegments={breadcrumbSegments}
-      handleBreadcrumbClick={handleBreadcrumbClick}
-      breadcrumbsMaxItems={breadcrumbsMaxItems}
-      isSmallScreen={isSmallScreen}
-      breadcrumbsContainerRef={breadcrumbsContainerRef as React.RefObject<HTMLDivElement>}
-      compact={false}
-      data-oid="c02a2p5"
-    />
-  ), [breadcrumbSegments, handleBreadcrumbClick, breadcrumbsMaxItems, isSmallScreen, breadcrumbsContainerRef]);
+  const breadcrumbNavigation = useMemo(
+    () => (
+      <BreadcrumbNavigation
+        breadcrumbSegments={breadcrumbSegments}
+        handleBreadcrumbClick={handleBreadcrumbClick}
+        breadcrumbsMaxItems={breadcrumbsMaxItems}
+        isSmallScreen={isSmallScreen}
+        breadcrumbsContainerRef={breadcrumbsContainerRef as React.RefObject<HTMLDivElement>}
+        compact={false}
+        data-oid="c02a2p5"
+      />
+    ),
+    [
+      breadcrumbSegments,
+      handleBreadcrumbClick,
+      breadcrumbsMaxItems,
+      isSmallScreen,
+      breadcrumbsContainerRef,
+    ],
+  );
 
   // 紧凑模式的面包屑（用于顶部栏）
-  const compactBreadcrumbNavigation = useMemo(() => (
-    <BreadcrumbNavigation
-      breadcrumbSegments={breadcrumbSegments}
-      handleBreadcrumbClick={handleBreadcrumbClick}
-      breadcrumbsMaxItems={breadcrumbsMaxItems}
-      isSmallScreen={isSmallScreen}
-      breadcrumbsContainerRef={breadcrumbsContainerRef as React.RefObject<HTMLDivElement>}
-      compact={true}
-      data-oid="c02a2p5-compact"
-    />
-  ), [breadcrumbSegments, handleBreadcrumbClick, breadcrumbsMaxItems, isSmallScreen, breadcrumbsContainerRef]);
+  const compactBreadcrumbNavigation = useMemo(
+    () => (
+      <BreadcrumbNavigation
+        breadcrumbSegments={breadcrumbSegments}
+        handleBreadcrumbClick={handleBreadcrumbClick}
+        breadcrumbsMaxItems={breadcrumbsMaxItems}
+        isSmallScreen={isSmallScreen}
+        breadcrumbsContainerRef={breadcrumbsContainerRef as React.RefObject<HTMLDivElement>}
+        compact={true}
+        data-oid="c02a2p5-compact"
+      />
+    ),
+    [
+      breadcrumbSegments,
+      handleBreadcrumbClick,
+      breadcrumbsMaxItems,
+      isSmallScreen,
+      breadcrumbsContainerRef,
+    ],
+  );
 
   return (
     <Container
@@ -331,13 +335,13 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
         <Portal container={toolbarBreadcrumbContainer}>
           <Box
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              width: '100%',
-              animation: 'slideUpFadeIn 0.3s ease-out',
-              '@keyframes slideUpFadeIn': {
-                from: { opacity: 0, transform: 'translateY(10px)' },
-                to: { opacity: 1, transform: 'translateY(0)' },
+              display: "flex",
+              alignItems: "center",
+              width: "100%",
+              animation: "slideUpFadeIn 0.3s ease-out",
+              "@keyframes slideUpFadeIn": {
+                from: { opacity: 0, transform: "translateY(10px)" },
+                to: { opacity: 1, transform: "translateY(0)" },
               },
             }}
           >
@@ -350,9 +354,9 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
         <Box
           sx={{
             opacity: shouldShowInToolbar ? 0 : 1,
-            transform: shouldShowInToolbar ? 'translateY(-20px)' : 'translateY(0)',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            pointerEvents: shouldShowInToolbar ? 'none' : 'auto',
+            transform: shouldShowInToolbar ? "translateY(-20px)" : "translateY(0)",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            pointerEvents: shouldShowInToolbar ? "none" : "auto",
           }}
         >
           {breadcrumbNavigation}
@@ -376,11 +380,7 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
           onNextImage={handleNextImage}
         />
       ) : loading ? (
-        <FileListSkeleton
-          isSmallScreen={isSmallScreen}
-          itemCount={8}
-          data-oid="-mkjng2"
-        />
+        <FileListSkeleton isSmallScreen={isSmallScreen} itemCount={8} data-oid="-mkjng2" />
       ) : error !== null ? (
         <ErrorDisplay
           errorMessage={error}
@@ -389,11 +389,7 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
           data-oid="j0jgapo"
         />
       ) : contents.length === 0 ? (
-        <EmptyState
-          type="empty-directory"
-          onAction={handleRetry}
-          isSmallScreen={isSmallScreen}
-        />
+        <EmptyState type="empty-directory" onAction={handleRetry} isSmallScreen={isSmallScreen} />
       ) : (
         <>
           <FileList

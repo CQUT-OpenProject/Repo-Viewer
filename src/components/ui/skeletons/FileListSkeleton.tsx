@@ -15,7 +15,7 @@ interface FileListSkeletonProps {
 
 /**
  * 文件列表骨架屏组件
- * 
+ *
  * 在文件列表加载时显示的占位骨架屏。
  */
 export const FileListSkeleton: React.FC<FileListSkeletonProps> = ({
@@ -37,14 +37,11 @@ export const FileListSkeleton: React.FC<FileListSkeletonProps> = ({
       borderColor: "divider",
       p: { xs: 1, sm: 2 },
     }),
-    []
+    [],
   );
 
   return (
-    <List
-      sx={[listBaseStyles, getContainerTransitionStyles(isExiting)]}
-      data-oid="jaa7p3i"
-    >
+    <List sx={[listBaseStyles, getContainerTransitionStyles(isExiting)]} data-oid="jaa7p3i">
       {Array.from({ length: itemCount }, (_, index) => (
         <FileListItemSkeleton
           key={index}
@@ -82,7 +79,7 @@ export const FileListItemSkeleton: React.FC<FileListItemSkeletonProps> = ({
       alignItems: "flex-start",
       justifyContent: "center",
     }),
-    []
+    [],
   );
   const itemContentBaseStyles = React.useMemo(
     () => ({
@@ -98,7 +95,7 @@ export const FileListItemSkeleton: React.FC<FileListItemSkeletonProps> = ({
       width: "100%",
       bgcolor: "transparent",
     }),
-    []
+    [],
   );
   const itemContentInnerStyles = React.useMemo(
     () => ({
@@ -107,7 +104,7 @@ export const FileListItemSkeleton: React.FC<FileListItemSkeletonProps> = ({
       width: "100%",
       minWidth: 0,
     }),
-    []
+    [],
   );
 
   return (
@@ -138,14 +135,8 @@ export const FileListItemSkeleton: React.FC<FileListItemSkeletonProps> = ({
       }
       data-oid=".a:nzp-"
     >
-      <Box
-        sx={[itemContentBaseStyles]}
-        data-oid="njw4ru1"
-      >
-        <Box
-          sx={[itemContentInnerStyles]}
-          data-oid="0be3k2w"
-        >
+      <Box sx={[itemContentBaseStyles]} data-oid="njw4ru1">
+        <Box sx={[itemContentInnerStyles]} data-oid="0be3k2w">
           <ListItemIcon
             sx={{
               minWidth: { xs: "32px", sm: "40px" },

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 const DEFAULT_ASPECT_RATIO = 16 / 9;
 

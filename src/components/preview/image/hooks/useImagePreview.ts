@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import type { UseImagePreviewReturn, ImagePreviewProps } from '../types';
+import { useState, useCallback, useRef, useEffect } from "react";
+import type { UseImagePreviewReturn, ImagePreviewProps } from "../types";
 
 /**
  * 图片预览功能的自定义Hook
@@ -10,7 +10,10 @@ export const useImagePreview = ({
   thumbnailMode = false,
   lazyLoad = true,
   onClose,
-}: Pick<ImagePreviewProps, 'isFullScreen' | 'thumbnailMode' | 'lazyLoad' | 'onClose'>): UseImagePreviewReturn => {
+}: Pick<
+  ImagePreviewProps,
+  "isFullScreen" | "thumbnailMode" | "lazyLoad" | "onClose"
+>): UseImagePreviewReturn => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
   const [rotation, setRotation] = useState<number>(0);
@@ -21,7 +24,7 @@ export const useImagePreview = ({
     if (!lazyLoad) {
       return true;
     }
-    return typeof IntersectionObserver === 'undefined';
+    return typeof IntersectionObserver === "undefined";
   });
 
   const imgRef = useRef<HTMLImageElement>(null);
@@ -33,7 +36,7 @@ export const useImagePreview = ({
       return;
     }
 
-    if (typeof IntersectionObserver === 'undefined') {
+    if (typeof IntersectionObserver === "undefined") {
       return;
     }
 
@@ -55,7 +58,7 @@ export const useImagePreview = ({
       },
       {
         root: null,
-        rootMargin: '100px',
+        rootMargin: "100px",
         threshold: 0.1,
       },
     );
@@ -108,7 +111,7 @@ export const useImagePreview = ({
       setFullScreenMode(false);
     }
 
-    if (typeof onClose === 'function') {
+    if (typeof onClose === "function") {
       onClose();
     }
   }, [thumbnailMode, fullScreenMode, onClose]);

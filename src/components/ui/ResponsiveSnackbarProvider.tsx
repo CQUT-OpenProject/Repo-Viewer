@@ -5,7 +5,7 @@ import CustomSnackbar from "./CustomSnackbar";
 
 /**
  * 响应式通知提供者组件
- * 
+ *
  * 根据屏幕大小自动调整通知显示配置，提供统一的通知服务。
  */
 export const ResponsiveSnackbarProvider: React.FC<{

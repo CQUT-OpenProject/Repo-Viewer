@@ -7,22 +7,22 @@
  * @module hooks/useDynamicIcon
  */
 
-import { useState, useEffect } from 'react';
-import { getCurrentThemeName } from '@/theme/index';
-import { logger } from '@/utils';
+import { useState, useEffect } from "react";
+import { getCurrentThemeName } from "@/theme/index";
+import { logger } from "@/utils";
 
 /** 默认图标路径 */
-const DEFAULT_ICON = '/icons/icon-pink.svg';
+const DEFAULT_ICON = "/icons/icon-pink.svg";
 
 /** 主题名称到图标路径的映射表 */
 const themeIconMap: Readonly<Record<string, string>> = {
-  '默认': DEFAULT_ICON,
-  '蓝色': '/icons/icon-blue.svg',
-  '绿色': '/icons/icon-green.svg',
-  '紫色': '/icons/icon-purple.svg',
-  '橙色': '/icons/icon-orange.svg',
-  '红色': '/icons/icon-red.svg',
-  '青色': '/icons/icon-cyan.svg'
+  默认: DEFAULT_ICON,
+  蓝色: "/icons/icon-blue.svg",
+  绿色: "/icons/icon-green.svg",
+  紫色: "/icons/icon-purple.svg",
+  橙色: "/icons/icon-orange.svg",
+  红色: "/icons/icon-red.svg",
+  青色: "/icons/icon-cyan.svg",
 };
 
 /**
@@ -35,7 +35,7 @@ const getThemeIconPath = (): string => {
     const currentTheme = getCurrentThemeName();
     return themeIconMap[currentTheme] ?? DEFAULT_ICON;
   } catch (error) {
-    logger.error('获取当前主题名称失败:', error);
+    logger.error("获取当前主题名称失败:", error);
     return DEFAULT_ICON;
   }
 };
@@ -67,18 +67,20 @@ export const useDynamicIcon = (): DynamicIconHook => {
   };
 
   useEffect(() => {
-    if (typeof window === 'undefined' || typeof document === 'undefined') {
+    if (typeof window === "undefined" || typeof document === "undefined") {
       return;
     }
 
-    logger.info('[DynamicIcon] 初始化动态图标系统');
+    logger.info("[DynamicIcon] 初始化动态图标系统");
 
     // 监听主题变化
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' &&
-            (mutation.attributeName === 'data-theme' || mutation.attributeName === 'class')) {
-          logger.debug('[DynamicIcon] 通过MutationObserver检测到主题变化');
+        if (
+          mutation.type === "attributes" &&
+          (mutation.attributeName === "data-theme" || mutation.attributeName === "class")
+        ) {
+          logger.debug("[DynamicIcon] 通过MutationObserver检测到主题变化");
           updateIcon();
         }
       });
@@ -87,27 +89,27 @@ export const useDynamicIcon = (): DynamicIconHook => {
     // 监听document和html元素的属性变化
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['data-theme', 'class']
+      attributeFilter: ["data-theme", "class"],
     });
 
     observer.observe(document.body, {
       attributes: true,
-      attributeFilter: ['data-theme', 'class']
+      attributeFilter: ["data-theme", "class"],
     });
 
     // 监听localStorage变化
     const handleStorageChange = (e: StorageEvent): void => {
-      if (e.key === 'colorMode' || e.key === 'themeData' || e.key === 'lastThemeColorDate') {
-        logger.debug('[DynamicIcon] 通过localStorage检测到主题变化:', e.key);
+      if (e.key === "colorMode" || e.key === "themeData" || e.key === "lastThemeColorDate") {
+        logger.debug("[DynamicIcon] 通过localStorage检测到主题变化:", e.key);
         setTimeout(updateIcon, 100);
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
 
     return () => {
       observer.disconnect();
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
 
@@ -117,7 +119,7 @@ export const useDynamicIcon = (): DynamicIconHook => {
     getCurrentThemeIconPath: (): string => {
       const currentTheme = getCurrentThemeName();
       return themeIconMap[currentTheme] ?? DEFAULT_ICON;
-    }
+    },
   };
 };
 
@@ -132,7 +134,7 @@ export const useFaviconUpdater = (): string => {
   const { iconPath } = useDynamicIcon();
 
   useEffect(() => {
-    if (typeof document === 'undefined') {
+    if (typeof document === "undefined") {
       return;
     }
 
@@ -141,7 +143,7 @@ export const useFaviconUpdater = (): string => {
       const existingFavicons = document.querySelectorAll('link[rel*="icon"]');
       existingFavicons.forEach((linkNode) => {
         if (linkNode instanceof HTMLLinkElement) {
-          logger.debug('[DynamicIcon] 移除现有的favicon:', linkNode.href);
+          logger.debug("[DynamicIcon] 移除现有的favicon:", linkNode.href);
         }
         linkNode.remove();
       });
@@ -151,25 +153,25 @@ export const useFaviconUpdater = (): string => {
         const timestamp = Date.now().toString();
 
         // 创建主要的favicon链接
-        const favicon = document.createElement('link');
-        favicon.rel = 'icon';
-        favicon.type = 'image/svg+xml';
+        const favicon = document.createElement("link");
+        favicon.rel = "icon";
+        favicon.type = "image/svg+xml";
         favicon.href = `${iconPath}?v=${timestamp}`;
         document.head.appendChild(favicon);
 
         // 创建备用的shortcut icon
-        const shortcutIcon = document.createElement('link');
-        shortcutIcon.rel = 'shortcut icon';
-        shortcutIcon.type = 'image/svg+xml';
+        const shortcutIcon = document.createElement("link");
+        shortcutIcon.rel = "shortcut icon";
+        shortcutIcon.type = "image/svg+xml";
         shortcutIcon.href = `${iconPath}?v=${timestamp}`;
         document.head.appendChild(shortcutIcon);
 
-        logger.info('[DynamicIcon] Favicon已更新为:', `${iconPath}?v=${timestamp}`);
+        logger.info("[DynamicIcon] Favicon已更新为:", `${iconPath}?v=${timestamp}`);
 
         // 强制触发浏览器重新加载favicon
         const linkElement = document.querySelector('link[rel="icon"]');
         if (linkElement instanceof HTMLLinkElement) {
-          linkElement.setAttribute('href', `${iconPath}?v=${timestamp}`);
+          linkElement.setAttribute("href", `${iconPath}?v=${timestamp}`);
         }
       }, 10);
     };

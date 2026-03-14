@@ -1,6 +1,6 @@
-import { GitHub } from '@/services/github';
-import { logger } from '../logging/logger';
-import axios from 'axios';
+import { GitHub } from "@/services/github";
+import { logger } from "../logging/logger";
+import axios from "axios";
 
 /**
  * Token状态响应接口
@@ -29,38 +29,38 @@ interface TokenStatus {
 
 /**
  * 从服务器获取GitHub Token状态
- * 
+ *
  * 调用服务端API接口查询token配置情况。
- * 
+ *
  * @returns Promise，解析为Token状态对象
  */
 export async function fetchServerTokenStatus(): Promise<TokenStatus> {
   try {
     // 调用新添加的服务端API接口
-    const response = await axios.get<TokenStatusResponse>('/api/github?action=getTokenStatus');
+    const response = await axios.get<TokenStatusResponse>("/api/github?action=getTokenStatus");
 
     const responseData = response.data;
-    if (responseData.status === 'success' && responseData.data !== undefined) {
+    if (responseData.status === "success" && responseData.data !== undefined) {
       const { hasTokens, count } = responseData.data;
-      return { 
-        hasToken: hasTokens, 
+      return {
+        hasToken: hasTokens,
         tokenCount: count,
-        isServerToken: true
+        isServerToken: true,
       };
     }
 
     return { hasToken: false, tokenCount: 0, isServerToken: true };
   } catch (error) {
-    logger.error('获取服务器令牌状态失败:', error);
+    logger.error("获取服务器令牌状态失败:", error);
     return { hasToken: false, tokenCount: 0, isServerToken: true, error };
   }
 }
 
 /**
  * 检查GitHub Token状态
- * 
+ *
  * 检查客户端和服务端的token配置情况，并在控制台输出详细信息。
- * 
+ *
  * @returns Promise，解析为包含客户端和服务端token状态的对象
  */
 export async function checkTokenStatus(): Promise<{
@@ -85,17 +85,16 @@ export async function checkTokenStatus(): Promise<{
       serverTokenStatus = await fetchServerTokenStatus();
     }
   } catch (error) {
-    logger.error('检查服务端令牌状态失败:', error);
+    logger.error("检查服务端令牌状态失败:", error);
   }
 
   // 结合前端和后端状态
   const combinedHasToken = hasClientToken || serverTokenStatus.hasToken;
-  const tokenCount = serverTokenStatus.hasToken ? 
-    serverTokenStatus.tokenCount : clientTokenCount;
+  const tokenCount = serverTokenStatus.hasToken ? serverTokenStatus.tokenCount : clientTokenCount;
 
   // 记录状态
   logger.info(`=============================================`);
-  logger.info(`GitHub Token状态: ${combinedHasToken ? '已配置' : '未配置'}`);
+  logger.info(`GitHub Token状态: ${combinedHasToken ? "已配置" : "未配置"}`);
   logger.info(`Token数量: ${tokenCount.toString()}`);
 
   if (serverTokenStatus.hasToken) {
@@ -106,37 +105,37 @@ export async function checkTokenStatus(): Promise<{
 
   // 如果未配置token，给出提示
   if (!combinedHasToken) {
-    logger.warn('未检测到GitHub Token，API搜索功能可能受限。');
-    logger.warn('请考虑配置Token以获取更好的搜索体验。');
-    logger.info('您可以使用以下代码在开发环境中设置临时token:');
+    logger.warn("未检测到GitHub Token，API搜索功能可能受限。");
+    logger.warn("请考虑配置Token以获取更好的搜索体验。");
+    logger.info("您可以使用以下代码在开发环境中设置临时token:");
     logger.info('setLocalToken("your_github_token_here")');
   }
   logger.info(`=============================================`);
 
-  return { 
-    hasToken: combinedHasToken, 
+  return {
+    hasToken: combinedHasToken,
     tokenCount,
     clientToken: { hasToken: hasClientToken, count: clientTokenCount },
-    serverToken: serverTokenStatus
+    serverToken: serverTokenStatus,
   };
 }
 
 /**
  * 测试GitHub API搜索功能
- * 
+ *
  * 执行测试搜索以验证配置的token是否有效。
- * 
+ *
  * @returns Promise，解析为测试结果（成功返回true，失败返回false）
  */
 export async function testApiSearch(): Promise<boolean> {
   try {
-    logger.info('正在测试GitHub API搜索...');
-    const result = await GitHub.Search.searchFiles('test', '', true);
+    logger.info("正在测试GitHub API搜索...");
+    const result = await GitHub.Search.searchFiles("test", "", true);
     logger.info(`搜索成功! 找到 ${result.length.toString()} 个结果`);
-    logger.debug('搜索结果:', result);
+    logger.debug("搜索结果:", result);
     return true;
   } catch (error) {
-    logger.error('GitHub API搜索测试失败:', error);
+    logger.error("GitHub API搜索测试失败:", error);
     return false;
   }
 }

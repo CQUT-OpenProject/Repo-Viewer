@@ -1,3 +1,2 @@
-export type * from './types';
-export * from './useRepoSearch';
-
+export type * from "./types";
+export * from "./useRepoSearch";

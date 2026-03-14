@@ -2,7 +2,7 @@ import { logger } from "@/utils";
 
 /**
  * KaTeX错误处理函数
- * 
+ *
  * @param message - 错误消息
  * @returns void
  */

@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
-import { performance } from '@/utils';
+import { useState, useEffect } from "react";
+import { performance } from "@/utils";
 
 /**
  * 自定义 Hook：监听滚动位置以控制元素可见性
- * 
+ *
  * 使用组合优化策略提升性能：
  * 1. requestAnimationFrame - 与浏览器刷新率同步
  * 2. debounce - 防抖限制函数调用频率
  * 3. passive 事件监听 - 提升滚动性能
- * 
+ *
  * @param threshold - 滚动阈值（像素），超过此值时返回 true
  * @returns 是否超过滚动阈值
- * 
+ *
  * @example
  * ```tsx
  * const showElement = useScrollVisibility(100);
@@ -48,13 +48,13 @@ export function useScrollVisibility(threshold = 100): boolean {
     // 16ms 约等于 60fps，与 RAF 配合使用效果最佳
     const debouncedHandleScroll = performance.debounce(handleScroll, 16);
 
-    window.addEventListener('scroll', debouncedHandleScroll, { passive: true });
+    window.addEventListener("scroll", debouncedHandleScroll, { passive: true });
 
     // 初始调用检查状态
     handleScroll();
 
     return () => {
-      window.removeEventListener('scroll', debouncedHandleScroll);
+      window.removeEventListener("scroll", debouncedHandleScroll);
       if (rafId !== null) {
         cancelAnimationFrame(rafId);
       }
@@ -63,4 +63,3 @@ export function useScrollVisibility(threshold = 100): boolean {
 
   return isVisible;
 }
-

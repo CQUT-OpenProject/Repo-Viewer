@@ -1,21 +1,14 @@
-import React from 'react';
-import {
-  Box,
-  Typography,
-  IconButton,
-  alpha,
-  useTheme,
-  GlobalStyles,
-} from '@mui/material';
+import React from "react";
+import { Box, Typography, IconButton, alpha, useTheme, GlobalStyles } from "@mui/material";
 import {
   Replay as ReplayIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
-} from '@mui/icons-material';
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import { ImagePreviewSkeleton } from '@/components/ui/skeletons';
-import ImageToolbar from './ImageToolbar';
-import type { ImagePreviewContentProps } from './types';
+} from "@mui/icons-material";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { ImagePreviewSkeleton } from "@/components/ui/skeletons";
+import ImageToolbar from "./ImageToolbar";
+import type { ImagePreviewContentProps } from "./types";
 import {
   useAspectRatioTracker,
   useContainerSize,
@@ -23,8 +16,8 @@ import {
   useTouchNavigation,
   useKeyboardNavigation,
   useStageMetrics,
-} from './hooks';
-import { useI18n } from '@/contexts/I18nContext';
+} from "./hooks";
+import { useI18n } from "@/contexts/I18nContext";
 
 /**
  * 图片预览内容组件
@@ -56,13 +49,14 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
   const theme = useTheme();
   const { t } = useI18n();
   const { containerRef, containerSize } = useContainerSize();
-  const { dominantAspectRatio, processAspectRatioFromImage, handleImageRef } = useAspectRatioTracker({
-    imageUrl,
-    imgRef,
-    onLoad,
-    ...(typeof initialAspectRatio === 'number' ? { initialAspectRatio } : {}),
-    ...(onAspectRatioChange !== undefined ? { onAspectRatioChange } : {}),
-  });
+  const { dominantAspectRatio, processAspectRatioFromImage, handleImageRef } =
+    useAspectRatioTracker({
+      imageUrl,
+      imgRef,
+      onLoad,
+      ...(typeof initialAspectRatio === "number" ? { initialAspectRatio } : {}),
+      ...(onAspectRatioChange !== undefined ? { onAspectRatioChange } : {}),
+    });
   const stageMetrics = useStageMetrics({ containerSize, dominantAspectRatio, isSmallScreen });
   const stageWidth = stageMetrics?.width ?? null;
   const stageHeight = stageMetrics?.height ?? null;
@@ -70,31 +64,34 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
   const stageMaxHeight = stageMetrics?.availableHeight ?? null;
   const currentScale = toolbarProps.scale;
 
-  const normalizedFileName = typeof fileName === 'string' && fileName.trim().length > 0 ? fileName : undefined;
-  const displayFileName = normalizedFileName ?? '未知文件';
-  const altText = normalizedFileName ?? '图片预览';
+  const normalizedFileName =
+    typeof fileName === "string" && fileName.trim().length > 0 ? fileName : undefined;
+  const displayFileName = normalizedFileName ?? "未知文件";
+  const altText = normalizedFileName ?? "图片预览";
   const hasError = error;
 
-  const { dragOffset, isDragging, handleTouchStart, handleTouchMove, handleTouchEnd } = useTouchNavigation({
-    isSmallScreen,
-    currentScale,
-    hasError,
-    loading,
-    hasPrevious,
-    hasNext,
-    imageUrl,
-    ...(onPrevious !== undefined ? { onPrevious } : {}),
-    ...(onNext !== undefined ? { onNext } : {}),
-  });
+  const { dragOffset, isDragging, handleTouchStart, handleTouchMove, handleTouchEnd } =
+    useTouchNavigation({
+      isSmallScreen,
+      currentScale,
+      hasError,
+      loading,
+      hasPrevious,
+      hasNext,
+      imageUrl,
+      ...(onPrevious !== undefined ? { onPrevious } : {}),
+      ...(onNext !== undefined ? { onNext } : {}),
+    });
 
-  const { activeNavSide, handleContainerMouseMove, handleContainerMouseLeave } = useDesktopNavigation({
-    containerRef,
-    isSmallScreen,
-    hasError,
-    loading,
-    hasPrevious,
-    hasNext,
-  });
+  const { activeNavSide, handleContainerMouseMove, handleContainerMouseLeave } =
+    useDesktopNavigation({
+      containerRef,
+      isSmallScreen,
+      hasError,
+      loading,
+      hasPrevious,
+      hasNext,
+    });
 
   useKeyboardNavigation({
     loading,
@@ -106,29 +103,29 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
   });
 
   const rotationTransform = `rotate(${String(rotation)}deg)`;
-  const containerClassName = [className, 'image-preview-container']
-    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
-    .join(' ');
+  const containerClassName = [className, "image-preview-container"]
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    .join(" ");
 
   return (
     <Box
       sx={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        overflow: 'hidden',
-        bgcolor: theme.palette.mode === 'dark' ? '#1a1a1a' : '#f5f5f5',
-        '--rv-image-preview-aspect-ratio': dominantAspectRatio.toFixed(3),
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+        overflow: "hidden",
+        bgcolor: theme.palette.mode === "dark" ? "#1a1a1a" : "#f5f5f5",
+        "--rv-image-preview-aspect-ratio": dominantAspectRatio.toFixed(3),
         ...(stageWidth !== null
-          ? { '--rv-image-preview-stage-width': `${stageWidth.toString()}px` }
+          ? { "--rv-image-preview-stage-width": `${stageWidth.toString()}px` }
           : {}),
         ...(stageHeight !== null
-          ? { '--rv-image-preview-stage-height': `${stageHeight.toString()}px` }
+          ? { "--rv-image-preview-stage-height": `${stageHeight.toString()}px` }
           : {}),
       }}
-      className={containerClassName.length > 0 ? containerClassName : 'image-preview-container'}
+      className={containerClassName.length > 0 ? containerClassName : "image-preview-container"}
       style={style}
       data-oid="j_s1bp2"
     >
@@ -138,15 +135,15 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
         aria-live="polite"
         aria-atomic="true"
         sx={{
-          position: 'absolute',
-          left: '-10000px',
-          width: '1px',
-          height: '1px',
-          overflow: 'hidden',
+          position: "absolute",
+          left: "-10000px",
+          width: "1px",
+          height: "1px",
+          overflow: "hidden",
         }}
       >
-        {loading && '正在加载图片'}
-        {hasError && '图片加载失败'}
+        {loading && "正在加载图片"}
+        {hasError && "图片加载失败"}
         {!loading && !hasError && `图片已加载：${displayFileName}`}
       </Box>
 
@@ -157,14 +154,11 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
           sx={{
             py: 1.5,
             px: 2,
-            textAlign: 'center',
-            bgcolor:
-              theme.palette.mode === 'dark'
-                ? 'rgba(0,0,0,0.4)'
-                : 'rgba(255,255,255,0.8)',
-            backdropFilter: 'blur(8px)',
-            borderBottom: '1px solid',
-            borderColor: 'divider',
+            textAlign: "center",
+            bgcolor: theme.palette.mode === "dark" ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.8)",
+            backdropFilter: "blur(8px)",
+            borderBottom: "1px solid",
+            borderColor: "divider",
           }}
           data-oid="5q_.d-t"
         >
@@ -179,21 +173,21 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
         onMouseLeave={handleContainerMouseLeave}
         sx={{
           flex: 1,
-          overflow: 'hidden',
-          position: 'relative',
+          overflow: "hidden",
+          position: "relative",
         }}
         data-oid="znlgest"
       >
         {/* 全局样式 */}
         <GlobalStyles
           styles={{
-            '.react-transform-wrapper': {
-              width: '100%',
-              height: '100%',
+            ".react-transform-wrapper": {
+              width: "100%",
+              height: "100%",
             },
-            '.react-transform-component': {
-              width: '100%',
-              height: '100%',
+            ".react-transform-component": {
+              width: "100%",
+              height: "100%",
             },
           }}
           data-oid="v02yxzy"
@@ -214,12 +208,12 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
         {hasError && (
           <Box
             sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
               p: 4,
-              position: 'absolute',
+              position: "absolute",
               top: 0,
               left: 0,
               right: 0,
@@ -228,23 +222,19 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
             }}
             data-oid="w:-3iqj"
           >
-            <Typography
-              color="error"
-              sx={{ mb: 2 }}
-              data-oid="tex3zwr"
-            >
+            <Typography color="error" sx={{ mb: 2 }} data-oid="tex3zwr">
               图像加载失败
             </Typography>
             <IconButton
               onClick={() => {
-                if (typeof toolbarProps.setError === 'function') {
+                if (typeof toolbarProps.setError === "function") {
                   toolbarProps.setError(false);
                 }
               }}
               color="primary"
               sx={{
                 bgcolor: alpha(theme.palette.primary.main, 0.1),
-                '&:hover': {
+                "&:hover": {
                   bgcolor: alpha(theme.palette.primary.main, 0.2),
                 },
               }}
@@ -273,18 +263,19 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
               {/* 图片展示 */}
               <TransformComponent
                 wrapperStyle={{
-                  width: '100%',
-                  height: '100%',
-                  boxSizing: 'border-box',
+                  width: "100%",
+                  height: "100%",
+                  boxSizing: "border-box",
                 }}
                 contentStyle={{
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  transform: isSmallScreen && isDragging ? `translateX(${String(dragOffset)}px)` : undefined,
-                  transition: isDragging ? 'none' : 'transform 0.3s ease',
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  transform:
+                    isSmallScreen && isDragging ? `translateX(${String(dragOffset)}px)` : undefined,
+                  transition: isDragging ? "none" : "transform 0.3s ease",
                 }}
                 wrapperProps={{
                   onTouchStart: handleTouchStart,
@@ -297,31 +288,32 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                 {!hasError && !loading && (
                   <div
                     style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
                       transform: rotationTransform,
-                      transition: 'transform 0.3s ease, width 0.35s ease, height 0.35s ease',
-                      transformOrigin: 'center center',
-                      width: stageWidth !== null ? `${stageWidth.toString()}px` : 'auto',
-                      height: stageHeight !== null ? `${stageHeight.toString()}px` : 'auto',
-                      maxWidth: stageMaxWidth !== null ? `${stageMaxWidth.toString()}px` : '100%',
-                      maxHeight: stageMaxHeight !== null ? `${stageMaxHeight.toString()}px` : '100%',
-                      position: 'relative',
+                      transition: "transform 0.3s ease, width 0.35s ease, height 0.35s ease",
+                      transformOrigin: "center center",
+                      width: stageWidth !== null ? `${stageWidth.toString()}px` : "auto",
+                      height: stageHeight !== null ? `${stageHeight.toString()}px` : "auto",
+                      maxWidth: stageMaxWidth !== null ? `${stageMaxWidth.toString()}px` : "100%",
+                      maxHeight:
+                        stageMaxHeight !== null ? `${stageMaxHeight.toString()}px` : "100%",
+                      position: "relative",
                     }}
                     data-oid="y6kwode"
                   >
                     <img
                       ref={handleImageRef}
-                      src={shouldLoad ? imageUrl : ''}
+                      src={shouldLoad ? imageUrl : ""}
                       alt={altText}
                       className="loaded"
                       style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
                         opacity: 1,
-                        transition: 'opacity 0.3s ease',
+                        transition: "opacity 0.3s ease",
                       }}
                       onLoad={(event) => {
                         processAspectRatioFromImage(event.currentTarget);
@@ -335,10 +327,10 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                 {!hasError && loading && (
                   <img
                     ref={handleImageRef}
-                    src={shouldLoad ? imageUrl : ''}
+                    src={shouldLoad ? imageUrl : ""}
                     alt={altText}
                     style={{
-                      display: 'none',
+                      display: "none",
                     }}
                     onLoad={(event) => {
                       processAspectRatioFromImage(event.currentTarget);
@@ -365,14 +357,14 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                   {hasPrevious && dragOffset > 30 && (
                     <Box
                       sx={{
-                        position: 'absolute',
+                        position: "absolute",
                         left: 16,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
+                        top: "50%",
+                        transform: "translateY(-50%)",
                         zIndex: 60,
                         opacity: Math.min(dragOffset / 100, 0.8),
-                        transition: 'opacity 0.2s ease',
-                        pointerEvents: 'none',
+                        transition: "opacity 0.2s ease",
+                        pointerEvents: "none",
                       }}
                       data-oid="drag-left-indicator"
                     >
@@ -380,18 +372,18 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                         sx={{
                           width: 48,
                           height: 48,
-                          borderRadius: '50%',
+                          borderRadius: "50%",
                           bgcolor: alpha(theme.palette.primary.main, 0.9),
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                           boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.3)}`,
                         }}
                       >
                         <ChevronLeftIcon
                           sx={{
-                            fontSize: '2rem',
-                            color: '#fff',
+                            fontSize: "2rem",
+                            color: "#fff",
                           }}
                         />
                       </Box>
@@ -402,14 +394,14 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                   {hasNext && dragOffset < -30 && (
                     <Box
                       sx={{
-                        position: 'absolute',
+                        position: "absolute",
                         right: 16,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
+                        top: "50%",
+                        transform: "translateY(-50%)",
                         zIndex: 60,
                         opacity: Math.min(Math.abs(dragOffset) / 100, 0.8),
-                        transition: 'opacity 0.2s ease',
-                        pointerEvents: 'none',
+                        transition: "opacity 0.2s ease",
+                        pointerEvents: "none",
                       }}
                       data-oid="drag-right-indicator"
                     >
@@ -417,18 +409,18 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                         sx={{
                           width: 48,
                           height: 48,
-                          borderRadius: '50%',
+                          borderRadius: "50%",
                           bgcolor: alpha(theme.palette.primary.main, 0.9),
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                           boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.3)}`,
                         }}
                       >
                         <ChevronRightIcon
                           sx={{
-                            fontSize: '2rem',
-                            color: '#fff',
+                            fontSize: "2rem",
+                            color: "#fff",
                           }}
                         />
                       </Box>
@@ -441,42 +433,48 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
               {!isSmallScreen && hasPrevious && onPrevious !== undefined && (
                 <Box
                   sx={{
-                    position: 'absolute',
+                    position: "absolute",
                     left: 0,
                     top: 0,
-                    bottom: '72px', // 避开底部工具栏
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'flex-start',
+                    bottom: "72px", // 避开底部工具栏
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "flex-start",
                     paddingLeft: 2,
                     zIndex: 50,
-                    cursor: activeNavSide === 'left' ? 'pointer' : 'default',
-                    pointerEvents: activeNavSide === 'left' ? 'auto' : 'none',
+                    cursor: activeNavSide === "left" ? "pointer" : "default",
+                    pointerEvents: activeNavSide === "left" ? "auto" : "none",
                   }}
                   data-oid="prev-nav-area"
                 >
                   <IconButton
                     onClick={onPrevious}
-                    aria-label={t('ui.image.previous')}
+                    aria-label={t("ui.image.previous")}
                     sx={{
-                      bgcolor: alpha(theme.palette.background.paper, activeNavSide === 'left' ? 0.95 : 0),
-                      backdropFilter: activeNavSide === 'left' ? 'blur(10px)' : 'none',
-                      '&:hover': {
+                      bgcolor: alpha(
+                        theme.palette.background.paper,
+                        activeNavSide === "left" ? 0.95 : 0,
+                      ),
+                      backdropFilter: activeNavSide === "left" ? "blur(10px)" : "none",
+                      "&:hover": {
                         bgcolor: alpha(theme.palette.background.paper, 0.98),
                       },
-                      width: '56px',
-                      height: '56px',
-                      opacity: activeNavSide === 'left' ? 1 : 0,
-                      transform: activeNavSide === 'left' ? 'translateX(0)' : 'translateX(-20px)',
-                      transition: 'all 0.3s ease',
-                      boxShadow: activeNavSide === 'left' ? `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}` : 'none',
-                      pointerEvents: activeNavSide === 'left' ? 'auto' : 'none',
+                      width: "56px",
+                      height: "56px",
+                      opacity: activeNavSide === "left" ? 1 : 0,
+                      transform: activeNavSide === "left" ? "translateX(0)" : "translateX(-20px)",
+                      transition: "all 0.3s ease",
+                      boxShadow:
+                        activeNavSide === "left"
+                          ? `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`
+                          : "none",
+                      pointerEvents: activeNavSide === "left" ? "auto" : "none",
                     }}
                     data-oid="prev-nav-btn"
                   >
                     <ChevronLeftIcon
                       sx={{
-                        fontSize: '2rem',
+                        fontSize: "2rem",
                         color: theme.palette.text.primary,
                       }}
                       data-oid="prev-icon"
@@ -489,42 +487,48 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
               {!isSmallScreen && hasNext && onNext !== undefined && (
                 <Box
                   sx={{
-                    position: 'absolute',
+                    position: "absolute",
                     right: 0,
                     top: 0,
-                    bottom: '72px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'flex-end',
+                    bottom: "72px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "flex-end",
                     paddingRight: 2,
                     zIndex: 50,
-                    cursor: activeNavSide === 'right' ? 'pointer' : 'default',
-                    pointerEvents: activeNavSide === 'right' ? 'auto' : 'none',
+                    cursor: activeNavSide === "right" ? "pointer" : "default",
+                    pointerEvents: activeNavSide === "right" ? "auto" : "none",
                   }}
                   data-oid="next-nav-area"
                 >
                   <IconButton
                     onClick={onNext}
-                    aria-label={t('ui.image.next')}
+                    aria-label={t("ui.image.next")}
                     sx={{
-                      bgcolor: alpha(theme.palette.background.paper, activeNavSide === 'right' ? 0.95 : 0),
-                      backdropFilter: activeNavSide === 'right' ? 'blur(10px)' : 'none',
-                      '&:hover': {
+                      bgcolor: alpha(
+                        theme.palette.background.paper,
+                        activeNavSide === "right" ? 0.95 : 0,
+                      ),
+                      backdropFilter: activeNavSide === "right" ? "blur(10px)" : "none",
+                      "&:hover": {
                         bgcolor: alpha(theme.palette.background.paper, 0.98),
                       },
-                      width: '56px',
-                      height: '56px',
-                      opacity: activeNavSide === 'right' ? 1 : 0,
-                      transform: activeNavSide === 'right' ? 'translateX(0)' : 'translateX(20px)',
-                      transition: 'all 0.3s ease',
-                      boxShadow: activeNavSide === 'right' ? `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}` : 'none',
-                      pointerEvents: activeNavSide === 'right' ? 'auto' : 'none',
+                      width: "56px",
+                      height: "56px",
+                      opacity: activeNavSide === "right" ? 1 : 0,
+                      transform: activeNavSide === "right" ? "translateX(0)" : "translateX(20px)",
+                      transition: "all 0.3s ease",
+                      boxShadow:
+                        activeNavSide === "right"
+                          ? `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`
+                          : "none",
+                      pointerEvents: activeNavSide === "right" ? "auto" : "none",
                     }}
                     data-oid="next-nav-btn"
                   >
                     <ChevronRightIcon
                       sx={{
-                        fontSize: '2rem',
+                        fontSize: "2rem",
                         color: theme.palette.text.primary,
                       }}
                       data-oid="next-icon"

@@ -40,10 +40,8 @@ const NativeSEO: React.FC<NativeSEOProps> = ({
   const metaTitle = normalizedTitle.length > 0 ? normalizedTitle : metadata.title;
   const metaDescription =
     normalizedDescription.length > 0 ? normalizedDescription : metadata.description;
-  const metaKeywords =
-    normalizedKeywords.length > 0 ? normalizedKeywords : metadata.keywords;
-  const metaOgImage =
-    normalizedOgImage.length > 0 ? normalizedOgImage : metadata.ogImage;
+  const metaKeywords = normalizedKeywords.length > 0 ? normalizedKeywords : metadata.keywords;
+  const metaOgImage = normalizedOgImage.length > 0 ? normalizedOgImage : metadata.ogImage;
 
   // 确保ogImage是完整URL
   const fullOgImageUrl = metaOgImage.startsWith("http")
@@ -52,8 +50,7 @@ const NativeSEO: React.FC<NativeSEOProps> = ({
 
   // 获取当前规范URL（canonical）
   const normalizedCanonical = normalizeString(canonical);
-  const canonicalUrl =
-    normalizedCanonical.length > 0 ? normalizedCanonical : window.location.href;
+  const canonicalUrl = normalizedCanonical.length > 0 ? normalizedCanonical : window.location.href;
 
   return (
     <>
@@ -66,34 +63,19 @@ const NativeSEO: React.FC<NativeSEOProps> = ({
 
       {/* 规范链接和索引控制 */}
       <link rel="canonical" href={canonicalUrl} data-oid="2kjm6oq" />
-      {noindex && (
-        <meta name="robots" content="noindex, nofollow" data-oid="pvnw5h5" />
-      )}
+      {noindex && <meta name="robots" content="noindex, nofollow" data-oid="pvnw5h5" />}
 
       {/* Open Graph标签 - 用于社交媒体分享 */}
       <meta property="og:title" content={metaTitle} data-oid="v3.fbm." />
-      <meta
-        property="og:description"
-        content={metaDescription}
-        data-oid="73sama8"
-      />
+      <meta property="og:description" content={metaDescription} data-oid="73sama8" />
       <meta property="og:image" content={fullOgImageUrl} data-oid="marbcjk" />
       <meta property="og:url" content={canonicalUrl} data-oid="8u43ypl" />
       <meta property="og:type" content="website" data-oid="vj3-ill" />
       <meta property="og:site_name" content={metaTitle} data-oid="vax8:o5" />
 
-
       {/* 其他常用元标签 */}
-      <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-        data-oid="wr_5f5z"
-      />
-      <meta
-        httpEquiv="Content-Type"
-        content="text/html; charset=utf-8"
-        data-oid="fxgfwa5"
-      />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" data-oid="wr_5f5z" />
+      <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" data-oid="fxgfwa5" />
       <meta name="language" content="Chinese" data-oid="axk0m1l" />
     </>
   );

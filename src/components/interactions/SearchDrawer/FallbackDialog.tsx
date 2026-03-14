@@ -10,7 +10,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Typography
+  Typography,
 } from "@mui/material";
 import React from "react";
 
@@ -26,18 +26,9 @@ interface FallbackDialogProps {
   onConfirm: () => void;
 }
 
-export const FallbackDialog: React.FC<FallbackDialogProps> = ({
-  open,
-  onClose,
-  onConfirm
-}) => {
+export const FallbackDialog: React.FC<FallbackDialogProps> = ({ open, onClose, onConfirm }) => {
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="xs"
-      fullWidth
-    >
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>使用 API 模式重新搜索？</DialogTitle>
       <DialogContent>
         <Typography variant="body2">

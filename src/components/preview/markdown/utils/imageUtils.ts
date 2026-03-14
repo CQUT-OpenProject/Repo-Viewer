@@ -2,15 +2,9 @@ import { GitHub } from "@/services/github";
 import type { GitHubContent } from "@/types";
 import { logger } from "@/utils";
 
-const GITHUB_USER_CONTENT_PATH_REGEX =
-  /githubusercontent\.com\/[^/]+\/[^/]+\/[^/]+\/(.+)/;
+const GITHUB_USER_CONTENT_PATH_REGEX = /githubusercontent\.com\/[^/]+\/[^/]+\/[^/]+\/(.+)/;
 
-const PROXY_FAILURE_HOSTS = [
-  "gh-proxy.com",
-  "ghproxy.com",
-  "staticdn.net",
-  "ghfast.top",
-];
+const PROXY_FAILURE_HOSTS = ["gh-proxy.com", "ghproxy.com", "staticdn.net", "ghfast.top"];
 
 const extractGithubusercontentPath = (url: string): string | null => {
   const match = GITHUB_USER_CONTENT_PATH_REGEX.exec(url);
@@ -38,7 +32,7 @@ export interface ImageLoadingState {
 
 /**
  * 创建图片加载状态对象
- * 
+ *
  * @returns 初始化的图片加载状态
  */
 export const createImageLoadingState = (): ImageLoadingState => ({
@@ -49,9 +43,9 @@ export const createImageLoadingState = (): ImageLoadingState => ({
 
 /**
  * 尝试直接加载图片
- * 
+ *
  * 从代理URL中提取原始路径，使用JSDelivr CDN加载。
- * 
+ *
  * @param imgSrc - 图片源URL
  * @returns 直接加载的CDN URL，失败时返回null
  */
@@ -97,9 +91,9 @@ export const tryDirectImageLoad = (imgSrc: string): string | null => {
 
 /**
  * 转换图片源URL
- * 
+ *
  * 将相对路径或原始URL转换为可访问的代理URL。
- * 
+ *
  * @param src - 原始图片URL
  * @param previewingItem - 当前预览的Markdown文件项
  * @param currentBranch - 当前分支名称（可选）
@@ -108,22 +102,18 @@ export const tryDirectImageLoad = (imgSrc: string): string | null => {
 export const transformImageSrc = (
   src: string | undefined,
   previewingItem: GitHubContent | null,
-  currentBranch?: string
+  currentBranch?: string,
 ): { imgSrc: string; originalSrc: string } => {
   const originalSrc = src ?? "";
   let imgSrc = originalSrc;
 
-  if (
-    previewingItem !== null &&
-    typeof src === "string" &&
-    src.length > 0
-  ) {
+  if (previewingItem !== null && typeof src === "string" && src.length > 0) {
     // 使用GitHubService处理图片URL
     const transformedSrc = GitHub.Proxy.transformImageUrl(
       src,
       previewingItem.path,
       true,
-      currentBranch
+      currentBranch,
     );
 
     if (typeof transformedSrc === "string" && transformedSrc.length > 0) {
@@ -139,9 +129,9 @@ export const transformImageSrc = (
 
 /**
  * 处理图片加载错误
- * 
+ *
  * 当图片加载失败时，自动尝试切换代理服务或使用备用加载方式。
- * 
+ *
  * @param imgSrc - 当前图片URL
  * @param originalSrc - 原始图片URL
  * @param imageState - 图片加载状态对象
@@ -152,7 +142,7 @@ export const handleImageError = (
   imgSrc: string,
   originalSrc: string,
   imageState: ImageLoadingState,
-  setIsImageFailed: (failed: boolean) => void
+  setIsImageFailed: (failed: boolean) => void,
 ): string | null => {
   logger.error("图片加载失败:", imgSrc);
 
@@ -242,9 +232,9 @@ export const handleImageError = (
 
 /**
  * 处理图片加载成功
- * 
+ *
  * 记录成功加载的图片，清除超时计时器。
- * 
+ *
  * @param imgSrc - 图片URL
  * @param imageState - 图片加载状态对象
  * @param setIsImageLoaded - 设置加载成功状态的函数
@@ -253,7 +243,7 @@ export const handleImageError = (
 export const handleImageLoad = (
   imgSrc: string,
   imageState: ImageLoadingState,
-  setIsImageLoaded: (loaded: boolean) => void
+  setIsImageLoaded: (loaded: boolean) => void,
 ): void => {
   // 设置本地状态
   setIsImageLoaded(true);

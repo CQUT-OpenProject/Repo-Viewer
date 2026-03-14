@@ -1,9 +1,9 @@
-import { logger } from '../logging/logger';
+import { logger } from "../logging/logger";
 
 // 防抖函数避免循环引用
 const debounce = <F extends (...args: unknown[]) => unknown>(
   func: F,
-  waitFor: number
+  waitFor: number,
 ): ((...args: Parameters<F>) => void) => {
   let timeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -45,10 +45,10 @@ export const removeLatexElements = (): void => {
   storedElements = [];
 
   // 获取所有LaTeX容器
-  const containers = document.querySelectorAll('.katex-display, .katex:not(.katex-display .katex)');
+  const containers = document.querySelectorAll(".katex-display, .katex:not(.katex-display .katex)");
   let count = 0;
 
-  containers.forEach(container => {
+  containers.forEach((container) => {
     const parent = container.parentElement;
     if (parent === null) {
       return;
@@ -62,16 +62,16 @@ export const removeLatexElements = (): void => {
       element,
       parent,
       nextSibling,
-      container: element.cloneNode(false) as HTMLElement
+      container: element.cloneNode(false) as HTMLElement,
     });
 
     // 替换为占位符元素，保持布局稳定
-    const placeholder = document.createElement('div');
-    placeholder.classList.add('latex-placeholder');
+    const placeholder = document.createElement("div");
+    placeholder.classList.add("latex-placeholder");
     placeholder.style.height = `${element.offsetHeight.toString()}px`;
     placeholder.style.width = `${element.offsetWidth.toString()}px`;
-    placeholder.style.display = 'inline-block';
-    placeholder.style.visibility = 'hidden';
+    placeholder.style.display = "inline-block";
+    placeholder.style.visibility = "hidden";
 
     // 从DOM中移除原始元素
     parent.replaceChild(placeholder, element);
@@ -107,7 +107,7 @@ export const restoreLatexElements = (): void => {
       const { element, parent, nextSibling } = entry;
 
       // 查找占位符
-      const placeholder = parent.querySelector('.latex-placeholder');
+      const placeholder = parent.querySelector(".latex-placeholder");
       if (placeholder !== null) {
         parent.replaceChild(element, placeholder);
         continue;
@@ -130,7 +130,7 @@ export const restoreLatexElements = (): void => {
       // 全部恢复完成
       storedElements = [];
       isThemeChanging = false;
-      logger.debug('已完成所有LaTeX元素的恢复');
+      logger.debug("已完成所有LaTeX元素的恢复");
     }
   };
 
@@ -158,7 +158,7 @@ export const debouncedShowLatexElements = debounce(restoreLatexElements, 100);
  * @returns LaTeX元素总数
  */
 export const countLatexElements = (): number => {
-  return document.querySelectorAll('.katex-display, .katex:not(.katex-display .katex)').length;
+  return document.querySelectorAll(".katex-display, .katex:not(.katex-display .katex)").length;
 };
 
 /**
@@ -170,12 +170,12 @@ export const countLatexElements = (): number => {
  */
 const addLatexOptimizerStyles = (): void => {
   // 如果样式已存在，则不重复添加
-  if (document.getElementById('latex-optimizer-styles') !== null) {
+  if (document.getElementById("latex-optimizer-styles") !== null) {
     return;
   }
 
-  const styleElement = document.createElement('style');
-  styleElement.id = 'latex-optimizer-styles';
+  const styleElement = document.createElement("style");
+  styleElement.id = "latex-optimizer-styles";
   styleElement.textContent = `
     .latex-placeholder {
       min-height: 1.2em;
@@ -200,17 +200,14 @@ const addLatexOptimizerStyles = (): void => {
  *
  * @returns 清理函数
  */
-export const setupLatexOptimization = (): () => void => {
+export const setupLatexOptimization = (): (() => void) => {
   // 添加必要的样式
   addLatexOptimizerStyles();
 
   // 创建MutationObserver监听data-theme变化
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
-      if (
-        mutation.attributeName === 'data-theme' &&
-        mutation.target === document.documentElement
-      ) {
+      if (mutation.attributeName === "data-theme" && mutation.target === document.documentElement) {
         // 检测到主题变化时移除LaTeX元素
         removeLatexElements();
 
@@ -228,7 +225,7 @@ export const setupLatexOptimization = (): () => void => {
   // 返回清理函数
   return () => {
     observer.disconnect();
-    const styleElement = document.getElementById('latex-optimizer-styles');
+    const styleElement = document.getElementById("latex-optimizer-styles");
     if (styleElement !== null) {
       styleElement.remove();
     }

@@ -1,13 +1,6 @@
 import type { FC } from "react";
 import { useState, useEffect, useCallback } from "react";
-import {
-  Fab,
-  useTheme,
-  useMediaQuery,
-  Zoom,
-  alpha,
-  Tooltip,
-} from "@mui/material";
+import { Fab, useTheme, useMediaQuery, Zoom, alpha, Tooltip } from "@mui/material";
 import { KeyboardArrowUp as ArrowUpIcon } from "@mui/icons-material";
 import { useI18n } from "@/contexts/I18nContext";
 import { scroll } from "@/utils";
@@ -47,9 +40,7 @@ const ScrollToTopFab: FC<ScrollToTopFabProps> = ({
     }
 
     const scrollTop = scroll.getScrollTop();
-    const hasContent = showOnlyWithContent
-      ? document.body.scrollHeight > window.innerHeight
-      : true;
+    const hasContent = showOnlyWithContent ? document.body.scrollHeight > window.innerHeight : true;
 
     return scrollTop > threshold && hasContent;
   };
@@ -64,9 +55,7 @@ const ScrollToTopFab: FC<ScrollToTopFabProps> = ({
     }
 
     const scrollTop = scroll.getScrollTop();
-    const hasContent = showOnlyWithContent
-      ? document.body.scrollHeight > window.innerHeight
-      : true;
+    const hasContent = showOnlyWithContent ? document.body.scrollHeight > window.innerHeight : true;
     const shouldBeVisible = scrollTop > threshold && hasContent;
 
     // 可见性改变时更新状态，避免复杂重渲染
@@ -136,7 +125,8 @@ const ScrollToTopFab: FC<ScrollToTopFabProps> = ({
       transform: "scale(0.95)",
       boxShadow: theme.shadows[6],
     },
-    transition: "background-color 650ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 800ms cubic-bezier(0.4, 0, 0.2, 1), transform 500ms cubic-bezier(0.4, 0, 0.2, 1)",
+    transition:
+      "background-color 650ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 800ms cubic-bezier(0.4, 0, 0.2, 1), transform 500ms cubic-bezier(0.4, 0, 0.2, 1)",
     ...(isSmallScreen && {
       width: 48,
       height: 48,
@@ -156,10 +146,10 @@ const ScrollToTopFab: FC<ScrollToTopFabProps> = ({
         transitionDelay: isVisible ? "0ms" : "100ms",
       }}
     >
-      <Tooltip title={t('ui.scrollToTop.aria')} placement="left" enterDelay={300}>
+      <Tooltip title={t("ui.scrollToTop.aria")} placement="left" enterDelay={300}>
         <Fab
           size={isSmallScreen ? "medium" : "large"}
-          aria-label={t('ui.scrollToTop.aria')}
+          aria-label={t("ui.scrollToTop.aria")}
           onClick={handleScrollToTop}
           disabled={isScrolling}
           sx={fabStyles}

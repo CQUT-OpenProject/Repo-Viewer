@@ -5,7 +5,7 @@
  * 确保API响应数据的类型安全，并提供验证函数。
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * GitHub内容项链接结构Schema
@@ -33,7 +33,7 @@ export const GitHubContentItemSchema = z.object({
   html_url: z.string(),
   git_url: z.string(),
   download_url: z.string().nullable(),
-  type: z.enum(['file', 'dir']),
+  type: z.enum(["file", "dir"]),
   _links: GitHubLinksSchema.optional(),
 });
 
@@ -99,7 +99,7 @@ export type GitHubSearchResponse = z.infer<typeof GitHubSearchResponseSchema>;
 
 /**
  * 验证GitHub内容响应
- * 
+ *
  * @param data - 待验证的数据
  * @returns 验证后的GitHubContentsResponse
  * @throws 当数据格式不符合schema时抛出错误
@@ -110,7 +110,7 @@ export function validateGitHubContentsResponse(data: unknown): GitHubContentsRes
 
 /**
  * 验证GitHub搜索响应
- * 
+ *
  * @param data - 待验证的数据
  * @returns 验证后的GitHubSearchResponse
  * @throws 当数据格式不符合schema时抛出错误
@@ -121,52 +121,56 @@ export function validateGitHubSearchResponse(data: unknown): GitHubSearchRespons
 
 /**
  * 安全验证GitHub内容响应
- * 
+ *
  * 不抛出异常的验证函数，返回包含成功状态的对象。
- * 
+ *
  * @param data - 待验证的数据
  * @returns 验证结果对象（成功或失败）
  */
-export function safeValidateGitHubContentsResponse(data: unknown): {
-  success: true;
-  data: GitHubContentsResponse;
-} | {
-  success: false;
-  error: string;
-} {
+export function safeValidateGitHubContentsResponse(data: unknown):
+  | {
+      success: true;
+      data: GitHubContentsResponse;
+    }
+  | {
+      success: false;
+      error: string;
+    } {
   try {
     const validatedData = GitHubContentsResponseSchema.parse(data);
     return { success: true, data: validatedData };
   } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : '未知验证错误' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "未知验证错误",
     };
   }
 }
 
 /**
  * 安全验证GitHub搜索响应
- * 
+ *
  * 不抛出异常的验证函数，返回包含成功状态的对象。
- * 
+ *
  * @param data - 待验证的数据
  * @returns 验证结果对象（成功或失败）
  */
-export function safeValidateGitHubSearchResponse(data: unknown): {
-  success: true;
-  data: GitHubSearchResponse;
-} | {
-  success: false;
-  error: string;
-} {
+export function safeValidateGitHubSearchResponse(data: unknown):
+  | {
+      success: true;
+      data: GitHubSearchResponse;
+    }
+  | {
+      success: false;
+      error: string;
+    } {
   try {
     const validatedData = GitHubSearchResponseSchema.parse(data);
     return { success: true, data: validatedData };
   } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : '未知验证错误' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "未知验证错误",
     };
   }
 }

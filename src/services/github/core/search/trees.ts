@@ -7,11 +7,11 @@
  * @module search/trees
  */
 
-import axios from 'axios';
+import axios from "axios";
 
-import { GITHUB_API_BASE, GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from '../Config';
-import { shouldUseServerAPI } from '../../config';
-import { getAuthHeaders } from '../Auth';
+import { GITHUB_API_BASE, GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "../Config";
+import { shouldUseServerAPI } from "../../config";
+import { getAuthHeaders } from "../Auth";
 
 /**
  * Git 树节点项接口
@@ -39,9 +39,9 @@ export interface GitTreeItem {
  */
 async function fetchTreeViaServerApi(branch: string): Promise<GitTreeItem[] | null> {
   const query = new URLSearchParams({
-    action: 'getTree',
+    action: "getTree",
     branch,
-    recursive: '1'
+    recursive: "1",
   });
   const response = await axios.get(`/api/github?${query.toString()}`);
   const data = response.data as { tree?: GitTreeItem[] };
@@ -59,8 +59,8 @@ async function fetchTreeDirectly(branch: string): Promise<GitTreeItem[] | null> 
   const apiUrl = `${GITHUB_API_BASE}/repos/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/git/trees/${encodeURIComponent(branch)}?recursive=1`;
 
   const response = await fetch(apiUrl, {
-    method: 'GET',
-    headers: getAuthHeaders()
+    method: "GET",
+    headers: getAuthHeaders(),
   });
 
   if (!response.ok) {
@@ -87,4 +87,3 @@ export async function getBranchTree(branch: string): Promise<GitTreeItem[] | nul
 
   return fetchTreeDirectly(branch);
 }
-

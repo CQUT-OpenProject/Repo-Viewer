@@ -9,7 +9,7 @@ import { z } from "zod";
 
 /** ISO日期字符串验证Schema - 确保日期格式有效 */
 const IsoDateStringSchema = z.string().refine((value) => !Number.isNaN(Date.parse(value)), {
-  message: "Invalid ISO date string"
+  message: "Invalid ISO date string",
 });
 
 /** 非空字符串验证Schema */
@@ -24,7 +24,7 @@ export const SearchIndexBranchEntrySchema = z.object({
   docfindPath: NonEmptyStringSchema,
   hash: NonEmptyStringSchema,
   fileCount: z.number().int().nonnegative().optional(),
-  generatedAt: IsoDateStringSchema.optional()
+  generatedAt: IsoDateStringSchema.optional(),
 });
 
 /**
@@ -35,7 +35,7 @@ export const SearchIndexBranchEntrySchema = z.object({
 export const SearchIndexManifestSchema = z.object({
   schemaVersion: z.literal("docfind-1"),
   generatedAt: IsoDateStringSchema,
-  branches: z.record(z.string(), SearchIndexBranchEntrySchema)
+  branches: z.record(z.string(), SearchIndexBranchEntrySchema),
 });
 
 /** 搜索索引清单类型 - 从Schema推断 */
@@ -52,13 +52,15 @@ export type SearchIndexBranchEntry = z.infer<typeof SearchIndexBranchEntrySchema
  * @param data - 待验证的原始数据
  * @returns 验证成功返回数据和成功标志，失败返回错误信息
  */
-export function safeValidateSearchIndexManifest(data: unknown): {
-  success: true;
-  data: SearchIndexManifest;
-} | {
-  success: false;
-  error: string;
-} {
+export function safeValidateSearchIndexManifest(data: unknown):
+  | {
+      success: true;
+      data: SearchIndexManifest;
+    }
+  | {
+      success: false;
+      error: string;
+    } {
   try {
     const manifest = SearchIndexManifestSchema.parse(data);
     return { success: true, data: manifest };

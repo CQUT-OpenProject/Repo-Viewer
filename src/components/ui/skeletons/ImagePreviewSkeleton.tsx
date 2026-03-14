@@ -5,11 +5,7 @@
  */
 
 import React from "react";
-import {
-  Box,
-  Skeleton,
-  useTheme,
-} from "@mui/material";
+import { Box, Skeleton, useTheme } from "@mui/material";
 import { getSkeletonStyles, getContainerTransitionStyles, useSkeletonVisibility } from "./shared";
 import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 
@@ -30,7 +26,7 @@ interface ImagePreviewSkeletonProps {
   /** 长宽比 */
   aspectRatio?: number;
   /** 数据OID */
-  'data-oid'?: string;
+  "data-oid"?: string;
 }
 
 /**
@@ -53,13 +49,14 @@ export const ImagePreviewSkeleton: React.FC<ImagePreviewSkeletonProps> = ({
 
   const fallbackWidth = isSmallScreen ? "88%" : "60%";
   const fallbackHeight = isSmallScreen ? "54%" : "60%";
-  const resolvedWidth = typeof targetWidth === "number" && targetWidth > 0
-    ? Math.round(targetWidth)
-    : fallbackWidth;
-  const resolvedHeight = typeof targetHeight === "number" && targetHeight > 0
-    ? Math.round(targetHeight)
-    : fallbackHeight;
-  const normalizedAspectRatio = typeof aspectRatio === "number" && aspectRatio > 0 ? aspectRatio : undefined;
+  const resolvedWidth =
+    typeof targetWidth === "number" && targetWidth > 0 ? Math.round(targetWidth) : fallbackWidth;
+  const resolvedHeight =
+    typeof targetHeight === "number" && targetHeight > 0
+      ? Math.round(targetHeight)
+      : fallbackHeight;
+  const normalizedAspectRatio =
+    typeof aspectRatio === "number" && aspectRatio > 0 ? aspectRatio : undefined;
 
   return (
     <Box

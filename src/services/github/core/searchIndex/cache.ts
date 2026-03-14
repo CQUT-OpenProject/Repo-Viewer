@@ -7,7 +7,7 @@
  * @module searchIndex/cache
  */
 
-import type { SearchIndexManifest } from '../../schemas';
+import type { SearchIndexManifest } from "../../schemas";
 
 /**
  * Manifest 缓存项接口

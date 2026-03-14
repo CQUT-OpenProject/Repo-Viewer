@@ -1,4 +1,4 @@
-import type { AppError } from '@/types/errors';
+import type { AppError } from "@/types/errors";
 
 /**
  * 错误历史管理类
@@ -40,8 +40,6 @@ export class ErrorHistory {
    */
   private cleanupOldErrors(): void {
     const now = Date.now();
-    this.errorHistory = this.errorHistory.filter(
-      e => (now - e.timestamp) < this.maxAge
-    );
+    this.errorHistory = this.errorHistory.filter((e) => now - e.timestamp < this.maxAge);
   }
 }

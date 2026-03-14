@@ -1,5 +1,8 @@
 name: Repo Viewer Search Index
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 on:
   push:
     branches:
@@ -20,14 +23,13 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
           node-version: 24
-          cache: "npm"
-          cache-dependency-path: "package-lock.json"
+          cache: true
       - name: Install dependencies
-        run: npm ci
+        run: vp install
       - name: Generate docfind index
         env:
           ENABLED_SEARCH_INDEX: "true"
@@ -36,16 +38,17 @@ jobs:
           GITHUB_REPO_OWNER: ${{ vars.GITHUB_REPO_OWNER || github.repository_owner }}
           GITHUB_REPO_NAME: ${{ vars.GITHUB_REPO_NAME || github.event.repository.name }}
           GITHUB_REPO_BRANCH: ${{ vars.GITHUB_REPO_BRANCH || github.ref_name }}
-          GITHUB_PAT1: ${{ secrets.GITHUB_PAT1 }}
-          GITHUB_PAT2: ${{ secrets.GITHUB_PAT2 }}
-        run: npm run generate:index
+          GITHUB_PAT1: ${{ secrets.RV_PAT1 }}
+          GITHUB_PAT2: ${{ secrets.RV_PAT2 }}
+        run: vp run generate:index
       - name: Commit search index
+        if: ${{ hashFiles('public/search-index/**') != '' }}
         run: |
           set -euo pipefail
           INDEX_DIR="public/search-index"
           if [ ! -d "$INDEX_DIR" ]; then
-            echo "Index directory not found: $INDEX_DIR"
-            exit 1
+            echo "Index directory not found, skip publishing: $INDEX_DIR"
+            exit 0
           fi
 
           WORKTREE_DIR="${RUNNER_TEMP}/rv-index"

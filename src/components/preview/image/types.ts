@@ -1,4 +1,4 @@
-import type React from 'react';
+import type React from "react";
 
 /**
  * 图片预览组件的Props接口定义
@@ -104,7 +104,7 @@ export interface ImageToolbarProps {
   /** 设置错误状态 */
   setError?: React.Dispatch<React.SetStateAction<boolean>>;
   /** 工具栏呈现模式 */
-  variant?: 'inline' | 'floating' | 'full-width';
+  variant?: "inline" | "floating" | "full-width";
 }
 
 /**

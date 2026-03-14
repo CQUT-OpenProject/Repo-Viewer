@@ -1,12 +1,16 @@
-import { ENV_MAPPING, CONFIG_DEFAULTS } from '../constants';
-import type { EnvMappingOptions } from '../types';
+import { ENV_MAPPING, CONFIG_DEFAULTS } from "../constants";
+import type { EnvMappingOptions } from "../types";
 
 type MutableEnvRecord = Record<string, string | undefined>;
 type EnvLookupRecord = Record<string, unknown>;
 
 const getProcessEnvRecord = (): MutableEnvRecord | undefined => {
   const globalProcess = (globalThis as { process?: { env?: unknown } }).process;
-  if (globalProcess !== undefined && typeof globalProcess.env === 'object' && globalProcess.env !== null) {
+  if (
+    globalProcess !== undefined &&
+    typeof globalProcess.env === "object" &&
+    globalProcess.env !== null
+  ) {
     return globalProcess.env as MutableEnvRecord;
   }
   return undefined;
@@ -22,7 +26,7 @@ const setProcessEnvValue = (key: string, value: string): void => {
 };
 
 const normalizeEnvValue = (value: unknown): string | undefined => {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return undefined;
   }
   const trimmed = value.trim();
@@ -40,22 +44,17 @@ const normalizeEnvValue = (value: unknown): string | undefined => {
  */
 function isProductionEnvironment(env: MutableEnvRecord, isProdLike: boolean): boolean {
   // 检查多个环境标志
-  const nodeEnv = env['NODE_ENV'] ?? runtimeProcessEnv?.['NODE_ENV'];
-  const mode = env['MODE'] ?? runtimeProcessEnv?.['MODE'];
-  const viteProd = env['PROD'] ?? runtimeProcessEnv?.['PROD'];
+  const nodeEnv = env["NODE_ENV"] ?? runtimeProcessEnv?.["NODE_ENV"];
+  const mode = env["MODE"] ?? runtimeProcessEnv?.["MODE"];
+  const viteProd = env["PROD"] ?? runtimeProcessEnv?.["PROD"];
 
   // 任何一个标志表明是生产环境，就返回 true
-  return (
-    isProdLike ||
-    nodeEnv === 'production' ||
-    mode === 'production' ||
-    viteProd === 'true'
-  );
+  return isProdLike || nodeEnv === "production" || mode === "production" || viteProd === "true";
 }
 
 export function applyEnvMappingForVite(
   env: MutableEnvRecord,
-  options: EnvMappingOptions = {}
+  options: EnvMappingOptions = {},
 ): void {
   const { isProdLike = false } = options;
 
@@ -75,8 +74,8 @@ export function applyEnvMappingForVite(
   const isProduction = isProductionEnvironment(env, isProdLike);
 
   if (!isProduction) {
-    const plainPrefix = 'GITHUB_PAT';
-    const vitePrefix = 'VITE_GITHUB_PAT';
+    const plainPrefix = "GITHUB_PAT";
+    const vitePrefix = "VITE_GITHUB_PAT";
 
     // 基础（无数字后缀）
     const basePlain = normalizeEnvValue(env[plainPrefix] ?? runtimeProcessEnv?.[plainPrefix]);
@@ -136,7 +135,7 @@ function lookupEnv(env: EnvLookupRecord, key: string): string | undefined {
 export const resolveEnvWithMapping = (
   env: EnvLookupRecord,
   plainKey: string,
-  fallback: string
+  fallback: string,
 ): string => {
   // 优先使用VITE_前缀的变量（如果存在）
   if (plainKey in ENV_MAPPING) {

@@ -5,16 +5,19 @@
     <!-- 动态favicon将由React组件管理 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Google Fonts - Roboto -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+      rel="stylesheet"
+    />
     <meta name="author" content="Repo-Viewer" />
     <title>Repo-Viewer</title>
     <script type="module">
       const env = import.meta.env;
-      const defaultTitle = 'Repo-Viewer';
-      const defaultDesc = '基于MD3设计语言的GitHub仓库浏览应用';
-      const defaultKeywords = 'GitHub, 仓库, 浏览器, 代码, 查看器';
+      const defaultTitle = "Repo-Viewer";
+      const defaultDesc = "基于MD3设计语言的GitHub仓库浏览应用";
+      const defaultKeywords = "GitHub, 仓库, 浏览器, 代码, 查看器";
 
       const title = env.VITE_SITE_TITLE || env.SITE_TITLE || defaultTitle;
       const description = env.VITE_SITE_DESCRIPTION || env.SITE_DESCRIPTION || defaultDesc;
@@ -25,15 +28,15 @@
       const ensureMeta = (name, content) => {
         let el = document.querySelector(`meta[name=\"${name}\"]`);
         if (!el) {
-          el = document.createElement('meta');
-          el.setAttribute('name', name);
+          el = document.createElement("meta");
+          el.setAttribute("name", name);
           document.head.appendChild(el);
         }
-        el.setAttribute('content', content);
+        el.setAttribute("content", content);
       };
 
-      ensureMeta('description', description);
-      ensureMeta('keywords', keywords);
+      ensureMeta("description", description);
+      ensureMeta("keywords", keywords);
     </script>
   </head>
   <body>

@@ -1,6 +1,6 @@
-import { useMemo, useRef } from 'react';
-import type { RefObject } from 'react';
-import type { BreadcrumbSegment } from '@/types';
+import { useMemo, useRef } from "react";
+import type { RefObject } from "react";
+import type { BreadcrumbSegment } from "@/types";
 
 interface UseBreadcrumbLayoutOptions {
   breadcrumbSegments: BreadcrumbSegment[];
@@ -19,7 +19,7 @@ interface UseBreadcrumbLayoutReturn {
  */
 export function useBreadcrumbLayout({
   breadcrumbSegments,
-  isSmallScreen
+  isSmallScreen,
 }: UseBreadcrumbLayoutOptions): UseBreadcrumbLayoutReturn {
   const breadcrumbsContainerRef = useRef<HTMLDivElement>(null);
   const breadcrumbsMaxItems = useMemo(() => {
@@ -38,6 +38,6 @@ export function useBreadcrumbLayout({
 
   return {
     breadcrumbsMaxItems,
-    breadcrumbsContainerRef
+    breadcrumbsContainerRef,
   };
 }

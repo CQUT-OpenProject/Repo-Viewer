@@ -1,13 +1,5 @@
 import React, { useCallback, useEffect, useRef } from "react";
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Box,
-  useTheme,
-  useMediaQuery,
-  Collapse,
-} from "@mui/material";
+import { AppBar, Toolbar, Typography, Box, useTheme, useMediaQuery, Collapse } from "@mui/material";
 import { AppContextProvider } from "@/contexts/unified";
 import MainContent from "@/components/layout/MainContent";
 import ToolbarButtons from "@/components/layout/ToolbarButtons";
@@ -22,7 +14,7 @@ import { PageErrorBoundary, FeatureErrorBoundary } from "@/components/ui/ErrorBo
 
 /**
  * 应用主组件
- * 
+ *
  * 应用的根组件，包含顶部导航栏、主内容区和页脚。
  * 处理标题点击、滚动监听和token状态检查。
  */
@@ -30,16 +22,16 @@ const App = React.memo(() => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const titleRef = useRef<HTMLDivElement | null>(null);
-  
+
   // 使用自定义 Hook 监听滚动位置
   const showBreadcrumbInToolbar = useScrollVisibility(100);
 
   /**
    * 重置应用状态
-   * 
+   *
    * 清除所有缓存的GitHub内容数据并记录日志。
    * 如果清除失败，只记录错误日志而不会抛出异常。
-   * 
+   *
    * @returns Promise<boolean> - 清除缓存是否成功
    */
   const resetApplicationState = useCallback(async (): Promise<boolean> => {
@@ -55,29 +47,33 @@ const App = React.memo(() => {
 
   /**
    * 处理应用标题的点击事件
-   * 
+   *
    * 当用户点击应用标题时，在桌面端会触发以下操作：
    * 1. 清除所有缓存的GitHub内容数据
    * 2. 重定向到网站根路径（首页）
-   * 
+   *
    * 注意：
    * - 在移动端（小屏幕）设备上，此功能被禁用以防止误触
    * - 只有当点击目标是标题元素本身时才会触发
-   * 
+   *
    * @param event - React鼠标点击事件对象
    */
-  const handleTitleClick = useCallback((event: React.MouseEvent<HTMLDivElement>): void => {
-    if (isSmallScreen) {
-      return;
-    }
-    
-    if (titleRef.current !== null && 
-        (event.target === titleRef.current || 
-         titleRef.current.contains(event.target as Node))) {
-      void resetApplicationState();
-      window.location.href = "/";
-    }
-  }, [isSmallScreen, resetApplicationState]);
+  const handleTitleClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>): void => {
+      if (isSmallScreen) {
+        return;
+      }
+
+      if (
+        titleRef.current !== null &&
+        (event.target === titleRef.current || titleRef.current.contains(event.target as Node))
+      ) {
+        void resetApplicationState();
+        window.location.href = "/";
+      }
+    },
+    [isSmallScreen, resetApplicationState],
+  );
 
   // 启动时检查token状态
   useEffect(() => {
@@ -105,8 +101,8 @@ const App = React.memo(() => {
       {/* 基础SEO设置 */}
       <SEO data-oid="542h-3i" />
 
-        <style data-oid="b003vxu">
-          {`
+      <style data-oid="b003vxu">
+        {`
             .notistack-SnackbarContainer {
               bottom: 24px !important;
             }
@@ -123,7 +119,7 @@ const App = React.memo(() => {
               padding: 10px 16px !important;
             }
           `}
-        </style>
+      </style>
       <PageErrorBoundary>
         <AppContextProvider data-oid="a29dni6">
           <Box
@@ -189,14 +185,14 @@ const App = React.memo(() => {
                     timeout={300}
                     sx={{
                       flexGrow: 1,
-                      overflow: 'hidden',
+                      overflow: "hidden",
                     }}
                   >
                     <Box
                       id="toolbar-breadcrumb-container"
                       sx={{
-                        display: 'flex',
-                        alignItems: 'center',
+                        display: "flex",
+                        alignItems: "center",
                         minWidth: 0,
                         flexGrow: 1,
                       }}

@@ -6,9 +6,9 @@ import { fadeAnimation, fadeOutAnimation } from "@/theme/animations";
 
 /**
  * 获取骨架屏样式
- * 
+ *
  * 生成骨架屏的动画和颜色样式，使用当前主题颜色。
- * 
+ *
  * @param theme - Material-UI主题对象
  * @returns 骨架屏样式对象
  */
@@ -33,9 +33,9 @@ export const getSkeletonStyles = (theme: Theme): SystemStyleObject<Theme> => ({
 
 /**
  * 获取容器过渡动画样式
- * 
+ *
  * 根据是否正在退出应用不同的动画效果。
- * 
+ *
  * @param isExiting - 是否正在退出
  * @returns 过渡动画样式对象
  */
@@ -50,9 +50,9 @@ export const getContainerTransitionStyles = (isExiting: boolean): SystemStyleObj
 
 /**
  * 骨架屏可见性Hook
- * 
+ *
  * 管理骨架屏的显示/隐藏状态和退出动画。
- * 
+ *
  * @param visible - 是否可见
  * @param onExited - 退出完成后的回调函数
  * @returns 是否正在退出

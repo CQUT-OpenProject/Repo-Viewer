@@ -7,8 +7,8 @@
  * @module hooks/useThemeTransition
  */
 
-import { useEffect, useRef } from 'react';
-import type { RefObject } from 'react';
+import { useEffect, useRef } from "react";
+import type { RefObject } from "react";
 
 /**
  * 主题切换状态 Hook
@@ -30,12 +30,12 @@ export const useThemeTransitionFlag = (): RefObject<boolean> => {
       isThemeChangingRef.current = false;
     };
 
-    window.addEventListener('theme:changing', handleThemeChanging);
-    window.addEventListener('theme:changed', handleThemeChanged);
+    window.addEventListener("theme:changing", handleThemeChanging);
+    window.addEventListener("theme:changed", handleThemeChanged);
 
     return () => {
-      window.removeEventListener('theme:changing', handleThemeChanging);
-      window.removeEventListener('theme:changed', handleThemeChanged);
+      window.removeEventListener("theme:changing", handleThemeChanging);
+      window.removeEventListener("theme:changed", handleThemeChanged);
     };
   }, []);
 

@@ -13,7 +13,7 @@ interface FullScreenPreviewProps {
 
 /**
  * 全屏预览组件
- * 
+ *
  * 提供全屏模式的预览容器，支持点击背景关闭。
  */
 const FullScreenPreview: FC<FullScreenPreviewProps> = ({

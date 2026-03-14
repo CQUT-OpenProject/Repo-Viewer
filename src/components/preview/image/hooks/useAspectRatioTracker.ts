@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import type { RefObject } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import type { RefObject } from "react";
 
 const DEFAULT_ASPECT_RATIO = 16 / 9;
 const MAX_RATIO_HISTORY = 6;
@@ -36,7 +36,11 @@ export function useAspectRatioTracker({
   const internalImgRef = useRef<HTMLImageElement | null>(null);
 
   const resolvedInitialAspectRatio = useMemo(() => {
-    if (typeof initialAspectRatio === 'number' && Number.isFinite(initialAspectRatio) && initialAspectRatio > 0) {
+    if (
+      typeof initialAspectRatio === "number" &&
+      Number.isFinite(initialAspectRatio) &&
+      initialAspectRatio > 0
+    ) {
       return initialAspectRatio;
     }
     return DEFAULT_ASPECT_RATIO;
@@ -44,11 +48,13 @@ export function useAspectRatioTracker({
 
   const ratioSamplesRef = useRef<number[]>([resolvedInitialAspectRatio]);
   const ratioBucketsRef = useRef<Map<number, number>>(
-    new Map([[getBucketKey(resolvedInitialAspectRatio), 1]])
+    new Map([[getBucketKey(resolvedInitialAspectRatio), 1]]),
   );
   const lastProcessedImageRef = useRef<string | null>(null);
   const previousNotifiedRatioRef = useRef<number>(resolvedInitialAspectRatio);
-  const [dominantAspectRatio, setDominantAspectRatio] = useState<number>(resolvedInitialAspectRatio);
+  const [dominantAspectRatio, setDominantAspectRatio] = useState<number>(
+    resolvedInitialAspectRatio,
+  );
 
   const addAspectRatioSample = useCallback((ratio: number): void => {
     if (!Number.isFinite(ratio) || ratio <= 0) {
@@ -85,74 +91,92 @@ export function useAspectRatioTracker({
       if (count > dominantCount) {
         dominantBucket = key;
         dominantCount = count;
-      } else if (count === dominantCount && Math.abs(key - bucketKey) < Math.abs(dominantBucket - bucketKey)) {
+      } else if (
+        count === dominantCount &&
+        Math.abs(key - bucketKey) < Math.abs(dominantBucket - bucketKey)
+      ) {
         dominantBucket = key;
         dominantCount = count;
       }
     });
 
-    const dominantSamples = ratioSamplesRef.current.filter(sample => getBucketKey(sample) === dominantBucket);
-    const averageDominantRatio = dominantSamples.reduce((sum, sample) => sum + sample, 0) / (dominantSamples.length > 0 ? dominantSamples.length : 1);
+    const dominantSamples = ratioSamplesRef.current.filter(
+      (sample) => getBucketKey(sample) === dominantBucket,
+    );
+    const averageDominantRatio =
+      dominantSamples.reduce((sum, sample) => sum + sample, 0) /
+      (dominantSamples.length > 0 ? dominantSamples.length : 1);
 
     if (Number.isFinite(averageDominantRatio) && averageDominantRatio > 0) {
-      setDominantAspectRatio(prev => (Math.abs(prev - averageDominantRatio) < 0.0001 ? prev : averageDominantRatio));
+      setDominantAspectRatio((prev) =>
+        Math.abs(prev - averageDominantRatio) < 0.0001 ? prev : averageDominantRatio,
+      );
     }
   }, []);
 
-  const processAspectRatioFromImage = useCallback((img: HTMLImageElement | null): void => {
-    if (img === null) {
-      return;
-    }
+  const processAspectRatioFromImage = useCallback(
+    (img: HTMLImageElement | null): void => {
+      if (img === null) {
+        return;
+      }
 
-    const src = img.currentSrc !== '' ? img.currentSrc : img.src;
-    if (src === '') {
-      return;
-    }
+      const src = img.currentSrc !== "" ? img.currentSrc : img.src;
+      if (src === "") {
+        return;
+      }
 
-    if (lastProcessedImageRef.current === src && img.dataset['rvAspectProcessed'] === 'true') {
-      return;
-    }
+      if (lastProcessedImageRef.current === src && img.dataset["rvAspectProcessed"] === "true") {
+        return;
+      }
 
-    if (img.naturalWidth <= 0 || img.naturalHeight <= 0) {
-      return;
-    }
+      if (img.naturalWidth <= 0 || img.naturalHeight <= 0) {
+        return;
+      }
 
-    const ratio = img.naturalWidth / img.naturalHeight;
-    addAspectRatioSample(ratio);
-    lastProcessedImageRef.current = src;
-    img.dataset['rvAspectProcessed'] = 'true';
-  }, [addAspectRatioSample]);
+      const ratio = img.naturalWidth / img.naturalHeight;
+      addAspectRatioSample(ratio);
+      lastProcessedImageRef.current = src;
+      img.dataset["rvAspectProcessed"] = "true";
+    },
+    [addAspectRatioSample],
+  );
 
   // 图片引用回调，用于检测缓存
-  const handleImageRef = useCallback((img: HTMLImageElement | null): void => {
-    if (imgRef !== null && imgRef !== undefined) {
-      imgRef.current = img;
-    }
-
-    internalImgRef.current = img;
-
-    if (img !== null) {
-      delete img.dataset['rvAspectProcessed'];
-
-      if (img.complete && img.naturalHeight !== 0) {
-        processAspectRatioFromImage(img);
-        onLoad();
+  const handleImageRef = useCallback(
+    (img: HTMLImageElement | null): void => {
+      if (imgRef !== null && imgRef !== undefined) {
+        imgRef.current = img;
       }
-    }
-  }, [imgRef, onLoad, processAspectRatioFromImage]);
+
+      internalImgRef.current = img;
+
+      if (img !== null) {
+        delete img.dataset["rvAspectProcessed"];
+
+        if (img.complete && img.naturalHeight !== 0) {
+          processAspectRatioFromImage(img);
+          onLoad();
+        }
+      }
+    },
+    [imgRef, onLoad, processAspectRatioFromImage],
+  );
 
   // 图片 URL 改变时重置处理状态
   useEffect(() => {
     lastProcessedImageRef.current = null;
     const currentImage = internalImgRef.current;
     if (currentImage !== null) {
-      delete currentImage.dataset['rvAspectProcessed'];
+      delete currentImage.dataset["rvAspectProcessed"];
     }
   }, [imageUrl]);
 
   // 通知宽高比变化
   useEffect(() => {
-    if (typeof onAspectRatioChange === 'function' && Math.abs(previousNotifiedRatioRef.current - dominantAspectRatio) >= 0.0001) {
+    if (
+      typeof onAspectRatioChange === "function" &&
+      Math.abs(previousNotifiedRatioRef.current - dominantAspectRatio) >= 0.0001
+    ) {
       previousNotifiedRatioRef.current = dominantAspectRatio;
       onAspectRatioChange(dominantAspectRatio);
     }

@@ -1,4 +1,4 @@
-import type { Logger, LoggerFactory } from './types';
+import type { Logger, LoggerFactory } from "./types";
 
 class VoidLogger implements Logger {
   debug(..._args: unknown[]): void {
@@ -37,4 +37,3 @@ export class VoidLoggerFactory implements LoggerFactory {
     return VoidLoggerFactory.instance;
   }
 }
-
