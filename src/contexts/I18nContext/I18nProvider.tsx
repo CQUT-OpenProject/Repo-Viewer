@@ -9,13 +9,13 @@
  * - 降级策略（加载失败时回退到默认语言）
  */
 
-import React, { useEffect, useState, useMemo } from 'react';
-import type { ReactNode } from 'react';
-import I18N from '@/utils/i18n/i18n';
-import type { Locale, ILocaleJSON } from '@/utils/i18n/types';
-import { getBrowserLocale, getLocAttributes } from '@/utils/i18n/locale';
-import { I18nContext, type I18nContextValue } from './context';
-import { logger } from '@/utils';
+import React, { useEffect, useState, useMemo } from "react";
+import type { ReactNode } from "react";
+import I18N from "@/utils/i18n/i18n";
+import type { Locale, ILocaleJSON } from "@/utils/i18n/types";
+import { getBrowserLocale, getLocAttributes } from "@/utils/i18n/locale";
+import { I18nContext, type I18nContextValue } from "./context";
+import { logger } from "@/utils";
 
 /**
  * I18n Provider 组件属性接口
@@ -32,18 +32,22 @@ interface I18nProviderProps {
 async function loadTranslations(locale: Locale): Promise<ILocaleJSON> {
   try {
     // 动态导入翻译文件
-    const translations = await import(`@/locales/${locale}/translations.json`) as { default?: ILocaleJSON } & ILocaleJSON;
+    const translations = (await import(`@/locales/${locale}/translations.json`)) as {
+      default?: ILocaleJSON;
+    } & ILocaleJSON;
     return translations.default ?? translations;
   } catch (error) {
     logger.warn(`Failed to load translations for locale: ${locale}`, error);
 
     // 如果加载失败，尝试加载默认语言（中文）
-    if (locale !== 'zh-CN') {
+    if (locale !== "zh-CN") {
       try {
-        const fallbackTranslations = await import('@/locales/zh-CN/translations.json') as { default?: ILocaleJSON } & ILocaleJSON;
+        const fallbackTranslations = (await import("@/locales/zh-CN/translations.json")) as {
+          default?: ILocaleJSON;
+        } & ILocaleJSON;
         return fallbackTranslations.default ?? fallbackTranslations;
       } catch (fallbackError) {
-        logger.error('Failed to load fallback translations', fallbackError);
+        logger.error("Failed to load fallback translations", fallbackError);
       }
     }
 
@@ -86,7 +90,7 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps): Re
           setIsLoading(false);
         }
       } catch (error) {
-        logger.error('Failed to load locale translations', error);
+        logger.error("Failed to load locale translations", error);
         if (isMounted) {
           setTranslations({});
           setIsLoading(false);
@@ -105,15 +109,15 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps): Re
 
   // 设置 HTML 属性
   useEffect(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
 
     const attributes = getLocAttributes(locale);
     const htmlElement = window.document.documentElement;
 
-    htmlElement.setAttribute('lang', attributes.lang);
-    htmlElement.setAttribute('dir', attributes.dir);
+    htmlElement.setAttribute("lang", attributes.lang);
+    htmlElement.setAttribute("dir", attributes.dir);
   }, [locale]);
 
   // 创建 I18N 实例
@@ -122,18 +126,16 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps): Re
   }, [locale, translations, isLoading]);
 
   // 上下文值
-  const contextValue: I18nContextValue = useMemo(() => ({
-    i18n,
-    t: i18n.t,
-    locale,
-  }), [i18n, locale]);
+  const contextValue: I18nContextValue = useMemo(
+    () => ({
+      i18n,
+      t: i18n.t,
+      locale,
+    }),
+    [i18n, locale],
+  );
 
   // 即使正在加载也直接渲染，因为即使没有翻译，应用也应该能运行
 
-  return (
-    <I18nContext.Provider value={contextValue}>
-      {children}
-    </I18nContext.Provider>
-  );
+  return <I18nContext.Provider value={contextValue}>{children}</I18nContext.Provider>;
 }
-

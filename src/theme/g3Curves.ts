@@ -99,7 +99,6 @@ export const G3_PRESETS = {
   } as G3CurveConfig,
 } as const;
 
-
 /**
  * 响应式圆角配置接口
  */
@@ -142,7 +141,7 @@ export const RESPONSIVE_G3_PRESETS = {
  */
 export function getResponsiveG3BorderRadius(
   preset: ResponsiveG3Config,
-  isSmallScreen: boolean
+  isSmallScreen: boolean,
 ): string {
   const config = isSmallScreen ? preset.mobile : preset.desktop;
   return createG3BorderRadius(config);

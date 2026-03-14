@@ -1,4 +1,4 @@
-import { THEME_COLORS, type ThemeColorConfig } from './palettes/themeColors';
+import { THEME_COLORS, type ThemeColorConfig } from "./palettes/themeColors";
 
 /**
  * 获取基于日期的主题索引

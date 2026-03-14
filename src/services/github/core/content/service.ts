@@ -1,36 +1,33 @@
-import axios from 'axios';
+import axios from "axios";
 
-import type {
-  GitHubContent,
-  InitialContentHydrationPayload
-} from '@/types';
-import { logger } from '@/utils';
+import type { GitHubContent, InitialContentHydrationPayload } from "@/types";
+import { logger } from "@/utils";
 
-import { RequestBatcher } from '../../RequestBatcher';
-import { getForceServerProxy, shouldUseServerAPI } from '../../config';
+import { RequestBatcher } from "../../RequestBatcher";
+import { getForceServerProxy, shouldUseServerAPI } from "../../config";
 import {
   safeValidateGitHubContentsResponse,
   filterAndNormalizeGitHubContents,
   transformGitHubContentsResponse,
-  validateGitHubContentsArray
-} from '../../schemas';
-import { getAuthHeaders } from '../Auth';
-import { USE_TOKEN_MODE, getApiUrl, getCurrentBranch } from '../Config';
+  validateGitHubContentsArray,
+} from "../../schemas";
+import { getAuthHeaders } from "../Auth";
+import { USE_TOKEN_MODE, getApiUrl, getCurrentBranch } from "../Config";
 import {
   ensureCacheInitialized,
   getCachedDirectoryContents,
   getCachedFileContent,
   isCacheAvailable,
   storeDirectoryContents,
-  storeFileContent
-} from './cacheState';
-import { buildContentsCacheKey } from './cacheKeys';
+  storeFileContent,
+} from "./cacheState";
+import { buildContentsCacheKey } from "./cacheKeys";
 import {
   consumeHydratedDirectory,
   consumeHydratedFile,
   hydrateInitialContent as hydratePayload,
-  INITIAL_CONTENT_EXCLUDE_FILES
-} from './hydrationStore';
+  INITIAL_CONTENT_EXCLUDE_FILES,
+} from "./hydrationStore";
 
 /**
  * 内容服务入口
@@ -42,7 +39,7 @@ import {
 
 const batcher = new RequestBatcher();
 
-type ContentSource = 'cache' | 'hydration' | 'network';
+type ContentSource = "cache" | "hydration" | "network";
 
 interface GetContentsOptions {
   forceRefresh?: boolean;
@@ -67,7 +64,7 @@ interface GetContentsOptions {
 export async function getContents(
   path: string,
   signal?: AbortSignal,
-  options?: GetContentsOptions
+  options?: GetContentsOptions,
 ): Promise<GitHubContent[]> {
   await ensureCacheInitialized();
 
@@ -79,14 +76,14 @@ export async function getContents(
   if (!forceRefresh) {
     const cachedContents = await getCachedDirectoryContents(cacheKey);
     if (cachedContents !== null && cachedContents !== undefined) {
-      logger.debug(`已从${isCacheAvailable() ? '主' : '降级'}缓存中获取内容: ${path}`);
-      options?.onSource?.('cache');
+      logger.debug(`已从${isCacheAvailable() ? "主" : "降级"}缓存中获取内容: ${path}`);
+      options?.onSource?.("cache");
       return cachedContents;
     }
 
     const hydratedContents = await consumeHydratedDirectory(path, branch, cacheKey);
     if (hydratedContents !== null) {
-      options?.onSource?.('hydration');
+      options?.onSource?.("hydration");
       return hydratedContents;
     }
   }
@@ -96,9 +93,9 @@ export async function getContents(
 
     if (shouldUseServerAPI()) {
       const query = new URLSearchParams();
-      query.set('action', 'getContents');
-      query.set('path', path);
-      query.set('branch', branch);
+      query.set("action", "getContents");
+      query.set("path", path);
+      query.set("branch", branch);
       const { data } = await axios.get<unknown>(`/api/github?${query.toString()}`);
       rawData = data;
       logger.debug(`通过服务端API获取内容: ${path}`);
@@ -110,8 +107,8 @@ export async function getContents(
         async () => {
           logger.debug(`API请求: ${apiUrl}`);
           const requestInit: RequestInit = {
-            method: 'GET',
-            headers: getAuthHeaders()
+            method: "GET",
+            headers: getAuthHeaders(),
           };
 
           if (signal !== undefined) {
@@ -128,10 +125,10 @@ export async function getContents(
           return json;
         },
         {
-          priority: 'high',
-          method: 'GET',
-          headers: getAuthHeaders() as Record<string, string>
-        }
+          priority: "high",
+          method: "GET",
+          headers: getAuthHeaders() as Record<string, string>,
+        },
       );
 
       logger.debug(`直接请求GitHub API获取内容: ${path}`);
@@ -147,7 +144,7 @@ export async function getContents(
 
     const contents = filterAndNormalizeGitHubContents(rawContents, {
       excludeHidden: true,
-      excludeFiles: [...INITIAL_CONTENT_EXCLUDE_FILES]
+      excludeFiles: [...INITIAL_CONTENT_EXCLUDE_FILES],
     });
 
     const contentValidation = validateGitHubContentsArray(contents);
@@ -156,7 +153,7 @@ export async function getContents(
     }
 
     await storeDirectoryContents(cacheKey, path, branch, contents);
-    options?.onSource?.('network');
+    options?.onSource?.("network");
 
     return contents;
   } catch (unknownError) {
@@ -183,7 +180,7 @@ export async function getFileContent(fileUrl: string): Promise<string> {
 
   const cachedContent = await getCachedFileContent(cacheKey);
   if (cachedContent !== undefined && cachedContent !== null) {
-    logger.debug(`从${isCacheAvailable() ? '主' : '降级'}缓存获取文件内容: ${fileUrl}`);
+    logger.debug(`从${isCacheAvailable() ? "主" : "降级"}缓存获取文件内容: ${fileUrl}`);
     return cachedContent;
   }
 
@@ -200,14 +197,14 @@ export async function getFileContent(fileUrl: string): Promise<string> {
       }
 
       let proxyUrl: string;
-      if (fileUrl.includes('raw.githubusercontent.com')) {
-        proxyUrl = fileUrl.replace('https://raw.githubusercontent.com', '/github-raw');
+      if (fileUrl.includes("raw.githubusercontent.com")) {
+        proxyUrl = fileUrl.replace("https://raw.githubusercontent.com", "/github-raw");
       } else {
         proxyUrl = fileUrl;
       }
 
       return fetch(proxyUrl, {
-        headers: USE_TOKEN_MODE ? getAuthHeaders() : {}
+        headers: USE_TOKEN_MODE ? getAuthHeaders() : {},
       });
     })();
 
@@ -252,5 +249,5 @@ export function clearBatcherCache(): void {
  * @returns void
  */
 export const hydrateInitialContent: (
-  payload: InitialContentHydrationPayload | null | undefined
+  payload: InitialContentHydrationPayload | null | undefined,
 ) => void = hydratePayload;

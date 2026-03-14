@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
-import type { GitHubContent } from '@/types';
-import { getPreviewFromUrl } from '@/utils/routing/urlManager';
-import { logger } from '@/utils';
+import { useEffect, useRef } from "react";
+import type { GitHubContent } from "@/types";
+import { getPreviewFromUrl } from "@/utils/routing/urlManager";
+import { logger } from "@/utils";
 
 interface UsePreviewFromUrlOptions {
   contents: GitHubContent[];
@@ -23,7 +23,7 @@ export function usePreviewFromUrl({
   error,
   previewingItem,
   previewingImageItem,
-  onSelectFile
+  onSelectFile,
 }: UsePreviewFromUrlOptions): void {
   const currentPreviewItemRef = useRef<GitHubContent | null>(null);
 
@@ -79,13 +79,5 @@ export function usePreviewFromUrl({
     };
 
     void loadPreviewFromUrl();
-  }, [
-    loading,
-    error,
-    contents,
-    previewingItem,
-    previewingImageItem,
-    onSelectFile
-  ]);
+  }, [loading, error, contents, previewingItem, previewingImageItem, onSelectFile]);
 }
-

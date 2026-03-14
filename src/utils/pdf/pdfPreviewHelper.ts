@@ -10,13 +10,13 @@
  * @module pdfPreviewHelper
  */
 
-import type { Theme } from '@mui/material';
+import type { Theme } from "@mui/material";
 import {
   extractPDFThemeColors,
   generatePDFLoadingHTML,
   generatePDFErrorHTML,
-  type PDFLoadingTranslations
-} from './pdfLoading';
+  type PDFLoadingTranslations,
+} from "./pdfLoading";
 
 /**
  * PDF 预览配置选项
@@ -45,9 +45,9 @@ export interface PDFPreviewOptions {
 function initializePDFWindow(
   fileName: string,
   theme: Theme,
-  translations: PDFLoadingTranslations
+  translations: PDFLoadingTranslations,
 ): Window | null {
-  const newTab = window.open('', '_blank');
+  const newTab = window.open("", "_blank");
 
   if (newTab === null) {
     return null;
@@ -56,11 +56,11 @@ function initializePDFWindow(
   const themeColors = extractPDFThemeColors(theme);
   const loadingHTML = generatePDFLoadingHTML(fileName, themeColors, translations);
   const parser = new DOMParser();
-  const doc = parser.parseFromString(loadingHTML, 'text/html');
+  const doc = parser.parseFromString(loadingHTML, "text/html");
 
   newTab.document.documentElement.innerHTML = doc.documentElement.innerHTML;
-  Array.from(doc.head.children).forEach(child => {
-    if (child.tagName === 'STYLE' || child.tagName === 'SCRIPT' || child.tagName === 'META') {
+  Array.from(doc.head.children).forEach((child) => {
+    if (child.tagName === "STYLE" || child.tagName === "SCRIPT" || child.tagName === "META") {
       newTab.document.head.appendChild(child.cloneNode(true));
     }
   });
@@ -78,7 +78,7 @@ function initializePDFWindow(
 function bindCancelHandler(
   newTab: Window,
   abortController: AbortController,
-  translations: PDFLoadingTranslations
+  translations: PDFLoadingTranslations,
 ): void {
   const cancel = (): void => {
     try {
@@ -87,20 +87,20 @@ function bindCancelHandler(
       // 忽略取消错误
     }
 
-    const status = newTab.document.getElementById('status');
+    const status = newTab.document.getElementById("status");
     if (status !== null) {
       status.textContent = translations.cancelled;
     }
 
-    const progress = newTab.document.getElementById('progress');
+    const progress = newTab.document.getElementById("progress");
     if (progress !== null) {
-      progress.textContent = '';
+      progress.textContent = "";
     }
 
-    const btn = newTab.document.getElementById('cancel-btn') as HTMLButtonElement | null;
+    const btn = newTab.document.getElementById("cancel-btn") as HTMLButtonElement | null;
     if (btn !== null) {
       btn.disabled = true;
-      btn.style.display = 'none';
+      btn.style.display = "none";
     }
 
     window.setTimeout(() => {
@@ -116,9 +116,9 @@ function bindCancelHandler(
   (newTab as Window & { cancelDownload?: () => void }).cancelDownload = cancel;
   (newTab as Window & { abortController?: AbortController }).abortController = abortController;
 
-  const btn = newTab.document.getElementById('cancel-btn');
+  const btn = newTab.document.getElementById("cancel-btn");
   if (btn !== null) {
-    btn.addEventListener('click', cancel, { once: true });
+    btn.addEventListener("click", cancel, { once: true });
   }
 }
 
@@ -140,27 +140,35 @@ function formatBytes(bytes: number): string {
  * @param total - 总字节数
  * @param translations - 翻译文本
  */
-function updateProgress(newTab: Window, loaded: number, total: number, translations: PDFLoadingTranslations): void {
-  const progressEl = newTab.document.getElementById('progress');
-  const progressCircle = newTab.document.getElementById('progress-circle') as SVGCircleElement | null;
+function updateProgress(
+  newTab: Window,
+  loaded: number,
+  total: number,
+  translations: PDFLoadingTranslations,
+): void {
+  const progressEl = newTab.document.getElementById("progress");
+  const progressCircle = newTab.document.getElementById(
+    "progress-circle",
+  ) as SVGCircleElement | null;
 
   const pct = total > 0 ? Math.min(100, Math.round((loaded / total) * 100)) : null;
 
   // 更新文本进度
   if (progressEl !== null) {
-    progressEl.textContent = total > 0 && pct !== null
-      ? translations.downloadedWithProgress
-          .replace('@@loaded@@', formatBytes(loaded))
-          .replace('@@total@@', formatBytes(total))
-          .replace('@@percent@@', pct.toString())
-      : translations.downloaded.replace('@@loaded@@', formatBytes(loaded));
+    progressEl.textContent =
+      total > 0 && pct !== null
+        ? translations.downloadedWithProgress
+            .replace("@@loaded@@", formatBytes(loaded))
+            .replace("@@total@@", formatBytes(total))
+            .replace("@@percent@@", pct.toString())
+        : translations.downloaded.replace("@@loaded@@", formatBytes(loaded));
   }
 
   // 更新进度条
   if (progressCircle !== null && total > 0 && pct !== null) {
-    progressCircle.classList.add('determinate');
+    progressCircle.classList.add("determinate");
     const circumference = 2 * Math.PI * 20; // radius = 20
-    const dashOffset = circumference - (circumference * pct / 100);
+    const dashOffset = circumference - (circumference * pct) / 100;
     progressCircle.style.strokeDashoffset = dashOffset.toString();
   }
 }
@@ -179,22 +187,23 @@ async function downloadAndDisplayPDF(
   downloadUrl: string,
   fileName: string,
   themeColors: ReturnType<typeof extractPDFThemeColors>,
-  translations: PDFLoadingTranslations
+  translations: PDFLoadingTranslations,
 ): Promise<void> {
   const abortController = new AbortController();
   bindCancelHandler(newTab, abortController, translations);
 
   try {
     const resp = await fetch(downloadUrl, {
-      mode: 'cors',
-      signal: abortController.signal
+      mode: "cors",
+      signal: abortController.signal,
     });
 
     if (!resp.ok || resp.body === null) {
       throw new Error(`HTTP ${resp.status.toString()}`);
     }
 
-    const contentLengthHeader = resp.headers.get('Content-Length') ?? resp.headers.get('content-length');
+    const contentLengthHeader =
+      resp.headers.get("Content-Length") ?? resp.headers.get("content-length");
     const total = contentLengthHeader !== null ? parseInt(contentLengthHeader, 10) : 0;
     let loaded = 0;
     const reader = resp.body.getReader();
@@ -208,7 +217,7 @@ async function downloadAndDisplayPDF(
       result = await reader.read();
     }
 
-    const blob = new Blob(chunks as BlobPart[], { type: 'application/pdf' });
+    const blob = new Blob(chunks as BlobPart[], { type: "application/pdf" });
     const blobUrl = URL.createObjectURL(blob);
 
     // 60秒后清理 blob URL
@@ -216,38 +225,44 @@ async function downloadAndDisplayPDF(
       URL.revokeObjectURL(blobUrl);
     }, 60_000);
 
-    const viewerEl = newTab.document.getElementById('viewer') as HTMLIFrameElement | null;
+    const viewerEl = newTab.document.getElementById("viewer") as HTMLIFrameElement | null;
     if (viewerEl !== null) {
       viewerEl.src = blobUrl;
-      viewerEl.style.visibility = 'visible';
+      viewerEl.style.visibility = "visible";
     } else {
       newTab.location.replace(blobUrl);
     }
 
-    const loaderEl = newTab.document.getElementById('loader');
+    const loaderEl = newTab.document.getElementById("loader");
     if (loaderEl !== null) {
-      loaderEl.style.display = 'none';
+      loaderEl.style.display = "none";
     }
 
     // 隐藏取消按钮
-    const cancelBtn = newTab.document.getElementById('cancel-btn');
+    const cancelBtn = newTab.document.getElementById("cancel-btn");
     if (cancelBtn !== null) {
-      cancelBtn.style.display = 'none';
+      cancelBtn.style.display = "none";
     }
 
-    newTab.document.title = fileName !== '' ? fileName : 'PDF';
+    newTab.document.title = fileName !== "" ? fileName : "PDF";
   } catch (error: unknown) {
-    const errorObj = error instanceof Error ? error : new Error('未知错误');
+    const errorObj = error instanceof Error ? error : new Error("未知错误");
 
     // 检查是否是用户主动取消
-    if (errorObj.name === 'AbortError') {
+    if (errorObj.name === "AbortError") {
       return; // 用户取消，不显示错误信息
     }
 
     // 显示错误页面
-    const loaderEl = newTab.document.getElementById('loader');
+    const loaderEl = newTab.document.getElementById("loader");
     if (loaderEl !== null) {
-      loaderEl.innerHTML = generatePDFErrorHTML(fileName, errorObj.message, downloadUrl, themeColors, translations);
+      loaderEl.innerHTML = generatePDFErrorHTML(
+        fileName,
+        errorObj.message,
+        downloadUrl,
+        themeColors,
+        translations,
+      );
     } else {
       newTab.location.replace(downloadUrl);
     }
@@ -260,11 +275,11 @@ async function downloadAndDisplayPDF(
  * @param downloadUrl - PDF 下载 URL
  */
 function createFallbackLink(downloadUrl: string): void {
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = downloadUrl;
-  a.target = '_blank';
-  a.rel = 'noopener';
-  a.style.display = 'none';
+  a.target = "_blank";
+  a.rel = "noopener";
+  a.style.display = "none";
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -314,4 +329,3 @@ export async function openPDFPreview(options: PDFPreviewOptions): Promise<void> 
   // 下载并显示 PDF
   await downloadAndDisplayPDF(newTab, finalDownloadUrl, fileName, themeColors, translations);
 }
-

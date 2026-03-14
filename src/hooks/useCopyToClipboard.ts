@@ -52,7 +52,7 @@ interface UseCopyToClipboardReturn {
  * @returns 包含复制状态、复制函数和重置函数的对象
  */
 export function useCopyToClipboard(
-  options: UseCopyToClipboardOptions = {}
+  options: UseCopyToClipboardOptions = {},
 ): UseCopyToClipboardReturn {
   const { resetDelay = COPY_RESET_DELAY, onSuccess, onError } = options;
   const [copied, setCopied] = useState(false);
@@ -111,7 +111,7 @@ export function useCopyToClipboard(
         return false;
       }
     },
-    [resetDelay, onSuccess, onError]
+    [resetDelay, onSuccess, onError],
   );
 
   return { copied, copy, reset };

@@ -23,7 +23,7 @@ interface AppContextProviderProps {
 
 /**
  * 应用上下文提供者组件
- * 
+ *
  * 统一管理应用的内容、预览和下载状态，为子组件提供全局上下文。
  */
 export function AppContextProvider({ children }: AppContextProviderProps): ReactElement {
@@ -174,14 +174,10 @@ export function AppContextProvider({ children }: AppContextProviderProps): React
     ],
   );
 
-
-
   return (
     <ContentContext.Provider value={contentValue}>
       <PreviewContext.Provider value={previewValue}>
-        <DownloadContext.Provider value={downloadValue}>
-          {children}
-        </DownloadContext.Provider>
+        <DownloadContext.Provider value={downloadValue}>{children}</DownloadContext.Provider>
       </PreviewContext.Provider>
     </ContentContext.Provider>
   );

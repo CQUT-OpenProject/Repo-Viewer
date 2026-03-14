@@ -1,8 +1,8 @@
-import React from 'react';
-import { Box, useTheme } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
-import { LazyMarkdownPreview, LazyImagePreview } from '@/utils/lazy-loading';
-import type { GitHubContent } from '@/types';
+import React from "react";
+import { Box, useTheme } from "@mui/material";
+import { motion, AnimatePresence } from "framer-motion";
+import { LazyMarkdownPreview, LazyImagePreview } from "@/utils/lazy-loading";
+import type { GitHubContent } from "@/types";
 
 /**
  * 预览覆盖层组件属性接口
@@ -54,7 +54,7 @@ const PreviewOverlay: React.FC<PreviewOverlayProps> = ({
   onNextImage,
   isSmallScreen,
   currentBranch,
-  onClose
+  onClose,
 }) => {
   const theme = useTheme();
 
@@ -72,16 +72,16 @@ const PreviewOverlay: React.FC<PreviewOverlayProps> = ({
               transition: {
                 duration: 0.125,
                 ease: [0.4, 0, 0.2, 1],
-                delay: 0.02
-              }
+                delay: 0.02,
+              },
             }}
             exit={{
               opacity: 0,
               y: 50,
               transition: {
                 duration: 0.125,
-                ease: [0.4, 0, 0.2, 1]
-              }
+                ease: [0.4, 0, 0.2, 1],
+              },
             }}
             style={{
               position: "fixed",
@@ -94,8 +94,8 @@ const PreviewOverlay: React.FC<PreviewOverlayProps> = ({
           >
             <Box
               sx={{
-                width: '100%',
-                height: '100%',
+                width: "100%",
+                height: "100%",
                 bgcolor: "background.default",
                 overflow: "auto",
                 p: { xs: 1, sm: 2, md: 3 },
@@ -142,4 +142,3 @@ const PreviewOverlay: React.FC<PreviewOverlayProps> = ({
 };
 
 export default PreviewOverlay;
-

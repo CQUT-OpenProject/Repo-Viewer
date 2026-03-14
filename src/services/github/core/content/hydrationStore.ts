@@ -4,13 +4,13 @@ import type {
   GitHubContent,
   InitialContentDirectoryEntry,
   InitialContentFileEntry,
-  InitialContentHydrationPayload
-} from '@/types';
-import { logger } from '@/utils';
+  InitialContentHydrationPayload,
+} from "@/types";
+import { logger } from "@/utils";
 
-import { filterAndNormalizeGitHubContents } from '../../schemas';
-import { storeDirectoryContents, storeFileContent } from './cacheState';
-import { normalizeDirectoryPath, normalizeFilePath, escapeRegExp } from './pathUtils';
+import { filterAndNormalizeGitHubContents } from "../../schemas";
+import { storeDirectoryContents, storeFileContent } from "./cacheState";
+import { normalizeDirectoryPath, normalizeFilePath, escapeRegExp } from "./pathUtils";
 
 /**
  * 首屏注水状态管理
@@ -29,20 +29,18 @@ interface HydratedFileEntry {
   sha?: string;
 }
 
-export const INITIAL_CONTENT_EXCLUDE_FILES = ['.gitkeep', 'Thumbs.db', '.DS_Store'] as const;
+export const INITIAL_CONTENT_EXCLUDE_FILES = [".gitkeep", "Thumbs.db", ".DS_Store"] as const;
 
 const initialDirectoryStore = new Map<DirectoryStoreKey, GitHubContent[]>();
 const initialFileStore = new Map<FileStoreKey, HydratedFileEntry>();
 
-let initialHydrationMeta:
-  | {
-      branch: string;
-      repoOwner: string;
-      repoName: string;
-      version: number;
-      generatedAt?: string;
-    }
-  | null = null;
+let initialHydrationMeta: {
+  branch: string;
+  repoOwner: string;
+  repoName: string;
+  version: number;
+  generatedAt?: string;
+} | null = null;
 
 let allowReadmeHydration = false;
 
@@ -56,16 +54,16 @@ const isHydrationActiveForBranch = (branch: string): boolean =>
   initialHydrationMeta !== null && initialHydrationMeta.branch === branch;
 
 const isReadmePath = (filePath: string): boolean => {
-  const filename = filePath.split('/').pop()?.toLowerCase() ?? '';
-  return filename.includes('readme');
+  const filename = filePath.split("/").pop()?.toLowerCase() ?? "";
+  return filename.includes("readme");
 };
 
 const stripSearchAndHash = (value: string): string => {
-  if (value.startsWith('http://') || value.startsWith('https://')) {
+  if (value.startsWith("http://") || value.startsWith("https://")) {
     try {
       const parsed = new URL(value);
-      parsed.search = '';
-      parsed.hash = '';
+      parsed.search = "";
+      parsed.hash = "";
       return parsed.toString();
     } catch {
       return value.split(/[?#]/u)[0] ?? value;
@@ -93,7 +91,7 @@ const extractPathFromFileUrl = (fileUrl: string): string | null => {
   const sanitized = stripSearchAndHash(fileUrl);
   const { repoOwner, repoName, branch } = initialHydrationMeta;
 
-  if (repoOwner === '' || repoName === '' || branch === '') {
+  if (repoOwner === "" || repoName === "" || branch === "") {
     return null;
   }
 
@@ -101,19 +99,25 @@ const extractPathFromFileUrl = (fileUrl: string): string | null => {
   const repoPattern = escapeRegExp(repoName);
   const branchPattern = escapeRegExp(branch);
 
-  const rawPattern = new RegExp(`https?:\/\/raw\.githubusercontent\.com\/${ownerPattern}\/${repoPattern}\/${branchPattern}\/(.+)`, 'iu');
+  const rawPattern = new RegExp(
+    `https?://raw\\.githubusercontent\\.com/${ownerPattern}/${repoPattern}/${branchPattern}/(.+)`,
+    "iu",
+  );
   const rawMatch = sanitized.match(rawPattern);
-  if (rawMatch?.[1] !== undefined && rawMatch[1] !== '') {
+  if (rawMatch?.[1] !== undefined && rawMatch[1] !== "") {
     return normalizeFilePath(decodeURIComponent(rawMatch[1]));
   }
 
-  const relativePattern = new RegExp(`^\/github-raw\/${ownerPattern}\/${repoPattern}\/${branchPattern}\/(.+)`, 'iu');
+  const relativePattern = new RegExp(
+    `^/github-raw/${ownerPattern}/${repoPattern}/${branchPattern}/(.+)`,
+    "iu",
+  );
   const relativeMatch = sanitized.match(relativePattern);
-  if (relativeMatch?.[1] !== undefined && relativeMatch[1] !== '') {
+  if (relativeMatch?.[1] !== undefined && relativeMatch[1] !== "") {
     return normalizeFilePath(decodeURIComponent(relativeMatch[1]));
   }
 
-  const proxyIndex = sanitized.indexOf('https://raw.githubusercontent.com/');
+  const proxyIndex = sanitized.indexOf("https://raw.githubusercontent.com/");
   if (proxyIndex > 0) {
     const nested = sanitized.slice(proxyIndex);
     return extractPathFromFileUrl(nested);
@@ -132,17 +136,17 @@ const extractPathFromFileUrl = (fileUrl: string): string | null => {
  * @returns 解码后的文件文本内容
  */
 const decodeInitialFileContent = (entry: InitialContentFileEntry): string => {
-  if (entry.encoding === 'base64') {
+  if (entry.encoding === "base64") {
     try {
-      if (typeof window !== 'undefined' && typeof window.atob === 'function') {
+      if (typeof window !== "undefined" && typeof window.atob === "function") {
         const binaryString = window.atob(entry.content);
-        const bytes = Uint8Array.from(binaryString, char => char.charCodeAt(0));
+        const bytes = Uint8Array.from(binaryString, (char) => char.charCodeAt(0));
         const decoder = new TextDecoder();
         return decoder.decode(bytes);
       }
     } catch (unknownError) {
       const cause = unknownError instanceof Error ? unknownError : new Error(String(unknownError));
-      logger.warn('ContentHydration: Base64 解码失败，已回退为原始字符串', cause);
+      logger.warn("ContentHydration: Base64 解码失败，已回退为原始字符串", cause);
     }
   }
 
@@ -156,9 +160,9 @@ const decodeInitialFileContent = (entry: InitialContentFileEntry): string => {
  * @returns 深拷贝后的内容数组
  */
 const cloneGitHubContents = (contents: GitHubContent[]): GitHubContent[] =>
-  contents.map(item => ({
+  contents.map((item) => ({
     ...item,
-    ...(item._links !== undefined ? { _links: { ...item._links } } : {})
+    ...(item._links !== undefined ? { _links: { ...item._links } } : {}),
   }));
 
 /**
@@ -172,7 +176,7 @@ const cleanupInitialHydrationStateIfEmpty = (): void => {
     initialDirectoryStore.size === 0 &&
     initialFileStore.size === 0
   ) {
-    logger.debug('ContentHydration: 首屏注水数据已全部消费');
+    logger.debug("ContentHydration: 首屏注水数据已全部消费");
     initialHydrationMeta = null;
     allowReadmeHydration = false;
   }
@@ -191,7 +195,7 @@ const registerHydrationDirectory = (branch: string, entry: InitialContentDirecto
   const cloned = cloneGitHubContents(entry.contents);
   const sanitized = filterAndNormalizeGitHubContents(cloned, {
     excludeHidden: true,
-    excludeFiles: [...INITIAL_CONTENT_EXCLUDE_FILES]
+    excludeFiles: [...INITIAL_CONTENT_EXCLUDE_FILES],
   });
   initialDirectoryStore.set(key, sanitized);
 };
@@ -209,10 +213,10 @@ const registerHydrationFile = (
   branch: string,
   owner: string,
   repo: string,
-  entry: InitialContentFileEntry
+  entry: InitialContentFileEntry,
 ): void => {
   const normalizedPath = normalizeFilePath(entry.path);
-  if (normalizedPath === '' || (!allowReadmeHydration && isReadmePath(normalizedPath))) {
+  if (normalizedPath === "" || (!allowReadmeHydration && isReadmePath(normalizedPath))) {
     return;
   }
 
@@ -222,18 +226,18 @@ const registerHydrationFile = (
   const hydratedEntry: HydratedFileEntry = {
     path: normalizedPath,
     content,
-    downloadUrl: entry.downloadUrl ?? null
+    downloadUrl: entry.downloadUrl ?? null,
   };
 
-  if (typeof entry.sha === 'string') {
+  if (typeof entry.sha === "string") {
     hydratedEntry.sha = entry.sha;
   }
 
   initialFileStore.set(key, hydratedEntry);
 
   if (initialHydrationMeta !== null) {
-    initialHydrationMeta.repoOwner = owner !== '' ? owner : initialHydrationMeta.repoOwner;
-    initialHydrationMeta.repoName = repo !== '' ? repo : initialHydrationMeta.repoName;
+    initialHydrationMeta.repoOwner = owner !== "" ? owner : initialHydrationMeta.repoOwner;
+    initialHydrationMeta.repoName = repo !== "" ? repo : initialHydrationMeta.repoName;
   }
 };
 
@@ -248,7 +252,7 @@ const registerHydrationFile = (
 export async function consumeHydratedDirectory(
   path: string,
   branch: string,
-  cacheKey: string
+  cacheKey: string,
 ): Promise<GitHubContent[] | null> {
   if (!isHydrationActiveForBranch(branch)) {
     return null;
@@ -263,7 +267,7 @@ export async function consumeHydratedDirectory(
   initialDirectoryStore.delete(key);
   await storeDirectoryContents(cacheKey, path, branch, contents);
   cleanupInitialHydrationStateIfEmpty();
-  logger.debug(`ContentHydration: 使用首屏注水目录数据 -> ${path === '' ? '/' : path}`);
+  logger.debug(`ContentHydration: 使用首屏注水目录数据 -> ${path === "" ? "/" : path}`);
   return contents;
 }
 
@@ -278,14 +282,14 @@ export async function consumeHydratedDirectory(
 export async function consumeHydratedFile(
   fileUrl: string,
   branch: string,
-  cacheKey: string
+  cacheKey: string,
 ): Promise<string | null> {
   if (!isHydrationActiveForBranch(branch)) {
     return null;
   }
 
   const path = extractPathFromFileUrl(fileUrl);
-  if (path === null || path === '') {
+  if (path === null || path === "") {
     return null;
   }
 
@@ -308,7 +312,9 @@ export async function consumeHydratedFile(
  * @param payload - 首屏注水载荷，可能为 null 或 undefined
  * @returns void
  */
-export function hydrateInitialContent(payload: InitialContentHydrationPayload | null | undefined): void {
+export function hydrateInitialContent(
+  payload: InitialContentHydrationPayload | null | undefined,
+): void {
   if (payload === undefined || payload === null) {
     allowReadmeHydration = false;
     return;
@@ -321,21 +327,21 @@ export function hydrateInitialContent(payload: InitialContentHydrationPayload | 
     const branch = payload.branch;
     const repoOwner = payload.repo.owner;
     const repoName = payload.repo.name;
-    allowReadmeHydration = payload.metadata?.['allowReadmeHydration'] === true;
+    allowReadmeHydration = payload.metadata?.["allowReadmeHydration"] === true;
 
     initialHydrationMeta = {
       branch,
       repoOwner,
       repoName,
       version: payload.version,
-      generatedAt: payload.generatedAt
+      generatedAt: payload.generatedAt,
     };
 
-    payload.directories.forEach(directory => {
+    payload.directories.forEach((directory) => {
       registerHydrationDirectory(branch, directory);
     });
 
-    payload.files.forEach(file => {
+    payload.files.forEach((file) => {
       registerHydrationFile(branch, repoOwner, repoName, file);
     });
 
@@ -345,14 +351,14 @@ export function hydrateInitialContent(payload: InitialContentHydrationPayload | 
       return;
     }
 
-    logger.debug('ContentHydration: 首屏注水数据已载入', {
+    logger.debug("ContentHydration: 首屏注水数据已载入", {
       branch,
       directories: initialDirectoryStore.size,
-      files: initialFileStore.size
+      files: initialFileStore.size,
     });
   } catch (unknownError) {
     const cause = unknownError instanceof Error ? unknownError : new Error(String(unknownError));
-    logger.warn('ContentHydration: 首屏注水数据处理失败', cause);
+    logger.warn("ContentHydration: 首屏注水数据处理失败", cause);
     initialDirectoryStore.clear();
     initialFileStore.clear();
     initialHydrationMeta = null;

@@ -4,7 +4,7 @@ import type {
   InterpolationOptions,
   TranslatorOptions,
   ITranslator,
-} from './types';
+} from "./types";
 
 const DEFAULT_MISSING_FN: (key: string) => string = (key: string): string => `**${key}**`;
 const DEFAULT_INTERPOLATION_REGEX = /@@(.*?)@@/g;
@@ -31,9 +31,8 @@ export function interpolateString(
     function (expression: string, argument: string) {
       const optionHasProperty = options.hasOwnProperty(argument);
       const optionType = typeof options[argument];
-      const argumentIsUndefined = optionType === 'undefined';
-      const argumentIsValid =
-        optionType === 'string' || optionType === 'number';
+      const argumentIsUndefined = optionType === "undefined";
+      const argumentIsValid = optionType === "string" || optionType === "number";
       let value: string = expression;
 
       if (optionHasProperty && argumentIsValid) {
@@ -43,13 +42,10 @@ export function interpolateString(
         }
 
         // 如果是数字类型，使用本地化格式
-        if (
-          optionType === 'number' &&
-          options.hasOwnProperty('count')
-        ) {
-          value = (validValue as number).toLocaleString([locale, 'en-US']);
+        if (optionType === "number" && options.hasOwnProperty("count")) {
+          value = (validValue as number).toLocaleString([locale, "en-US"]);
         } else {
-          value = typeof validValue === 'string' ? validValue : String(validValue);
+          value = typeof validValue === "string" ? validValue : String(validValue);
         }
       } else if (onMissingInterpolationFn !== null && argumentIsUndefined) {
         onMissingInterpolationFn(key, value);
@@ -68,21 +64,17 @@ export function interpolateString(
  * @param locale - 语言代码
  * @returns 复数形式的键，如 "item.one" 或 "item.other"
  */
-export const getPlural = (
-  count: number,
-  key: string,
-  locale: Locale,
-): string => {
-  const parts = locale.split('-');
-  const lang = parts[0]?.toLowerCase() ?? '';
+export const getPlural = (count: number, key: string, locale: Locale): string => {
+  const parts = locale.split("-");
+  const lang = parts[0]?.toLowerCase() ?? "";
 
   // 对于中文，通常不需要复数形式
-  if (lang === 'zh') {
+  if (lang === "zh") {
     return key;
   }
 
   // 对于英文等语言，使用简单的复数规则
-  if (lang === 'en' || lang.startsWith('en')) {
+  if (lang === "en" || lang.startsWith("en")) {
     return count === 1 ? `${key}.one` : `${key}.other`;
   }
 
@@ -95,11 +87,11 @@ export const getPlural = (
  * 支持点号分隔的键路径，如 "search.results.empty"
  */
 function getNestedValue(obj: ILocaleJSON, path: string): string | null {
-  const keys = path.split('.');
+  const keys = path.split(".");
   let current: string | ILocaleJSON = obj;
 
   for (const key of keys) {
-    if (typeof current === 'object' && key in current) {
+    if (typeof current === "object" && key in current) {
       const nextValue: string | ILocaleJSON | undefined = current[key];
       if (nextValue === undefined) {
         return null;
@@ -110,7 +102,7 @@ function getNestedValue(obj: ILocaleJSON, path: string): string | null {
     }
   }
 
-  return typeof current === 'string' ? current : null;
+  return typeof current === "string" ? current : null;
 }
 
 /**
@@ -124,22 +116,15 @@ class Translator implements ITranslator {
   private readonly onMissingInterpolationFn: ((key: string, interpolation: string) => void) | null;
   private readonly translations: ILocaleJSON;
 
-  constructor(
-    locale: Locale,
-    phrases: ILocaleJSON,
-    options: TranslatorOptions = {},
-  ) {
-    const {
-      onMissingKeyFn = DEFAULT_MISSING_FN,
-      onMissingInterpolationFn = null,
-    } = options;
+  constructor(locale: Locale, phrases: ILocaleJSON, options: TranslatorOptions = {}) {
+    const { onMissingKeyFn = DEFAULT_MISSING_FN, onMissingInterpolationFn = null } = options;
 
     this.locale = locale;
     this.translations = phrases;
 
     // 将嵌套对象扁平化为 Map
     this.translationMap = new Map();
-    this.flattenTranslations(phrases, '');
+    this.flattenTranslations(phrases, "");
 
     this.onMissingKeyFn = onMissingKeyFn;
     this.onMissingInterpolationFn = onMissingInterpolationFn;
@@ -152,9 +137,9 @@ class Translator implements ITranslator {
     for (const [key, value] of Object.entries(obj)) {
       const fullKey = prefix !== "" ? `${prefix}.${key}` : key;
 
-      if (typeof value === 'string') {
+      if (typeof value === "string") {
         this.translationMap.set(fullKey, value);
-      } else if (typeof value === 'object' && !Array.isArray(value)) {
+      } else if (typeof value === "object" && !Array.isArray(value)) {
         this.flattenTranslations(value, fullKey);
       }
     }

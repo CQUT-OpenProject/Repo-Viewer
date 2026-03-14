@@ -2,10 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 * {
-  transition: background-color 300ms cubic-bezier(0.05, 0.01, 0.5, 1.0),
-              color 300ms cubic-bezier(0.05, 0.01, 0.5, 1.0),
-              opacity 300ms cubic-bezier(0.05, 0.01, 0.5, 1.0),
-              transform 300ms cubic-bezier(0.05, 0.01, 0.5, 1.0);
+  transition:
+    background-color 300ms cubic-bezier(0.05, 0.01, 0.5, 1),
+    color 300ms cubic-bezier(0.05, 0.01, 0.5, 1),
+    opacity 300ms cubic-bezier(0.05, 0.01, 0.5, 1),
+    transform 300ms cubic-bezier(0.05, 0.01, 0.5, 1);
 }
 body {
   position: relative;
@@ -22,7 +23,7 @@ body::after {
   opacity: 0;
   pointer-events: none;
   z-index: -1;
-  transition: opacity 600ms cubic-bezier(0.05, 0.01, 0.5, 1.0);
+  transition: opacity 600ms cubic-bezier(0.05, 0.01, 0.5, 1);
   will-change: opacity;
 }
 body.theme-transition::after {
@@ -34,9 +35,10 @@ body.theme-transition::after {
 .MuiDrawer-paper,
 .MuiCard-root,
 .MuiPaper-root {
-  transition: background-color 600ms cubic-bezier(0.05, 0.01, 0.5, 1.0),
-              opacity 600ms cubic-bezier(0.05, 0.01, 0.5, 1.0),
-              transform 600ms cubic-bezier(0.05, 0.01, 0.5, 1.0);
+  transition:
+    background-color 600ms cubic-bezier(0.05, 0.01, 0.5, 1),
+    opacity 600ms cubic-bezier(0.05, 0.01, 0.5, 1),
+    transform 600ms cubic-bezier(0.05, 0.01, 0.5, 1);
 }
 body.theme-transition .MuiContainer-root {
   transform: scale(0.98);
@@ -49,8 +51,9 @@ body.theme-transition .MuiAppBar-root {
 body.theme-transition .file-list-container {
   transform: scale(0.98) !important;
   opacity: 0.4 !important;
-  transition: transform 700ms cubic-bezier(0.1, 0.0, 0.2, 1.0),
-              opacity 700ms cubic-bezier(0.1, 0.0, 0.2, 1.0) !important;
+  transition:
+    transform 700ms cubic-bezier(0.1, 0, 0.2, 1),
+    opacity 700ms cubic-bezier(0.1, 0, 0.2, 1) !important;
   will-change: transform, opacity;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
@@ -60,8 +63,9 @@ body.theme-transition .file-list-container {
 body.theme-transition .readme-container {
   transform: scale(0.96) !important;
   opacity: 0.2 !important;
-  transition: transform 600ms cubic-bezier(0.05, 0.01, 0.5, 1.0),
-              opacity 600ms cubic-bezier(0.05, 0.01, 0.5, 1.0) !important;
+  transition:
+    transform 600ms cubic-bezier(0.05, 0.01, 0.5, 1),
+    opacity 600ms cubic-bezier(0.05, 0.01, 0.5, 1) !important;
   will-change: transform, opacity;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
@@ -71,8 +75,9 @@ body.theme-transition .readme-container {
 body.theme-transition .MuiBreadcrumbs-root {
   transform: translateY(-3px) !important;
   opacity: 0.7 !important;
-  transition: transform 600ms cubic-bezier(0.05, 0.01, 0.5, 1.0),
-              opacity 600ms cubic-bezier(0.05, 0.01, 0.5, 1.0) !important;
+  transition:
+    transform 600ms cubic-bezier(0.05, 0.01, 0.5, 1),
+    opacity 600ms cubic-bezier(0.05, 0.01, 0.5, 1) !important;
   will-change: transform, opacity;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
@@ -81,7 +86,7 @@ body.theme-transition .MuiBreadcrumbs-root {
 }
 body.theme-transition .MuiLinearProgress-root {
   opacity: 1 !important;
-  transition: opacity 600ms cubic-bezier(0.05, 0.01, 0.5, 1.0) !important;
+  transition: opacity 600ms cubic-bezier(0.05, 0.01, 0.5, 1) !important;
   will-change: opacity;
 }
 .MuiTouchRipple-ripple {
@@ -99,8 +104,11 @@ body.theme-transition .MuiLinearProgress-root {
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
-input, select, textarea,
-*:active, *:focus {
+input,
+select,
+textarea,
+*:active,
+*:focus {
   transition-duration: 0ms !important;
 }
 body {
@@ -175,7 +183,7 @@ body {
 [data-theme="dark"] .markdown-body h4,
 [data-theme="dark"] .markdown-body h5,
 [data-theme="dark"] .markdown-body h6 {
-  color: #E6E1E5 !important;
+  color: #e6e1e5 !important;
   border-bottom-color: rgba(208, 188, 255, 0.1) !important;
 }
 .file-list-container,
@@ -201,8 +209,9 @@ body {
 body.theme-transition .image-preview-container {
   transform: scale(0.96) !important;
   opacity: 0.2 !important;
-  transition: transform 600ms cubic-bezier(0.05, 0.01, 0.5, 1.0),
-              opacity 600ms cubic-bezier(0.05, 0.01, 0.5, 1.0) !important;
+  transition:
+    transform 600ms cubic-bezier(0.05, 0.01, 0.5, 1),
+    opacity 600ms cubic-bezier(0.05, 0.01, 0.5, 1) !important;
 }
 .image-preview-container::-webkit-scrollbar {
   width: 8px;
@@ -269,7 +278,9 @@ body {
 
 .MuiListItemButton-root {
   position: relative;
-  transition: transform 0.15s ease-in-out, background-color 0.15s ease-in-out !important;
+  transition:
+    transform 0.15s ease-in-out,
+    background-color 0.15s ease-in-out !important;
   transform: translateZ(0);
 }
 
@@ -334,8 +345,12 @@ body {
 }
 
 @keyframes fadeOutScrollbar {
-  0% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .virtual-file-list:not(.is-scrolling)::-webkit-scrollbar-thumb {
@@ -396,7 +411,6 @@ body {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
 }
 
-
 .file-list-container.no-scroll .file-list-item-container {
   margin-bottom: 0 !important;
 }
@@ -429,7 +443,7 @@ body {
 }
 
 @media (min-height: 800px) {
-  .file-list-container .MuiListItemButton-root:nth-child(n+20) .MuiTouchRipple-ripple {
+  .file-list-container .MuiListItemButton-root:nth-child(n + 20) .MuiTouchRipple-ripple {
     transition-duration: 220ms !important;
     opacity: 0.7;
   }
@@ -481,7 +495,7 @@ body {
 }
 
 [data-theme="dark"] .katex {
-  color: #E6E1E5;
+  color: #e6e1e5;
 }
 
 .katex-display {
@@ -542,8 +556,9 @@ html:not([data-theme="dark"]) .katex-display {
 body.refreshing .file-list-container {
   transform: scale(0.99) !important;
   opacity: 0.5 !important;
-  transition: transform 700ms cubic-bezier(0.1, 0.0, 0.2, 1.0),
-              opacity 700ms cubic-bezier(0.1, 0.0, 0.2, 1.0) !important;
+  transition:
+    transform 700ms cubic-bezier(0.1, 0, 0.2, 1),
+    opacity 700ms cubic-bezier(0.1, 0, 0.2, 1) !important;
   will-change: transform, opacity;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
@@ -553,8 +568,9 @@ body.refreshing .readme-container,
 body.refreshing .MuiContainer-root,
 body.refreshing .MuiBreadcrumbs-root,
 body.refreshing .image-preview-container {
-  transition: transform 700ms cubic-bezier(0.1, 0.0, 0.2, 1.0),
-              opacity 700ms cubic-bezier(0.1, 0.0, 0.2, 1.0) !important;
+  transition:
+    transform 700ms cubic-bezier(0.1, 0, 0.2, 1),
+    opacity 700ms cubic-bezier(0.1, 0, 0.2, 1) !important;
   will-change: transform, opacity;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
@@ -564,13 +580,14 @@ body.refreshing .image-preview-container {
 body.theme-transition .readme-container {
   transform: scale(0.99) !important;
   opacity: 0.6 !important;
-  transition: transform 600ms cubic-bezier(0.05, 0.01, 0.5, 1.0),
-    opacity 600ms cubic-bezier(0.05, 0.01, 0.5, 1.0) !important;
+  transition:
+    transform 600ms cubic-bezier(0.05, 0.01, 0.5, 1),
+    opacity 600ms cubic-bezier(0.05, 0.01, 0.5, 1) !important;
 }
 
 /* 主题切换期间保持内容可见性 */
 body.theme-transition .readme-container .MuiPaper-root {
-  transition: background-color 600ms cubic-bezier(0.05, 0.01, 0.5, 1.0) !important;
+  transition: background-color 600ms cubic-bezier(0.05, 0.01, 0.5, 1) !important;
 }
 
 /* 文件列表导航动画 */
@@ -627,10 +644,10 @@ body.theme-transition .readme-container .MuiPaper-root {
   animation: fileListFadeIn 0.15s ease-out;
 }
 
-
 .file-list-item-container {
-  transition: transform 250ms cubic-bezier(0.1, 0.0, 0.2, 1.0),
-              opacity 250ms cubic-bezier(0.1, 0.0, 0.2, 1.0);
+  transition:
+    transform 250ms cubic-bezier(0.1, 0, 0.2, 1),
+    opacity 250ms cubic-bezier(0.1, 0, 0.2, 1);
   will-change: transform, opacity;
   overflow: visible;
   box-sizing: border-box;
@@ -642,8 +659,9 @@ body.theme-transition .readme-container .MuiPaper-root {
 .file-list-container {
   position: relative;
   will-change: transform, opacity;
-  transition: transform 300ms cubic-bezier(0.1, 0.0, 0.2, 1.0),
-              opacity 300ms cubic-bezier(0.1, 0.0, 0.2, 1.0);
+  transition:
+    transform 300ms cubic-bezier(0.1, 0, 0.2, 1),
+    opacity 300ms cubic-bezier(0.1, 0, 0.2, 1);
   contain: content;
   content-visibility: auto;
 }
@@ -670,7 +688,6 @@ body.theme-transition .readme-container .MuiPaper-root {
   }
 }
 
-
 @keyframes fadeIn {
   0% {
     opacity: 0;
@@ -690,7 +707,6 @@ body.theme-transition .readme-container .MuiPaper-root {
     opacity: 1;
   }
 }
-
 
 .readme-container .MuiCircularProgress-root {
   display: none !important;

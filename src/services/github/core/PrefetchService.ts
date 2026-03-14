@@ -7,10 +7,14 @@
  * @module PrefetchService
  */
 
-import type { GitHubContent } from '@/types';
-import { logger } from '@/utils';
-import { CacheManager } from '../cache';
-import { prefetchFilesWithPriority, selectPriorityDirectories, selectPriorityFiles } from './prefetch';
+import type { GitHubContent } from "@/types";
+import { logger } from "@/utils";
+import { CacheManager } from "../cache";
+import {
+  prefetchFilesWithPriority,
+  selectPriorityDirectories,
+  selectPriorityFiles,
+} from "./prefetch";
 
 /**
  * 智能预取目录内容
@@ -21,18 +25,20 @@ import { prefetchFilesWithPriority, selectPriorityDirectories, selectPriorityFil
  * @param priority - 预取优先级，默认为'low'
  * @returns void
  */
-export function prefetchContents(path: string, priority: 'high' | 'medium' | 'low' = 'low'): void {
+export function prefetchContents(path: string, priority: "high" | "medium" | "low" = "low"): void {
   // 使用低优先级预加载，不影响用户操作
-  const delay = priority === 'high' ? 0 : priority === 'medium' ? 100 : 200;
+  const delay = priority === "high" ? 0 : priority === "medium" ? 100 : 200;
   setTimeout(() => {
     // 动态导入避免循环依赖
-    void import('./content').then(({ getContents }) => {
-      void getContents(path).catch(() => {
-        // 忽略错误
+    void import("./content")
+      .then(({ getContents }) => {
+        void getContents(path).catch(() => {
+          // 忽略错误
+        });
+      })
+      .catch(() => {
+        // 忽略动态导入错误
       });
-    }).catch(() => {
-      // 忽略动态导入错误
-    });
   }, delay);
 }
 
@@ -50,21 +56,19 @@ export async function batchPrefetchContents(paths: string[], maxConcurrency = 3)
     return;
   }
 
-    // 动态导入避免循环依赖
-  const { getContents } = await import('./content');
+  // 动态导入避免循环依赖
+  const { getContents } = await import("./content");
 
   // 限制并发数量防止网络资源过耗
   for (let i = 0; i < paths.length; i += maxConcurrency) {
     const batch = paths.slice(i, i + maxConcurrency);
-    const promises = batch.map(path =>
-      getContents(path).catch(() => null)
-    );
+    const promises = batch.map((path) => getContents(path).catch(() => null));
 
     await Promise.allSettled(promises);
 
     // 批次间稍微延迟
     if (i + maxConcurrency < paths.length) {
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
     }
   }
 }
@@ -79,8 +83,8 @@ export async function batchPrefetchContents(paths: string[], maxConcurrency = 3)
  */
 export async function prefetchRelatedContent(contents: GitHubContent[]): Promise<void> {
   try {
-    const directories = contents.filter(item => item.type === 'dir');
-    const files = contents.filter(item => item.type === 'file');
+    const directories = contents.filter((item) => item.type === "dir");
+    const files = contents.filter((item) => item.type === "file");
 
     const priorityDirs = selectPriorityDirectories(directories);
     const priorityFiles = selectPriorityFiles(files);
@@ -90,26 +94,26 @@ export async function prefetchRelatedContent(contents: GitHubContent[]): Promise
     if (priorityDirs.length > 0) {
       const prefetchPromise = Promise.resolve()
         .then(() => {
-          CacheManager.prefetchContent(priorityDirs.map(dir => dir.path));
+          CacheManager.prefetchContent(priorityDirs.map((dir) => dir.path));
         })
         .catch((error: unknown) => {
-          logger.debug('预加载目录失败', error);
+          logger.debug("预加载目录失败", error);
         });
       prefetchPromises.push(prefetchPromise);
     }
 
     if (priorityFiles.length > 0) {
-      const filesPrefetchPromise = prefetchFilesWithPriority(priorityFiles, 'low').catch(
+      const filesPrefetchPromise = prefetchFilesWithPriority(priorityFiles, "low").catch(
         (error: unknown) => {
-          logger.debug('预加载文件失败', error);
+          logger.debug("预加载文件失败", error);
           return Promise.resolve();
-        }
+        },
       );
       prefetchPromises.push(filesPrefetchPromise);
     }
 
     await Promise.allSettled(prefetchPromises);
   } catch (error) {
-    logger.debug('预加载相关内容失败', error);
+    logger.debug("预加载相关内容失败", error);
   }
 }

@@ -1,4 +1,4 @@
-import { getAccessConfig, getProxyConfig } from '@/config';
+import { getAccessConfig, getProxyConfig } from "@/config";
 
 // 获取配置
 export const accessConfig = getAccessConfig();

@@ -1,10 +1,5 @@
 import React, { useContext, useState, useCallback, useEffect, useRef, lazy, Suspense } from "react";
-import {
-  Box,
-  IconButton,
-  Tooltip,
-  useTheme,
-} from "@mui/material";
+import { Box, IconButton, Tooltip, useTheme } from "@mui/material";
 import {
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
@@ -89,11 +84,7 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
     setCurrentPath,
   } = useContentContext();
 
-  const {
-    previewState,
-    selectFile,
-    closePreview,
-  } = usePreviewContext();
+  const { previewState, selectFile, closePreview } = usePreviewContext();
 
   const BROWSER_REFRESH_FLAG = "repo-viewer:pending-refresh";
   const refreshSyncHandledRef = useRef<boolean>(false);
@@ -109,12 +100,15 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
     pathValueRef.current = currentPath;
   }, [currentPath]);
 
-  const buildRefreshSessionState = useCallback((): RefreshSessionState => ({
-    version: 1,
-    branch: branchValueRef.current,
-    path: pathValueRef.current,
-    timestamp: Date.now(),
-  }), []);
+  const buildRefreshSessionState = useCallback(
+    (): RefreshSessionState => ({
+      version: 1,
+      branch: branchValueRef.current,
+      path: pathValueRef.current,
+      timestamp: Date.now(),
+    }),
+    [],
+  );
 
   useEffect(() => {
     const handleBeforeUnload = (): void => {
@@ -275,13 +269,14 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
     };
 
     if (storedRefreshStateRef.current !== null) {
-      const schedule = typeof window.requestAnimationFrame === "function"
-        ? window.requestAnimationFrame.bind(window)
-        : (callback: FrameRequestCallback): void => {
-            window.setTimeout(() => {
-              callback(performance.now());
-            }, 0);
-          };
+      const schedule =
+        typeof window.requestAnimationFrame === "function"
+          ? window.requestAnimationFrame.bind(window)
+          : (callback: FrameRequestCallback): void => {
+              window.setTimeout(() => {
+                callback(performance.now());
+              }, 0);
+            };
 
       schedule(() => {
         void runRefresh();
@@ -300,9 +295,7 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
     const fetchRepoInfo = async (): Promise<void> => {
       try {
         // 尝试从API获取仓库信息
-        const response = await axios.get<GitHubConfigResponse>(
-          "/api/github?action=getConfig",
-        );
+        const response = await axios.get<GitHubConfigResponse>("/api/github?action=getConfig");
         if (response.data.status === "success") {
           const { repoOwner, repoName } = response.data.data ?? {};
           if (
@@ -327,7 +320,8 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
   // 如果存在文本文件预览，先关闭预览，切换主题，然后自动重新打开
   const onThemeToggleClick = useCallback(async () => {
     // 检查是否有文本文件预览（性能优化：避免主题切换时的卡顿）
-    const hasTextPreview = previewState.previewType === 'text' && previewState.previewingItem !== null;
+    const hasTextPreview =
+      previewState.previewType === "text" && previewState.previewingItem !== null;
 
     let previewItemToRestore: typeof previewState.previewingItem = null;
 
@@ -339,7 +333,7 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
       closePreview();
 
       // 等待一小段时间，确保预览已完全关闭
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
     }
 
     // 执行主题切换
@@ -386,11 +380,7 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
     const previewTarget = previewMatch?.[1];
     const hasPathname = safePath.length > 0;
 
-    if (
-      typeof previewTarget === "string" &&
-      previewTarget.length > 0 &&
-      hasPathname
-    ) {
+    if (typeof previewTarget === "string" && previewTarget.length > 0 && hasPathname) {
       let decodedFileName = previewTarget;
       try {
         decodedFileName = decodeURIComponent(previewTarget);
@@ -431,24 +421,22 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
           gap: 1,
           alignItems: "center",
           transform: shouldHideButtons
-            ? { xs: 'translateX(120px)', sm: 'translateX(0)' }
-            : 'translateX(0)',
+            ? { xs: "translateX(120px)", sm: "translateX(0)" }
+            : "translateX(0)",
           opacity: shouldHideButtons ? 0 : 1,
-          transition: shouldHideButtons
-            ? 'none'
-            : 'all 0.2s ease-out',
-          pointerEvents: shouldHideButtons ? 'none' : 'auto',
-          position: shouldHideButtons ? { xs: 'absolute', sm: 'relative' } : 'relative',
-          right: shouldHideButtons ? { xs: 0, sm: 'auto' } : 'auto',
+          transition: shouldHideButtons ? "none" : "all 0.2s ease-out",
+          pointerEvents: shouldHideButtons ? "none" : "auto",
+          position: shouldHideButtons ? { xs: "absolute", sm: "relative" } : "relative",
+          right: shouldHideButtons ? { xs: 0, sm: "auto" } : "auto",
         }}
         data-oid="7:zr_jb"
       >
-        <Tooltip title={t('ui.toolbar.searchFiles')} data-oid="toolbar-search">
+        <Tooltip title={t("ui.toolbar.searchFiles")} data-oid="toolbar-search">
           <span>
             <IconButton
               color="inherit"
               onClick={openSearchDrawer}
-              aria-label={t('ui.toolbar.searchFiles')}
+              aria-label={t("ui.toolbar.searchFiles")}
               data-oid="toolbar-search-button"
             >
               <SearchIcon />
@@ -456,50 +444,54 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
           </span>
         </Tooltip>
 
-        <Tooltip title={t('ui.toolbar.viewOnGitHub')} data-oid="f.rvw_c">
+        <Tooltip title={t("ui.toolbar.viewOnGitHub")} data-oid="f.rvw_c">
           <IconButton
             color="inherit"
             onClick={onGitHubClick}
-            aria-label={t('ui.toolbar.viewOnGitHub')}
+            aria-label={t("ui.toolbar.viewOnGitHub")}
             sx={{
-            "&:hover": {
-              color: theme.palette.primary.light,
-            },
-          }}
-          data-oid="jdbz_el"
-        >
-          <GitHubIcon data-oid="nw02ywc" />
-        </IconButton>
-      </Tooltip>
+              "&:hover": {
+                color: theme.palette.primary.light,
+              },
+            }}
+            data-oid="jdbz_el"
+          >
+            <GitHubIcon data-oid="nw02ywc" />
+          </IconButton>
+        </Tooltip>
 
-      {/* 主题切换按钮 - 点击时不会触发内容重新加载 */}
-      <Tooltip
-        title={theme.palette.mode === "dark" ? t('ui.toolbar.lightMode') : t('ui.toolbar.darkMode')}
-        data-oid="skn4izp"
-      >
-        <IconButton
-          onClick={() => {
-            void onThemeToggleClick();
-          }}
-          color="inherit"
-          aria-label={theme.palette.mode === "dark" ? t('ui.toolbar.lightMode') : t('ui.toolbar.darkMode')}
-          sx={{
-            "&:hover": {
-              color:
-                theme.palette.mode === "dark"
-                  ? theme.palette.warning.light
-                  : theme.palette.primary.light,
-            },
-          }}
-          data-oid="90u9cza"
+        {/* 主题切换按钮 - 点击时不会触发内容重新加载 */}
+        <Tooltip
+          title={
+            theme.palette.mode === "dark" ? t("ui.toolbar.lightMode") : t("ui.toolbar.darkMode")
+          }
+          data-oid="skn4izp"
         >
-          {theme.palette.mode === "dark" ? (
-            <LightModeIcon data-oid="-y49csw" />
-          ) : (
-            <DarkModeIcon data-oid="mo0ub3d" />
-          )}
-        </IconButton>
-      </Tooltip>
+          <IconButton
+            onClick={() => {
+              void onThemeToggleClick();
+            }}
+            color="inherit"
+            aria-label={
+              theme.palette.mode === "dark" ? t("ui.toolbar.lightMode") : t("ui.toolbar.darkMode")
+            }
+            sx={{
+              "&:hover": {
+                color:
+                  theme.palette.mode === "dark"
+                    ? theme.palette.warning.light
+                    : theme.palette.primary.light,
+              },
+            }}
+            data-oid="90u9cza"
+          >
+            {theme.palette.mode === "dark" ? (
+              <LightModeIcon data-oid="-y49csw" />
+            ) : (
+              <DarkModeIcon data-oid="mo0ub3d" />
+            )}
+          </IconButton>
+        </Tooltip>
       </Box>
       {searchDrawerOpen && (
         <Suspense fallback={null}>

@@ -8,10 +8,7 @@ export {
   tryDirectImageLoad,
   type ImageLoadingState,
 } from "./utils/imageUtils";
-export {
-  checkLatexCount,
-  createLatexCodeHandler,
-} from "./utils/latexUtils";
+export { checkLatexCount, createLatexCodeHandler } from "./utils/latexUtils";
 export { katexOptions, handleKatexError } from "./config/katex";
 export { markdownGlobalStyles } from "./styles/globalStyles";
 export { createMarkdownStyles } from "./styles/markdownStyles";

@@ -29,11 +29,10 @@ const isExternalLink = (href: string): boolean => {
 /**
  * Markdown链接组件属性接口
  */
-interface MarkdownLinkProps
-  extends Omit<
-    React.AnchorHTMLAttributes<HTMLAnchorElement>,
-    "href" | "style" | "target" | "rel"
-  > {
+interface MarkdownLinkProps extends Omit<
+  React.AnchorHTMLAttributes<HTMLAnchorElement>,
+  "href" | "style" | "target" | "rel"
+> {
   href?: string;
   style?: React.CSSProperties | undefined;
   children?: React.ReactNode;
@@ -72,7 +71,7 @@ export const MarkdownLink: React.FC<MarkdownLinkProps> = ({
       e.stopPropagation();
       onInternalLinkClick(resolvedHref);
     },
-    [isExternal, onInternalLinkClick, resolvedHref]
+    [isExternal, onInternalLinkClick, resolvedHref],
   );
 
   // 对于外部链接，使用 target="_blank"
@@ -97,7 +96,7 @@ export const MarkdownLink: React.FC<MarkdownLinkProps> = ({
         color: theme.palette.primary.main,
         textDecoration: "none",
         cursor: "pointer",
-        ...style
+        ...style,
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.textDecoration = "underline";

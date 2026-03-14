@@ -1,16 +1,16 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { GitHub } from '@/services/github';
-import { logger } from '@/utils';
-import { getBranchFromUrl } from '@/utils/routing/urlManager';
-import type { BranchManagementState } from './types';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { GitHub } from "@/services/github";
+import { logger } from "@/utils";
+import { getBranchFromUrl } from "@/utils/routing/urlManager";
+import type { BranchManagementState } from "./types";
 
 const DEFAULT_BRANCH = GitHub.Branch.getDefaultBranchName();
 
 /**
  * 分支管理 Hook
- * 
+ *
  * 管理 GitHub 仓库的分支列表、当前分支和分支切换
- * 
+ *
  * @returns 分支管理状态和操作函数
  */
 export function useBranchManagement(): BranchManagementState {
@@ -38,9 +38,9 @@ export function useBranchManagement(): BranchManagementState {
   }, [currentBranch]);
 
   const mergeBranchList = useCallback((branchesToMerge: string[]) => {
-    setBranches(prev => {
+    setBranches((prev) => {
       const branchSet = new Set(prev);
-      branchesToMerge.forEach(name => {
+      branchesToMerge.forEach((name) => {
         const trimmed = name.trim();
         if (trimmed.length > 0) {
           branchSet.add(trimmed);
@@ -51,7 +51,7 @@ export function useBranchManagement(): BranchManagementState {
 
       const branchArray = Array.from(branchSet);
       // 按字母顺序排序
-      branchArray.sort((a, b) => a.localeCompare(b, 'zh-CN'));
+      branchArray.sort((a, b) => a.localeCompare(b, "zh-CN"));
       // 默认分支排在最前面
       branchArray.sort((a, b) => {
         if (a === DEFAULT_BRANCH) {
@@ -73,9 +73,9 @@ export function useBranchManagement(): BranchManagementState {
       const fetchedBranches = await GitHub.Branch.getBranches();
       mergeBranchList(fetchedBranches);
     } catch (error) {
-      const message = error instanceof Error ? error.message : '未知错误';
+      const message = error instanceof Error ? error.message : "未知错误";
       setBranchError(`获取分支列表失败: ${message}`);
-      logger.error('获取分支列表失败:', error);
+      logger.error("获取分支列表失败:", error);
     } finally {
       setBranchLoading(false);
     }
@@ -86,42 +86,48 @@ export function useBranchManagement(): BranchManagementState {
     void loadBranches();
   }, [loadBranches]);
 
-  const applyBranchState = useCallback((branchName: string): string => {
-    const trimmed = branchName.trim();
-    const target = trimmed.length > 0 ? trimmed : DEFAULT_BRANCH;
+  const applyBranchState = useCallback(
+    (branchName: string): string => {
+      const trimmed = branchName.trim();
+      const target = trimmed.length > 0 ? trimmed : DEFAULT_BRANCH;
 
-    if (currentBranchRef.current === target) {
+      if (currentBranchRef.current === target) {
+        return target;
+      }
+
+      GitHub.Branch.setCurrentBranch(target);
+      currentBranchRef.current = target;
+      setCurrentBranchState(target);
+      mergeBranchList([target]);
+      setBranchError(null);
+
       return target;
-    }
+    },
+    [mergeBranchList],
+  );
 
-    GitHub.Branch.setCurrentBranch(target);
-    currentBranchRef.current = target;
-    setCurrentBranchState(target);
-    mergeBranchList([target]);
-    setBranchError(null);
+  const setCurrentBranch = useCallback(
+    (branchName: string): void => {
+      const trimmed = branchName.trim();
+      const targetBranch = trimmed.length > 0 ? trimmed : DEFAULT_BRANCH;
 
-    return target;
-  }, [mergeBranchList]);
+      if (targetBranch === currentBranchRef.current) {
+        logger.debug(`分支未变更，忽略：${targetBranch}`);
+        return;
+      }
 
-  const setCurrentBranch = useCallback((branchName: string): void => {
-    const trimmed = branchName.trim();
-    const targetBranch = trimmed.length > 0 ? trimmed : DEFAULT_BRANCH;
-
-    if (targetBranch === currentBranchRef.current) {
-      logger.debug(`分支未变更，忽略：${targetBranch}`);
-      return;
-    }
-
-    logger.info(`切换分支: ${currentBranchRef.current} -> ${targetBranch}`);
-    applyBranchState(targetBranch);
-  }, [applyBranchState]);
+      logger.info(`切换分支: ${currentBranchRef.current} -> ${targetBranch}`);
+      applyBranchState(targetBranch);
+    },
+    [applyBranchState],
+  );
 
   // 监听 popstate 事件中的分支变化
   useEffect(() => {
     const handlePopState = (event: PopStateEvent): void => {
       const state = event.state as { path?: string; preview?: string; branch?: string } | null;
-      
-      const stateBranch = typeof state?.branch === 'string' ? state.branch : '';
+
+      const stateBranch = typeof state?.branch === "string" ? state.branch : "";
       const urlBranch = getBranchFromUrl().trim();
       const branchCandidate = stateBranch.trim().length > 0 ? stateBranch.trim() : urlBranch;
 
@@ -131,15 +137,15 @@ export function useBranchManagement(): BranchManagementState {
           applyBranchState(branchCandidate);
         }
       } else if (currentBranchRef.current !== DEFAULT_BRANCH) {
-        logger.debug('历史导航事件，无分支信息，回退到默认分支');
+        logger.debug("历史导航事件，无分支信息，回退到默认分支");
         applyBranchState(DEFAULT_BRANCH);
       }
     };
 
-    window.addEventListener('popstate', handlePopState);
+    window.addEventListener("popstate", handlePopState);
 
     return () => {
-      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener("popstate", handlePopState);
     };
   }, [applyBranchState]);
 
@@ -149,6 +155,6 @@ export function useBranchManagement(): BranchManagementState {
     branchLoading,
     branchError,
     setCurrentBranch,
-    refreshBranches: loadBranches
+    refreshBranches: loadBranches,
   };
 }

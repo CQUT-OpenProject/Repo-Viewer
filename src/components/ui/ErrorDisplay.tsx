@@ -14,7 +14,7 @@ const defaultRetry: () => void = () => undefined;
 
 /**
  * 错误显示组件
- * 
+ *
  * 显示错误信息并提供重试功能。
  */
 const ErrorDisplay = memo<ErrorDisplayProps>(

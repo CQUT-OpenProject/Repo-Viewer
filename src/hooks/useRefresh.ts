@@ -8,11 +8,11 @@
  * @module hooks/useRefresh
  */
 
-import { useCallback, useRef, useEffect } from 'react';
-import { useContentContext } from '@/contexts/unified';
-import { removeLatexElements, restoreLatexElements } from '@/utils/rendering/latexOptimizer';
-import { logger } from '@/utils';
-import { useThemeTransitionFlag } from '@/hooks/useThemeTransition';
+import { useCallback, useRef, useEffect } from "react";
+import { useContentContext } from "@/contexts/unified";
+import { removeLatexElements, restoreLatexElements } from "@/utils/rendering/latexOptimizer";
+import { logger } from "@/utils";
+import { useThemeTransitionFlag } from "@/hooks/useThemeTransition";
 
 /** 最小动画持续时间（毫秒） */
 const MIN_ANIMATION_DURATION = 600;
@@ -40,20 +40,24 @@ export const useRefresh = (): (() => void) => {
 
   useEffect(() => {
     if (refreshingRef.current && !loading) {
-      logger.info('内容加载完成，计算动画剩余时间');
+      logger.info("内容加载完成，计算动画剩余时间");
       const elapsedTime = Date.now() - startTimeRef.current;
       const remainingTime = Math.max(MIN_ANIMATION_DURATION - elapsedTime, 0);
-      logger.debug(`加载用时: ${elapsedTime.toString()}ms, 剩余动画时间: ${remainingTime.toString()}ms`);
+      logger.debug(
+        `加载用时: ${elapsedTime.toString()}ms, 剩余动画时间: ${remainingTime.toString()}ms`,
+      );
 
       const timeoutId = window.setTimeout(() => {
-        document.body.classList.remove('theme-transition');
-        document.body.classList.remove('refreshing');
+        document.body.classList.remove("theme-transition");
+        document.body.classList.remove("refreshing");
 
         const expectedPath = refreshTargetPathRef.current;
         refreshTargetPathRef.current = null;
 
         if (expectedPath !== null && currentPathRef.current !== expectedPath) {
-          logger.warn(`刷新结束时检测到目录已变更: 期望 ${expectedPath}，实际 ${currentPathRef.current}`);
+          logger.warn(
+            `刷新结束时检测到目录已变更: 期望 ${expectedPath}，实际 ${currentPathRef.current}`,
+          );
         }
 
         window.setTimeout(() => {
@@ -74,13 +78,13 @@ export const useRefresh = (): (() => void) => {
   return useCallback(() => {
     // 主题切换期间跳过刷新
     if (isThemeChangingRef.current) {
-      logger.info('主题切换中，跳过内容刷新');
+      logger.info("主题切换中，跳过内容刷新");
       return;
     }
 
     if (
-      document.body.classList.contains('theme-transition') ||
-      document.body.classList.contains('refreshing') ||
+      document.body.classList.contains("theme-transition") ||
+      document.body.classList.contains("refreshing") ||
       refreshingRef.current
     ) {
       return;
@@ -91,16 +95,16 @@ export const useRefresh = (): (() => void) => {
 
     window.setTimeout(() => {
       startTimeRef.current = Date.now();
-      document.body.classList.add('theme-transition');
-      document.body.classList.add('refreshing');
+      document.body.classList.add("theme-transition");
+      document.body.classList.add("refreshing");
       refreshingRef.current = true;
-      logger.info('刷新页面');
+      logger.info("刷新页面");
       refresh();
       refreshTimerRef.current = window.setTimeout(() => {
         if (refreshingRef.current) {
-          logger.warn('刷新动画安全超时结束');
-          document.body.classList.remove('theme-transition');
-          document.body.classList.remove('refreshing');
+          logger.warn("刷新动画安全超时结束");
+          document.body.classList.remove("theme-transition");
+          document.body.classList.remove("refreshing");
           window.setTimeout(() => {
             refreshingRef.current = false;
             window.setTimeout(() => {

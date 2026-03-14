@@ -25,7 +25,7 @@ export interface Config {
     };
     searchIndex: {
       enabled: boolean;
-      generationMode: 'build' | 'action' | 'off';
+      generationMode: "build" | "action" | "off";
       defaultBranch: string;
       manifestPath: string;
       assetBasePath: string;
@@ -68,7 +68,7 @@ export interface DeveloperLoggingConfig {
   includeWarnInReporting?: boolean;
   enableRecorder?: boolean;
   reportUrl?: string;
-  baseLevel?: 'debug' | 'info' | 'warn' | 'error';
+  baseLevel?: "debug" | "info" | "warn" | "error";
 }
 
 /**
@@ -81,7 +81,7 @@ export type ConfigChangeListener = (newConfig: Config, oldConfig: Config) => voi
  */
 export interface ConfigDebugInfo {
   loadedAt: string;
-  environment: 'development' | 'production';
+  environment: "development" | "production";
   configSummary: {
     siteTitle: string;
     repoOwner: string;
@@ -91,7 +91,7 @@ export interface ConfigDebugInfo {
     tokenCount: number;
   };
   envVarStatus: Record<string, boolean>;
-  tokenSources: {key: string; hasValue: boolean; isValid: boolean}[];
+  tokenSources: { key: string; hasValue: boolean; isValid: boolean }[];
 }
 export interface EnvMappingOptions {
   isProdLike?: boolean;

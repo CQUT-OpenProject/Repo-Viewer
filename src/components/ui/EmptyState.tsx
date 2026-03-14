@@ -1,14 +1,6 @@
 import React from "react";
-import {
-  Box,
-  Typography,
-  useTheme,
-  alpha,
-  Paper,
-  Stack,
-  Button,
-} from "@mui/material";
-import { g3BorderRadius, G3_PRESETS } from '@/theme/g3Curves';
+import { Box, Typography, useTheme, alpha, Paper, Stack, Button } from "@mui/material";
+import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 import { scaleInAnimation } from "@/theme/animations";
 import {
   FolderOpen as FolderOpenIcon,
@@ -179,12 +171,9 @@ const EmptyState: React.FC<EmptyStateProps> = ({
     "&:active": {
       transform: "translateY(0px)",
     },
-    transition: theme.transitions.create(
-      ["box-shadow", "transform"],
-      {
-        duration: theme.transitions.duration.short,
-      }
-    ),
+    transition: theme.transitions.create(["box-shadow", "transform"], {
+      duration: theme.transitions.duration.short,
+    }),
   };
 
   return (
@@ -203,19 +192,12 @@ const EmptyState: React.FC<EmptyStateProps> = ({
         </Box>
 
         {/* 标题 */}
-        <Typography
-          variant={titleVariant}
-          component="h2"
-          sx={titleStyles}
-        >
+        <Typography variant={titleVariant} component="h2" sx={titleStyles}>
           {finalTitle}
         </Typography>
 
         {/* 描述 */}
-        <Typography
-          variant="body1"
-          sx={descriptionStyles}
-        >
+        <Typography variant="body1" sx={descriptionStyles}>
           {finalDescription}
         </Typography>
 

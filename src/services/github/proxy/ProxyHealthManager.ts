@@ -1,6 +1,6 @@
-import { getProxyConfig } from '@/config';
-import { PROXY_SERVICES } from './ProxyConfig';
-import { logger } from '@/utils';
+import { getProxyConfig } from "@/config";
+import { PROXY_SERVICES } from "./ProxyConfig";
+import { logger } from "@/utils";
 
 const proxyConfig = getProxyConfig();
 
@@ -19,7 +19,7 @@ export interface ProxyHealth {
 
 /**
  * 代理健康管理器类
- * 
+ *
  * 监控代理服务的健康状态，提供故障转移和自动恢复功能。
  * 支持定期健康检查和响应时间追踪。
  */
@@ -34,8 +34,8 @@ export class ProxyHealthManager {
   }
 
   private initializeProxies(): void {
-    PROXY_SERVICES.forEach(proxyUrl => {
-      if (proxyUrl !== '' && proxyUrl.trim() !== '') {
+    PROXY_SERVICES.forEach((proxyUrl) => {
+      if (proxyUrl !== "" && proxyUrl.trim() !== "") {
         this.proxyHealth.set(proxyUrl, {
           url: proxyUrl,
           failureCount: 0,
@@ -43,7 +43,7 @@ export class ProxyHealthManager {
           responseTime: 0,
           isHealthy: true,
           consecutiveFailures: 0,
-          lastSuccessTime: Date.now()
+          lastSuccessTime: Date.now(),
         });
       }
     });
@@ -51,7 +51,7 @@ export class ProxyHealthManager {
 
   /**
    * 记录代理成功响应
-   * 
+   *
    * @param proxyUrl - 代理URL
    * @param responseTime - 响应时间（毫秒）
    * @returns void
@@ -69,9 +69,9 @@ export class ProxyHealthManager {
 
   /**
    * 记录代理失败
-   * 
+   *
    * 记录代理服务的失败次数，连续失败超过阈值后标记为不健康。
-   * 
+   *
    * @param proxyUrl - 代理URL
    * @returns void
    */
@@ -88,14 +88,14 @@ export class ProxyHealthManager {
 
   /**
    * 获取最佳代理服务
-   * 
+   *
    * 根据健康状态和响应时间选择最佳代理服务。
-   * 
+   *
    * @returns 最佳代理服务URL
    */
   public getBestProxy(): string {
     const healthyProxies = Array.from(this.proxyHealth.values())
-      .filter(health => health.isHealthy || this.shouldRetryProxy(health))
+      .filter((health) => health.isHealthy || this.shouldRetryProxy(health))
       .sort((a, b) => {
         // 优先选择健康的代理
         if (a.isHealthy && !b.isHealthy) {
@@ -108,21 +108,21 @@ export class ProxyHealthManager {
         return a.responseTime - b.responseTime;
       });
 
-    return healthyProxies.length > 0 ? (healthyProxies[0]?.url ?? '') : (PROXY_SERVICES[0] ?? '');
+    return healthyProxies.length > 0 ? (healthyProxies[0]?.url ?? "") : (PROXY_SERVICES[0] ?? "");
   }
 
   /**
    * 检查代理是否应该重试
-   * 
+   *
    * 根据恢复时间判断失败的代理是否可以重试。
-   * 
+   *
    * @param health - 代理健康状态
    * @returns 如果可以重试返回true
    */
   private shouldRetryProxy(health: ProxyHealth): boolean {
     const now = Date.now();
     const recoveryTime = proxyConfig.recoveryTime;
-    return (now - health.lastFailure) > recoveryTime;
+    return now - health.lastFailure > recoveryTime;
   }
 
   private startHealthCheck(): void {
@@ -133,8 +133,9 @@ export class ProxyHealthManager {
   }
 
   private async performHealthCheck(): Promise<void> {
-    const unhealthyProxies = Array.from(this.proxyHealth.values())
-      .filter(health => !health.isHealthy && this.shouldRetryProxy(health));
+    const unhealthyProxies = Array.from(this.proxyHealth.values()).filter(
+      (health) => !health.isHealthy && this.shouldRetryProxy(health),
+    );
 
     for (const health of unhealthyProxies) {
       let timeoutId: number | null = null;
@@ -146,8 +147,8 @@ export class ProxyHealthManager {
         }, proxyConfig.healthCheckTimeout);
         const startTime = Date.now();
         const response = await fetch(testUrl, {
-          method: 'HEAD',
-          signal: controller.signal
+          method: "HEAD",
+          signal: controller.signal,
         });
 
         if (response.ok) {
@@ -166,7 +167,7 @@ export class ProxyHealthManager {
 
   /**
    * 获取健康统计信息
-   * 
+   *
    * @returns 所有代理服务的健康状态数组
    */
   public getHealthStats(): {
@@ -176,20 +177,20 @@ export class ProxyHealthManager {
     responseTime: number;
     consecutiveFailures: number;
   }[] {
-    return Array.from(this.proxyHealth.values()).map(health => ({
+    return Array.from(this.proxyHealth.values()).map((health) => ({
       url: health.url,
       isHealthy: health.isHealthy,
       failureCount: health.failureCount,
       responseTime: health.responseTime,
-      consecutiveFailures: health.consecutiveFailures
+      consecutiveFailures: health.consecutiveFailures,
     }));
   }
 
   /**
    * 销毁健康管理器
-   * 
+   *
    * 清理健康检查定时器。
-   * 
+   *
    * @returns void
    */
   public destroy(): void {
@@ -201,9 +202,9 @@ export class ProxyHealthManager {
 
   /**
    * 重置健康管理器
-   * 
+   *
    * 清空所有代理健康记录并重新初始化定时器。
-   * 
+   *
    * @returns void
    */
   public reset(): void {
@@ -219,7 +220,7 @@ export class ProxyHealthManager {
     // 重新启动健康检查
     this.startHealthCheck();
 
-    logger.info('代理健康管理器已重置，所有状态已清空并重新初始化');
+    logger.info("代理健康管理器已重置，所有状态已清空并重新初始化");
   }
 }
 

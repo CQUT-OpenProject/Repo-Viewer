@@ -1,19 +1,12 @@
-import Translator from './translator';
-import type {
-  Locale,
-  InterpolationOptions,
-  ILocaleJSON,
-  ITranslator,
-} from './types';
-import { logger } from '@/utils';
+import Translator from "./translator";
+import type { Locale, InterpolationOptions, ILocaleJSON, ITranslator } from "./types";
+import { logger } from "@/utils";
 
 /**
  * 格式化插值选项
  */
-const formatOptions = (
-  options: InterpolationOptions | number,
-): InterpolationOptions =>
-  typeof options === 'number' ? { count: options } : options;
+const formatOptions = (options: InterpolationOptions | number): InterpolationOptions =>
+  typeof options === "number" ? { count: options } : options;
 
 /**
  * I18N 类
@@ -32,7 +25,7 @@ export class I18N {
    * @param isLoading - 是否正在加载翻译文件（加载中时不报告缺失 key 警告）
    */
   constructor(
-    locale: Locale = 'zh-CN',
+    locale: Locale = "zh-CN",
     translation: ILocaleJSON = {},
     alwaysShowScreamers = false,
     isLoading = false,
@@ -43,7 +36,7 @@ export class I18N {
       onMissingKeyFn: (key: string): string => {
         // 只在翻译文件加载完成后才报告缺失 key 警告
         if (shouldWarn) {
-          logger.warn('i18n: key missing:', key);
+          logger.warn("i18n: key missing:", key);
         }
         return `**${key}**`;
       },

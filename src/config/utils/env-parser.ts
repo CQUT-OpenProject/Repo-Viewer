@@ -5,7 +5,7 @@
  * @returns 标准化后的字符串，如果无效则返回undefined
  */
 const normalizeString = (value: unknown): string | undefined => {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return undefined;
   }
   const trimmed = value.trim();
@@ -18,7 +18,7 @@ const normalizeString = (value: unknown): string | undefined => {
  * @param value - 字符串值
  * @returns 如果值为'true'返回true，否则返回false
  */
-export const parseBoolean = (value: string | undefined): boolean => value === 'true';
+export const parseBoolean = (value: string | undefined): boolean => value === "true";
 
 /**
  * 解析字符串数组
@@ -34,9 +34,9 @@ export const parseStringArray = (value: string | undefined): string[] => {
     return [];
   }
   return normalized
-    .split(',')
-    .map(item => item.trim())
-    .filter(item => item.length > 0);
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
 };
 
 interface ParseIntegerOptions {
@@ -55,7 +55,7 @@ interface ParseIntegerOptions {
 export const parseInteger = (
   value: string | undefined,
   fallback: number,
-  options: ParseIntegerOptions = {}
+  options: ParseIntegerOptions = {},
 ): number => {
   const normalized = normalizeString(value);
   if (normalized === undefined) {
@@ -68,11 +68,11 @@ export const parseInteger = (
   }
 
   const { min, max } = options;
-  if (typeof min === 'number' && parsed < min) {
+  if (typeof min === "number" && parsed < min) {
     return min;
   }
 
-  if (typeof max === 'number' && parsed > max) {
+  if (typeof max === "number" && parsed > max) {
     return max;
   }
 
@@ -92,8 +92,7 @@ export const validateToken = (token: unknown): token is string => {
   if (normalized === undefined) {
     return false;
   }
-  return !(normalized === 'your_token_here' || normalized.includes('placeholder'));
-
+  return !(normalized === "your_token_here" || normalized.includes("placeholder"));
 };
 
 /**
@@ -105,5 +104,5 @@ export const EnvParser = {
   parseBoolean,
   parseStringArray,
   parseInteger,
-  validateToken
+  validateToken,
 } as const;

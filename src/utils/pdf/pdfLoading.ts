@@ -1,4 +1,4 @@
-import type { Theme } from '@mui/material';
+import type { Theme } from "@mui/material";
 
 /**
  * PDF加载页面主题颜色接口
@@ -50,7 +50,7 @@ export const extractPDFThemeColors = (muiTheme: Theme): PDFLoadingThemeColors =>
     textSecondary: palette.text.secondary,
     outline: palette.divider,
     outlineVariant: palette.action.disabled,
-    isDark: palette.mode === 'dark'
+    isDark: palette.mode === "dark",
   };
 };
 
@@ -65,7 +65,7 @@ export const extractPDFThemeColors = (muiTheme: Theme): PDFLoadingThemeColors =>
 export const generatePDFLoadingHTML = (
   fileName: string,
   themeColors: PDFLoadingThemeColors,
-  translations: PDFLoadingTranslations
+  translations: PDFLoadingTranslations,
 ): string => {
   return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -97,7 +97,7 @@ export const generatePDFLoadingHTML = (
       --md-sys-color-on-primary-container: ${themeColors.text};
       --md-sys-color-outline: ${themeColors.outline};
       --md-sys-color-outline-variant: ${themeColors.outlineVariant};
-      --md-elevation-1: 0px 1px 2px rgba(0, 0, 0, ${themeColors.isDark ? '0.3' : '0.1'}), 0px 1px 3px 1px rgba(0, 0, 0, ${themeColors.isDark ? '0.15' : '0.05'});
+      --md-elevation-1: 0px 1px 2px rgba(0, 0, 0, ${themeColors.isDark ? "0.3" : "0.1"}), 0px 1px 3px 1px rgba(0, 0, 0, ${themeColors.isDark ? "0.15" : "0.05"});
     }
 
     body {
@@ -370,7 +370,7 @@ export const generatePDFErrorHTML = (
   errorMessage: string,
   downloadUrl: string,
   themeColors: PDFLoadingThemeColors,
-  translations: PDFLoadingTranslations
+  translations: PDFLoadingTranslations,
 ): string => {
   const inlineStyles = `
     background-color: ${themeColors.surface};
@@ -382,7 +382,7 @@ export const generatePDFErrorHTML = (
   const actionColor = themeColors.onPrimary;
   return `
     <div class="error-card" style="${inlineStyles}">
-      <h2 class="error-title" style="color: ${titleColor};">${translations.loadFailed.replace('@@fileName@@', fileName)}</h2>
+      <h2 class="error-title" style="color: ${titleColor};">${translations.loadFailed.replace("@@fileName@@", fileName)}</h2>
       <p class="error-message" style="color: ${messageColor};">${errorMessage}</p>
       <a href="${downloadUrl}" target="_self" rel="noopener" class="error-action" style="background-color: ${actionBg}; color: ${actionColor};">
         ${translations.openOriginal}

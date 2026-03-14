@@ -4,5 +4,5 @@ export {
   shouldUseServerAPI,
   getRequestStrategy,
   getProxyConfigDetails,
-  refreshProxyConfig
-} from './ProxyForceManager';
+  refreshProxyConfig,
+} from "./ProxyForceManager";

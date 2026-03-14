@@ -1,51 +1,52 @@
-import { shouldLog } from './filters';
-import type { CoreLogLevel, Logger, LoggerFactory } from './types';
-import type { Config } from '@/config';
+import { shouldLog } from "./filters";
+import type { CoreLogLevel, Logger, LoggerFactory } from "./types";
+import type { Config } from "@/config";
 
 export interface ConsoleLoggerOptions {
-  getDeveloperConfig: () => Config['developer'];
+  getDeveloperConfig: () => Config["developer"];
   useCollapsedGroup?: boolean;
 }
 
 const MAP_TO_CONSOLE_METHOD: Record<CoreLogLevel, keyof Console> = {
-  debug: 'debug',
-  info: 'info',
-  log: 'log',
-  warn: 'warn',
-  error: 'error'
+  debug: "debug",
+  info: "info",
+  log: "log",
+  warn: "warn",
+  error: "error",
 };
 
-const nativeConsole: Console | undefined = typeof globalThis.console === 'object' ? globalThis.console : undefined;
+const nativeConsole: Console | undefined =
+  typeof globalThis.console === "object" ? globalThis.console : undefined;
 
 class ConsoleLogger implements Logger {
   constructor(
     private readonly name: string,
-    private readonly options: ConsoleLoggerOptions
+    private readonly options: ConsoleLoggerOptions,
   ) {}
 
   debug(...args: unknown[]): void {
-    this.logInternal('debug', args);
+    this.logInternal("debug", args);
   }
 
   info(...args: unknown[]): void {
-    this.logInternal('info', args);
+    this.logInternal("info", args);
   }
 
   log(...args: unknown[]): void {
-    this.logInternal('log', args);
+    this.logInternal("log", args);
   }
 
   warn(...args: unknown[]): void {
-    this.logInternal('warn', args);
+    this.logInternal("warn", args);
   }
 
   error(...args: unknown[]): void {
-    this.logInternal('error', args);
+    this.logInternal("error", args);
   }
 
   group(label: string): void {
     const config = this.options.getDeveloperConfig();
-    if (!shouldLog(this.name, 'debug', config)) {
+    if (!shouldLog(this.name, "debug", config)) {
       return;
     }
 
@@ -53,25 +54,26 @@ class ConsoleLogger implements Logger {
       return;
     }
 
-    const method: keyof Console = this.options.useCollapsedGroup === true ? 'groupCollapsed' : 'group';
+    const method: keyof Console =
+      this.options.useCollapsedGroup === true ? "groupCollapsed" : "group";
     const groupMethod = nativeConsole[method];
 
-    if (typeof groupMethod === 'function') {
+    if (typeof groupMethod === "function") {
       groupMethod.call(nativeConsole, `[${this.name}] ${label}`);
       return;
     }
 
-    if (typeof nativeConsole.group === 'function') {
+    if (typeof nativeConsole.group === "function") {
       nativeConsole.group(`[${this.name}] ${label}`);
     }
   }
 
   groupEnd(): void {
     const config = this.options.getDeveloperConfig();
-    if (!shouldLog(this.name, 'debug', config)) {
+    if (!shouldLog(this.name, "debug", config)) {
       return;
     }
-    if (nativeConsole !== undefined && typeof nativeConsole.groupEnd === 'function') {
+    if (nativeConsole !== undefined && typeof nativeConsole.groupEnd === "function") {
       nativeConsole.groupEnd();
     }
   }
@@ -88,7 +90,7 @@ class ConsoleLogger implements Logger {
 
     const consoleMethod = MAP_TO_CONSOLE_METHOD[level];
     const logFn = nativeConsole[consoleMethod];
-    if (typeof logFn !== 'function') {
+    if (typeof logFn !== "function") {
       return;
     }
     const invoke = logFn as (...consoleArgs: unknown[]) => void;
@@ -100,7 +102,7 @@ class ConsoleLogger implements Logger {
     }
 
     const [first, ...rest] = args;
-    if (typeof first === 'string') {
+    if (typeof first === "string") {
       invoke.call(nativeConsole, `${prefix} ${first}`, ...rest);
     } else {
       invoke.call(nativeConsole, prefix, ...args);
@@ -115,4 +117,3 @@ export class ConsoleLoggerFactory implements LoggerFactory {
     return new ConsoleLogger(name, this.options);
   }
 }
-

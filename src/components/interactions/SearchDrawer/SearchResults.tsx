@@ -14,7 +14,7 @@ import {
   ListItemText,
   Typography,
   useMediaQuery,
-  useTheme
+  useTheme,
 } from "@mui/material";
 import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 import { SearchResultItem } from "./SearchResultItem";
@@ -88,13 +88,7 @@ const SearchResultRow = ({
   const item = rowData.items[index];
 
   if (item === undefined) {
-    return (
-      <div
-        style={style}
-        {...ariaAttributes}
-        aria-hidden="true"
-      />
-    );
+    return <div style={style} {...ariaAttributes} aria-hidden="true" />;
   }
 
   return (
@@ -125,10 +119,10 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   onResultClick,
   onOpenGithub,
   onFallbackPrompt,
-  disableSearchButton
+  disableSearchButton,
 }) => {
   const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const { t } = useI18n();
   const listHeight = isSmallScreen ? 300 : 400;
   const shouldVirtualize = items.length >= VIRTUALIZE_THRESHOLD;
@@ -145,17 +139,9 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
       highlightRegex,
       isSmallScreen,
       onResultClick,
-      onOpenGithub
+      onOpenGithub,
     }),
-    [
-      items,
-      keyword,
-      keywordLower,
-      highlightRegex,
-      isSmallScreen,
-      onResultClick,
-      onOpenGithub
-    ]
+    [items, keyword, keywordLower, highlightRegex, isSmallScreen, onResultClick, onOpenGithub],
   );
 
   const showEmptyIndexResult =
@@ -175,25 +161,27 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
             justifyContent: "space-between",
             alignItems: "center",
             gap: 1,
-            px: isSmallScreen ? 1.5 : 2
+            px: isSmallScreen ? 1.5 : 2,
           }}
           action={
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={onFallbackPrompt}
-                disabled={disableSearchButton}
-                sx={{
-                  borderRadius: g3BorderRadius(G3_PRESETS.button),
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                {isSmallScreen ? t('search.results.apiSearchButtonShort') : t('search.results.apiSearchButton')}
-              </Button>
-            }
-          >
-              <Typography variant={isSmallScreen ? "caption" : "body2"}>
-            {t('search.results.emptyIndexResult')}
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={onFallbackPrompt}
+              disabled={disableSearchButton}
+              sx={{
+                borderRadius: g3BorderRadius(G3_PRESETS.button),
+                whiteSpace: "nowrap",
+              }}
+            >
+              {isSmallScreen
+                ? t("search.results.apiSearchButtonShort")
+                : t("search.results.apiSearchButton")}
+            </Button>
+          }
+        >
+          <Typography variant={isSmallScreen ? "caption" : "body2"}>
+            {t("search.results.emptyIndexResult")}
           </Typography>
         </Alert>
       )}
@@ -220,7 +208,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                     overflowX: "hidden",
                     listStyle: "none",
                     margin: 0,
-                    padding: 0
+                    padding: 0,
                   }}
                 />
               );
@@ -233,10 +221,10 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
             maxHeight: listHeight,
             overflowY: "auto",
             overflowX: "hidden",
-            width: "100%"
+            width: "100%",
           }}
         >
-          {items.map(item => (
+          {items.map((item) => (
             <SearchResultItem
               key={`${item.branch}:${item.path}`}
               item={item}
@@ -251,15 +239,15 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           {searchResult !== null && searchResult.items.length === 0 && (
             <ListItem>
               <ListItemText
-                primary={t('search.results.noResults')}
-                secondary={t('search.results.noResultsHint')}
+                primary={t("search.results.noResults")}
+                secondary={t("search.results.noResultsHint")}
                 slotProps={{
                   primary: {
-                    variant: isSmallScreen ? "body2" : "body1"
+                    variant: isSmallScreen ? "body2" : "body1",
                   },
                   secondary: {
-                    variant: isSmallScreen ? "caption" : "body2"
-                  }
+                    variant: isSmallScreen ? "caption" : "body2",
+                  },
                 }}
               />
             </ListItem>

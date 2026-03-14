@@ -7,8 +7,8 @@
  * @module StatsService
  */
 
-import { CacheManager } from '../cache';
-import { getProxyHealthStats, resetFailedProxyServices } from '../proxy';
+import { CacheManager } from "../cache";
+import { getProxyHealthStats, resetFailedProxyServices } from "../proxy";
 
 /**
  * 清除所有缓存和重置网络状态
@@ -19,7 +19,7 @@ import { getProxyHealthStats, resetFailedProxyServices } from '../proxy';
  */
 export async function clearCache(): Promise<void> {
   await CacheManager.clearAllCaches();
-  const { clearBatcherCache } = await import('./content');
+  const { clearBatcherCache } = await import("./content");
   clearBatcherCache();
   resetFailedProxyServices();
 }
@@ -45,10 +45,10 @@ export async function getNetworkStats(): Promise<{
   proxy: ReturnType<typeof getProxyHealthStats>;
   cache: ReturnType<typeof getCacheStats>;
 }> {
-  const { getBatcher } = await import('./content');
+  const { getBatcher } = await import("./content");
   return {
     batcher: getBatcher().getStats(),
     proxy: getProxyHealthStats(),
-    cache: getCacheStats()
+    cache: getCacheStats(),
   };
 }

@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import type { RefObject } from 'react';
+import { useState, useEffect, useRef } from "react";
+import type { RefObject } from "react";
 
 interface ContainerSize {
   width: number;
@@ -33,7 +33,7 @@ export function useContainerSize(): UseContainerSizeReturn {
 
     updateSize();
 
-    if (typeof ResizeObserver !== 'undefined') {
+    if (typeof ResizeObserver !== "undefined") {
       const observer = new ResizeObserver((entries) => {
         const entry = entries[0];
         if (entry !== undefined) {
@@ -47,9 +47,9 @@ export function useContainerSize(): UseContainerSizeReturn {
       };
     }
 
-    window.addEventListener('resize', updateSize);
+    window.addEventListener("resize", updateSize);
     return () => {
-      window.removeEventListener('resize', updateSize);
+      window.removeEventListener("resize", updateSize);
     };
   }, []);
 

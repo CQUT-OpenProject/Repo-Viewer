@@ -1,7 +1,7 @@
-import type { GitHubContent } from '@/types';
+import type { GitHubContent } from "@/types";
 
-const IMPORTANT_DIR_NAMES = ['src', 'docs', 'components', 'pages', 'lib', 'utils', 'assets'];
-const IMPORTANT_EXTENSIONS = ['.md', '.txt', '.json', '.js', '.ts', '.tsx', '.jsx'];
+const IMPORTANT_DIR_NAMES = ["src", "docs", "components", "pages", "lib", "utils", "assets"];
+const IMPORTANT_EXTENSIONS = [".md", ".txt", ".json", ".js", ".ts", ".tsx", ".jsx"];
 const MAX_PREFETCH_FILE_SIZE = 100 * 1024;
 
 /**
@@ -12,11 +12,11 @@ const MAX_PREFETCH_FILE_SIZE = 100 * 1024;
  */
 export function selectPriorityDirectories(directories: GitHubContent[]): GitHubContent[] {
   const prioritized = directories.sort((a, b) => {
-    const aImportance = IMPORTANT_DIR_NAMES.findIndex(name =>
-      a.name.toLowerCase().includes(name.toLowerCase())
+    const aImportance = IMPORTANT_DIR_NAMES.findIndex((name) =>
+      a.name.toLowerCase().includes(name.toLowerCase()),
     );
-    const bImportance = IMPORTANT_DIR_NAMES.findIndex(name =>
-      b.name.toLowerCase().includes(name.toLowerCase())
+    const bImportance = IMPORTANT_DIR_NAMES.findIndex((name) =>
+      b.name.toLowerCase().includes(name.toLowerCase()),
     );
 
     if (aImportance !== -1 && bImportance === -1) {
@@ -42,12 +42,12 @@ export function selectPriorityDirectories(directories: GitHubContent[]): GitHubC
  * @returns 优先文件列表
  */
 export function selectPriorityFiles(files: GitHubContent[]): GitHubContent[] {
-  const candidates = files.filter(file => {
+  const candidates = files.filter((file) => {
     if (file.size === undefined || file.size === 0 || file.size > MAX_PREFETCH_FILE_SIZE) {
       return false;
     }
 
-    const lastDotIndex = file.name.lastIndexOf('.');
+    const lastDotIndex = file.name.lastIndexOf(".");
     if (lastDotIndex === -1) {
       return false;
     }
@@ -60,10 +60,10 @@ export function selectPriorityFiles(files: GitHubContent[]): GitHubContent[] {
     const aName = a.name.toLowerCase();
     const bName = b.name.toLowerCase();
 
-    if (aName.startsWith('readme')) {
-      return bName.startsWith('readme') ? 0 : -1;
+    if (aName.startsWith("readme")) {
+      return bName.startsWith("readme") ? 0 : -1;
     }
-    if (bName.startsWith('readme')) {
+    if (bName.startsWith("readme")) {
       return 1;
     }
 
@@ -72,4 +72,3 @@ export function selectPriorityFiles(files: GitHubContent[]): GitHubContent[] {
 
   return prioritized.slice(0, 5);
 }
-

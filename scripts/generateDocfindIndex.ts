@@ -4,7 +4,13 @@ import fs from "fs";
 import path from "path";
 import { spawn } from "child_process";
 
-import { collectTokens, loadEnvFiles, parseBoolean, parseList, resolveEnvValue } from "./utils/env.js";
+import {
+  collectTokens,
+  loadEnvFiles,
+  parseBoolean,
+  parseList,
+  resolveEnvValue,
+} from "./utils/env.js";
 import { resolveRepoRoot } from "./utils/paths.js";
 
 interface DocfindManifestBranch {
@@ -67,7 +73,7 @@ const DEFAULT_EXTENSION_WHITELIST = [
   "m",
   "mm",
   "scala",
-  "lua"
+  "lua",
 ];
 
 // 默认最大内容索引体积，超限文件只索引路径
@@ -200,7 +206,11 @@ const computeDocfindAssetName = (): string => {
 
 // Windows 使用 PowerShell 解压 zip 其他平台使用 tar
 // 解压下载的 docfind 归档
-const extractDocfindArchive = async (archivePath: string, destDir: string, rootDir: string): Promise<void> => {
+const extractDocfindArchive = async (
+  archivePath: string,
+  destDir: string,
+  rootDir: string,
+): Promise<void> => {
   if (archivePath.endsWith(".zip")) {
     const archiveArg = toPosixPath(archivePath);
     const destArg = toPosixPath(destDir);
@@ -331,7 +341,7 @@ const buildRemoteUrl = (repoOwner: string, repoName: string, token?: string): st
 // 生成远端地址候选列表 依次尝试不同 token
 const buildRemoteCandidates = (repoOwner: string, repoName: string, tokens: string[]): string[] => {
   const uniqueTokens = Array.from(
-    new Set(tokens.map((token) => token.trim()).filter((token) => token.length > 0))
+    new Set(tokens.map((token) => token.trim()).filter((token) => token.length > 0)),
   );
   const candidates = uniqueTokens.map((token) => buildRemoteUrl(repoOwner, repoName, token));
   const fallback = buildRemoteUrl(repoOwner, repoName);
@@ -350,7 +360,7 @@ const updateRemoteUrl = async (repoPath: string, remoteUrl: string): Promise<voi
 const ensureTempRepo = async (
   rootDir: string,
   repoOwner: string,
-  repoName: string
+  repoName: string,
 ): Promise<string> => {
   const tempRoot = path.join(rootDir, ".docfind", "tmp");
   await fs.promises.mkdir(tempRoot, { recursive: true });
@@ -369,7 +379,7 @@ const ensureTempRepo = async (
 const fetchBranch = async (
   repoPath: string,
   branch: string,
-  remoteUrls: string[]
+  remoteUrls: string[],
 ): Promise<string | null> => {
   const remoteRef = `refs/remotes/origin/${branch}`;
   let lastError: unknown = null;
@@ -381,7 +391,7 @@ const fetchBranch = async (
       await runCommand(
         "git",
         ["fetch", "--depth", "1", "--no-tags", "--progress", "origin", `${branch}:${remoteRef}`],
-        repoPath
+        repoPath,
       );
       console.log(`[docfind] Fetched ${branch}`);
       return remoteRef;
@@ -401,9 +411,7 @@ const resolveBranchRef = async (repoPath: string, branch: string): Promise<strin
     try {
       await runCommandText("git", ["rev-parse", "--verify", candidate], repoPath);
       return candidate;
-    } catch {
-
-    }
+    } catch {}
   }
   return null;
 };
@@ -428,7 +436,7 @@ const buildDocumentsForBranch = async (
   branchName: string,
   extensionWhitelist: Set<string>,
   maxFileSize: number,
-  payloadPath: string
+  payloadPath: string,
 ): Promise<{ documentCount: number; skipped: number }> => {
   console.log(`[docfind] Checking out ${branchName}...`);
   await checkoutBranch(repoPath, branchRef);
@@ -487,7 +495,7 @@ const buildDocumentsForBranch = async (
             path: normalizedPath,
             branch: branchName,
             extension,
-            body
+            body,
           };
           await writeChunk(`${documentCount > 0 ? ",\n" : ""}${JSON.stringify(doc)}`);
           documentCount += 1;
@@ -507,7 +515,7 @@ const buildDocumentsForBranch = async (
         path: normalizedPath,
         branch: branchName,
         extension,
-        body
+        body,
       };
       await writeChunk(`${documentCount > 0 ? ",\n" : ""}${JSON.stringify(doc)}`);
       documentCount += 1;
@@ -555,14 +563,20 @@ const run = async (): Promise<void> => {
   const rootDir = resolveRepoRoot(import.meta.url);
   loadEnvFiles(rootDir);
 
-  const generationMode = normalizeGenerationMode(resolveEnvValue(["SEARCH_INDEX_GENERATION_MODE"], "build"));
+  const generationMode = normalizeGenerationMode(
+    resolveEnvValue(["SEARCH_INDEX_GENERATION_MODE"], "build"),
+  );
   const generationContext = resolveGenerationContext();
   if (!shouldGenerateIndex(generationMode, generationContext)) {
-    console.log(`[docfind] Generation mode is ${generationMode}, skip in ${generationContext} context.`);
+    console.log(
+      `[docfind] Generation mode is ${generationMode}, skip in ${generationContext} context.`,
+    );
     return;
   }
 
-  const enabled = parseBoolean(resolveEnvValue(["ENABLED_SEARCH_INDEX", "VITE_ENABLED_SEARCH_INDEX"], "false"));
+  const enabled = parseBoolean(
+    resolveEnvValue(["ENABLED_SEARCH_INDEX", "VITE_ENABLED_SEARCH_INDEX"], "false"),
+  );
   if (!enabled) {
     console.log("[docfind] Search index disabled, skip generation.");
     return;
@@ -575,10 +589,7 @@ const run = async (): Promise<void> => {
     return;
   }
 
-  const defaultBranch = resolveEnvValue(
-    ["GITHUB_REPO_BRANCH", "VITE_GITHUB_REPO_BRANCH"],
-    "main"
-  );
+  const defaultBranch = resolveEnvValue(["GITHUB_REPO_BRANCH", "VITE_GITHUB_REPO_BRANCH"], "main");
   const branchList = parseList(resolveEnvValue(["SEARCH_INDEX_BRANCHES"], ""));
   const branches = branchList.length > 0 ? branchList : [defaultBranch];
 
@@ -593,7 +604,7 @@ const run = async (): Promise<void> => {
   const extensionWhitelist = new Set<string>(
     (extensionOverride.length > 0 ? extensionOverride : DEFAULT_EXTENSION_WHITELIST)
       .map((ext: string) => ext.trim().toLowerCase().replace(/^\./, ""))
-      .filter((ext: string) => ext.length > 0)
+      .filter((ext: string) => ext.length > 0),
   );
 
   const outputRoot = path.join(rootDir, "public", basePath.replace(/^\//, ""));
@@ -606,9 +617,10 @@ const run = async (): Promise<void> => {
   const repoPath = resolveEnvValue(["DOCFIND_REPO_PATH"], "");
   const tokens = collectTokens();
   const remoteCandidates = buildRemoteCandidates(repoOwner, repoName, tokens);
-  const tempRepoPath = repoPath.length > 0
-    ? path.resolve(rootDir, repoPath)
-    : await ensureTempRepo(rootDir, repoOwner, repoName);
+  const tempRepoPath =
+    repoPath.length > 0
+      ? path.resolve(rootDir, repoPath)
+      : await ensureTempRepo(rootDir, repoOwner, repoName);
 
   if (repoPath.length === 0) {
     console.log(`[docfind] Temporary repo at ${tempRepoPath}`);
@@ -617,14 +629,15 @@ const run = async (): Promise<void> => {
   const manifest: DocfindManifest = {
     schemaVersion: DOCFIND_SCHEMA_VERSION,
     generatedAt: new Date().toISOString(),
-    branches: {}
+    branches: {},
   };
 
   for (const branch of branches) {
     // action 模式使用 fetch 本地模式走 ref 解析
-    const branchRef = repoPath.length > 0
-      ? await resolveBranchRef(tempRepoPath, branch)
-      : await fetchBranch(tempRepoPath, branch, remoteCandidates);
+    const branchRef =
+      repoPath.length > 0
+        ? await resolveBranchRef(tempRepoPath, branch)
+        : await fetchBranch(tempRepoPath, branch, remoteCandidates);
 
     if (!branchRef) {
       console.warn(`[docfind] Skip missing branch: ${branch}`);
@@ -643,7 +656,7 @@ const run = async (): Promise<void> => {
       branch,
       extensionWhitelist,
       safeMaxFileSize,
-      payloadPath
+      payloadPath,
     );
 
     if (documentCount === 0) {
@@ -660,14 +673,16 @@ const run = async (): Promise<void> => {
 
     const wasmPath = path.join(branchDir, "docfind_bg.wasm");
     const hash = await hashFile(wasmPath);
-    const branchUrlPath = branchSegments.map((segment: string) => encodeURIComponent(segment)).join("/");
+    const branchUrlPath = branchSegments
+      .map((segment: string) => encodeURIComponent(segment))
+      .join("/");
     const docfindPath = `${basePath}/${branchUrlPath}/docfind.js`;
 
     manifest.branches[branch] = {
       docfindPath,
       hash,
       fileCount: documentCount,
-      generatedAt: new Date().toISOString()
+      generatedAt: new Date().toISOString(),
     };
 
     console.log(`[docfind] Built ${branch}: ${documentCount} documents (${skipped} skipped)`);

@@ -1,16 +1,14 @@
-<div style="text-align: center;">
-  <h1><em>Repo-Viewer</em></h1>
-</div>
+<h1 align="center">
+  <em>Repo-Viewer</em>
+</h1>
 
-<div style="text-align: center;">
-  <p>
-    <strong>基于 Material Design 3设计风格的 GitHub仓库浏览应用</strong>
-    &nbsp;&nbsp;
-    <a href="https://deepwiki.com/CQUT-OpenProject/Repo-Viewer">
-      <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki">
-    </a>
-  </p>
-</div>
+<p align="center">
+  <strong>基于 Material Design 3设计风格的 GitHub仓库浏览应用</strong>
+  &nbsp;&nbsp;
+  <a href="https://deepwiki.com/CQUT-OpenProject/Repo-Viewer" target="_blank">
+    <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki">
+  </a>
+</p>
 
 ![Preview Dark](docs/image/dark.png)
 
@@ -27,7 +25,7 @@
 此项目已进入稳定阶段，本人将不再花过多精力维护。若发现已知的问题，欢迎任何形式的贡献！无论是修复错误、改进功能，还是提升代码质量，我们都非常欢迎您的参与。
 
 > 此组织的所有成员均有管理员权限，若不想提交 Pull Request，直接推送代码是被允许的。
-> 
+>
 > 但在提交贡献前，推荐阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 以了解建议的代码规范和提交流程。
 
 ## 主要功能

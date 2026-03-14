@@ -1,5 +1,5 @@
-import type { GitHubContent } from '@/types';
-import { hashStringSync } from '@/utils/crypto/hashUtils';
+import type { GitHubContent } from "@/types";
+import { hashStringSync } from "@/utils/crypto/hashUtils";
 
 /**
  * 缓存键与版本号工具。
@@ -15,7 +15,7 @@ import { hashStringSync } from '@/utils/crypto/hashUtils';
  * @returns 唯一的缓存键
  */
 export function buildContentsCacheKey(path: string, branch: string): string {
-  const normalizedPath = path === '' ? '/' : path;
+  const normalizedPath = path === "" ? "/" : path;
   const keyString = `${branch}:${normalizedPath}`;
   const hash = hashStringSync(keyString);
   return `content:v2:${hash}`;
@@ -32,14 +32,14 @@ export function buildContentsCacheKey(path: string, branch: string): string {
 export function generateContentVersion(
   path: string,
   branch: string,
-  contents: GitHubContent[]
+  contents: GitHubContent[],
 ): string {
   const contentSignature = contents
-    .map(item => {
-      const identifier = item.sha !== '' ? item.sha : item.size?.toString() ?? 'unknown';
+    .map((item) => {
+      const identifier = item.sha !== "" ? item.sha : (item.size?.toString() ?? "unknown");
       return `${item.name}-${identifier}`;
     })
-    .join('|');
+    .join("|");
 
   const versionString = `${branch}:${path}:${contentSignature}:${Date.now().toString()}`;
   const hash = hashStringSync(versionString);
@@ -60,4 +60,3 @@ export function generateFileVersion(fileUrl: string, content: string): string {
   const hash = hashStringSync(versionString);
   return `fv_${hash}`;
 }
-

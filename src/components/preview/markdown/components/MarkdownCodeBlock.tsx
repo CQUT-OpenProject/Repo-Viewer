@@ -60,7 +60,11 @@ export const MarkdownCodeBlock: React.FC<MarkdownCodeBlockProps> = ({
       return { restProps: {} as HTMLAttributes<HTMLElement>, ref: undefined };
     }
 
-    const { children: _children, ref, ...rest } = codeProps as Record<string, unknown> & {
+    const {
+      children: _children,
+      ref,
+      ...rest
+    } = codeProps as Record<string, unknown> & {
       ref?: ClassAttributes<HTMLElement>["ref"];
     };
 
@@ -80,10 +84,34 @@ export const MarkdownCodeBlock: React.FC<MarkdownCodeBlockProps> = ({
     <Box
       sx={{ position: "relative", width: "100%" }}
       data-oid={dataOid !== undefined ? `${dataOid}-container` : undefined}
-      onMouseEnter={isDesktop ? () => { setIsHovered(true); } : undefined}
-      onMouseLeave={isDesktop ? () => { setIsHovered(false); } : undefined}
-      onFocusCapture={isDesktop ? () => { setIsHovered(true); } : undefined}
-      onBlurCapture={isDesktop ? () => { setIsHovered(false); } : undefined}
+      onMouseEnter={
+        isDesktop
+          ? () => {
+              setIsHovered(true);
+            }
+          : undefined
+      }
+      onMouseLeave={
+        isDesktop
+          ? () => {
+              setIsHovered(false);
+            }
+          : undefined
+      }
+      onFocusCapture={
+        isDesktop
+          ? () => {
+              setIsHovered(true);
+            }
+          : undefined
+      }
+      onBlurCapture={
+        isDesktop
+          ? () => {
+              setIsHovered(false);
+            }
+          : undefined
+      }
     >
       <pre
         className={className}
@@ -91,17 +119,13 @@ export const MarkdownCodeBlock: React.FC<MarkdownCodeBlockProps> = ({
         data-language={language ?? undefined}
         data-oid={dataOid}
       >
-        <code
-          className={className}
-          ref={codeRef}
-          {...codeAttributes}
-        >
+        <code className={className} ref={codeRef} {...codeAttributes}>
           {content}
         </code>
       </pre>
 
       <Tooltip
-        title={copied ? t('ui.markdown.copy.copied') : t('ui.markdown.copy.button')}
+        title={copied ? t("ui.markdown.copy.copied") : t("ui.markdown.copy.button")}
         placement="left"
         enterDelay={200}
         leaveDelay={150}
@@ -111,7 +135,7 @@ export const MarkdownCodeBlock: React.FC<MarkdownCodeBlockProps> = ({
       >
         <IconButton
           size="small"
-          aria-label={t('ui.markdown.copy.aria')}
+          aria-label={t("ui.markdown.copy.aria")}
           onClick={handleCopy}
           sx={{
             position: "absolute",
@@ -125,9 +149,12 @@ export const MarkdownCodeBlock: React.FC<MarkdownCodeBlockProps> = ({
             border: `1px solid ${borderColor}`,
             boxShadow: theme.shadows[1],
             backdropFilter: "blur(6px)",
-            transition: theme.transitions.create(["background-color", "color", "box-shadow", "opacity"], {
-              duration: theme.transitions.duration.shortest,
-            }),
+            transition: theme.transitions.create(
+              ["background-color", "color", "box-shadow", "opacity"],
+              {
+                duration: theme.transitions.duration.shortest,
+              },
+            ),
             opacity: showCopyButton ? 1 : 0,
             pointerEvents: showCopyButton ? "auto" : "none",
             "&:hover": {

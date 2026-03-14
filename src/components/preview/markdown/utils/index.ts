@@ -7,7 +7,4 @@ export {
   type ImageLoadingState,
 } from "./imageUtils";
 
-export {
-  checkLatexCount,
-  createLatexCodeHandler,
-} from "./latexUtils";
+export { checkLatexCount, createLatexCodeHandler } from "./latexUtils";

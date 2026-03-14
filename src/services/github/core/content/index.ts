@@ -9,16 +9,11 @@ export {
   getFileContent,
   getBatcher,
   clearBatcherCache,
-  hydrateInitialContent
-} from './service';
+  hydrateInitialContent,
+} from "./service";
 
-export {
-  buildContentsCacheKey,
-  generateContentVersion,
-  generateFileVersion
-} from './cacheKeys';
+export { buildContentsCacheKey, generateContentVersion, generateFileVersion } from "./cacheKeys";
 
-export { INITIAL_CONTENT_EXCLUDE_FILES } from './hydrationStore';
+export { INITIAL_CONTENT_EXCLUDE_FILES } from "./hydrationStore";
 
-export { normalizeDirectoryPath, normalizeFilePath, escapeRegExp } from './pathUtils';
-
+export { normalizeDirectoryPath, normalizeFilePath, escapeRegExp } from "./pathUtils";

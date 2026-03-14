@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 interface UseKeyboardNavigationOptions {
   loading: boolean;
@@ -29,18 +29,18 @@ export function useKeyboardNavigation({
         return;
       }
 
-      if (e.key === 'ArrowLeft' && hasPrevious && onPrevious !== undefined) {
+      if (e.key === "ArrowLeft" && hasPrevious && onPrevious !== undefined) {
         e.preventDefault();
         onPrevious();
-      } else if (e.key === 'ArrowRight' && hasNext && onNext !== undefined) {
+      } else if (e.key === "ArrowRight" && hasNext && onNext !== undefined) {
         e.preventDefault();
         onNext();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [loading, hasError, hasPrevious, hasNext, onPrevious, onNext]);
 }

@@ -1,4 +1,4 @@
-import type { CacheConfig } from './CacheTypes';
+import type { CacheConfig } from "./CacheTypes";
 
 /**
  * 默认缓存配置
@@ -17,7 +17,7 @@ export const DEFAULT_CACHE_CONFIG: CacheConfig = {
 
   enablePersistence: true,
   useIndexedDB: true,
-  storageKey: '',
+  storageKey: "",
 
   enablePrefetch: true,
   prefetchDelay: 100,
@@ -29,7 +29,7 @@ export const DEFAULT_CACHE_CONFIG: CacheConfig = {
 export const CONTENT_CACHE_CONFIG: CacheConfig = {
   ...DEFAULT_CACHE_CONFIG,
   defaultTTL: 10 * 60 * 1000,
-  storageKey: 'repo_viewer_content_cache_v2',
+  storageKey: "repo_viewer_content_cache_v2",
 };
 
 /**
@@ -39,5 +39,5 @@ export const FILE_CACHE_CONFIG: CacheConfig = {
   ...DEFAULT_CACHE_CONFIG,
   defaultTTL: 30 * 60 * 1000,
   maxTTL: 2 * 60 * 60 * 1000,
-  storageKey: 'repo_viewer_file_cache_v2',
+  storageKey: "repo_viewer_file_cache_v2",
 };

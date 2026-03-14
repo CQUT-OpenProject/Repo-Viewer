@@ -16,7 +16,7 @@ export const loadEnvFiles = (rootDir: string, files: string[] = DEFAULT_ENV_FILE
 export const resolveEnvValue = (
   keys: string[],
   fallback = "",
-  env: NodeJS.ProcessEnv = process.env
+  env: NodeJS.ProcessEnv = process.env,
 ): string => {
   for (const key of keys) {
     const value = env[key];
@@ -54,7 +54,7 @@ export const parseList = (value: string | undefined): string[] => {
 
 export const collectTokens = (
   prefixes: string[] = ["GITHUB_PAT", "VITE_GITHUB_PAT", "GITHUB_TOKEN"],
-  env: NodeJS.ProcessEnv = process.env
+  env: NodeJS.ProcessEnv = process.env,
 ): string[] => {
   const tokens: string[] = [];
   const keys = Object.keys(env)

@@ -1,13 +1,16 @@
-import type { GitHubContent } from '@/types';
-import type { SearchIndexErrorCode, SearchIndexResultItem } from '@/services/github/core/searchIndex';
+import type { GitHubContent } from "@/types";
+import type {
+  SearchIndexErrorCode,
+  SearchIndexResultItem,
+} from "@/services/github/core/searchIndex";
 
-export type RepoSearchMode = 'search-index' | 'github-api';
+export type RepoSearchMode = "search-index" | "github-api";
 
 export type RepoSearchFallbackReason =
-  | 'index-disabled'
-  | 'index-not-ready'
-  | 'index-error'
-  | 'branch-not-indexed';
+  | "index-disabled"
+  | "index-not-ready"
+  | "index-error"
+  | "branch-not-indexed";
 
 export interface RepoSearchFilters {
   keyword: string;
@@ -17,11 +20,11 @@ export interface RepoSearchFilters {
 }
 
 export interface RepoSearchIndexItem extends SearchIndexResultItem {
-  source: 'search-index';
+  source: "search-index";
 }
 
 export interface RepoSearchApiItem extends GitHubContent {
-  source: 'github-api';
+  source: "github-api";
   branch: string;
 }
 
@@ -36,7 +39,7 @@ export interface RepoSearchExecutionResult {
 }
 
 export interface RepoSearchError {
-  source: 'index' | 'search';
+  source: "index" | "search";
   code?: SearchIndexErrorCode;
   message: string;
   details?: unknown;

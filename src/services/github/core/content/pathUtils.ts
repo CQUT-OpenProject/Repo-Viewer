@@ -9,10 +9,10 @@
  * - 移除多余前缀与重复斜杠
  */
 export function normalizeDirectoryPath(path: string): string {
-  if (path === '' || path === '/') {
-    return '/';
+  if (path === "" || path === "/") {
+    return "/";
   }
-  return path.replace(/^\/+/u, '').replace(/\/+/gu, '/');
+  return path.replace(/^\/+/u, "").replace(/\/+/gu, "/");
 }
 
 /**
@@ -24,10 +24,10 @@ export function normalizeDirectoryPath(path: string): string {
  * @remarks 去掉开头的多余斜杠，保留空字符串表示根目录文件。
  */
 export function normalizeFilePath(path: string): string {
-  if (path === '') {
-    return '';
+  if (path === "") {
+    return "";
   }
-  return path.replace(/^\/+/u, '');
+  return path.replace(/^\/+/u, "");
 }
 
 /**
@@ -39,6 +39,5 @@ export function normalizeFilePath(path: string): string {
  * @remarks 避免路径中的特殊字符破坏匹配表达式。
  */
 export function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }
-

@@ -4,11 +4,11 @@
 
 ## 我们的协作方式
 
-  由于项目作者的水平有限，本项目的**大部分代码**由 AI Agents 完成（在开发者监督和审查下）。作者也在通过这个项目进一步学习。
+由于项目作者的水平有限，本项目的**大部分代码**由 AI Agents 完成（在开发者监督和审查下）。作者也在通过这个项目进一步学习。
 
-  是的，你没有听错，本项目几乎由人工智能驱动！错误和不完善之处在所难免。正因如此，我们非常欢迎您的贡献，以帮助修复错误、改进功能和提高代码质量！
+是的，你没有听错，本项目几乎由人工智能驱动！错误和不完善之处在所难免。正因如此，我们非常欢迎您的贡献，以帮助修复错误、改进功能和提高代码质量！
 
-  ***为了保证协作的顺畅，在合并代码前，你需要阅读以下规范：***
+**_为了保证协作的顺畅，在合并代码前，你需要阅读以下规范：_**
 
 ## 快速入门
 
@@ -16,28 +16,29 @@
 
 - **克隆仓库**
 
-    ```bash
-    git clone https://github.com/CQUT-OpenProject/Repo-Viewer.git
-    cd Repo-Viewer
-    ```
+  ```bash
+  git clone https://github.com/CQUT-OpenProject/Repo-Viewer.git
+  cd Repo-Viewer
+  ```
 
 - **安装依赖**
 
-    ```bash
-   npm install
-   ```
+  ```bash
+  vp install
+  ```
 
 - **创建环境配置**：复制 `.env.example` 到 `.env` 并配置必要的环境变量（参见下方内容）
 
-   ```bash
-   cp .env.example .env
-   ```
+  ```bash
+  cp .env.example .env
+  ```
 
 - **启动开发服务器**
+  开发服务器、预览、构建与校验统一由 Vite+ 提供。
 
-   ```bash
-   npm run dev
-   ```
+  ```bash
+  vp dev
+  ```
 
 ### 2. 创建功能分支
 
@@ -53,10 +54,10 @@ git checkout -b branch-name/your-description
 
 ### 4. 自行测试所有内容
 
-在提交 PR 之前，确保通过 ESLint 测试，不推荐出现任何的错误或警告：
+在提交 PR 之前，确保通过统一校验，不推荐出现任何的错误或警告：
 
 ```bash
-npm run lint
+vp check
 ```
 
 同时请确保代码质量和部署通过，我们不会对 PR 进行任何审查。若预览分支出现问题，我们会直接撤销你的合并请求。

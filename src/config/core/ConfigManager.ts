@@ -3,13 +3,13 @@
  * 单例模式的配置管理
  */
 
-import type { Config, ConfigChangeListener, ConfigDebugInfo } from '../types';
-import { CONFIG_DEFAULTS } from '../constants';
-import { EnvParser } from '../utils/env-parser';
-import { hasEnvValue } from '../utils/env-mapping';
-import { ConfigLoader } from './ConfigLoader';
-import { ConfigValidator } from './ConfigValidator';
-import { TokenLoader } from './TokenLoader';
+import type { Config, ConfigChangeListener, ConfigDebugInfo } from "../types";
+import { CONFIG_DEFAULTS } from "../constants";
+import { EnvParser } from "../utils/env-parser";
+import { hasEnvValue } from "../utils/env-mapping";
+import { ConfigLoader } from "./ConfigLoader";
+import { ConfigValidator } from "./ConfigValidator";
+import { TokenLoader } from "./TokenLoader";
 
 /**
  * 配置管理器 - 单例模式
@@ -103,38 +103,40 @@ export class ConfigManager {
     }
 
     // 只在浏览器环境中启用
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
 
     this.hotReloadHandler = () => {
       const config = this.getConfig();
       if (config.developer.mode || config.developer.consoleLogging) {
-        // eslint-disable-next-line no-console
-        console.log('[ConfigManager] 检测到配置重载事件，重新加载配置...');
+        // oxlint-disable-next-line no-console
+        console.log("[ConfigManager] 检测到配置重载事件，重新加载配置...");
       }
       this.reloadConfig();
     };
 
-    window.addEventListener('config:reload', this.hotReloadHandler);
+    window.addEventListener("config:reload", this.hotReloadHandler);
     this.hotReloadEnabled = true;
 
     const config = this.getConfig();
     if (config.developer.mode || config.developer.consoleLogging) {
-      // eslint-disable-next-line no-console
-      console.log('[ConfigManager] 配置热更新已启用。使用 window.dispatchEvent(new CustomEvent("config:reload")) 触发重载。');
+      // oxlint-disable-next-line no-console
+      console.log(
+        '[ConfigManager] 配置热更新已启用。使用 window.dispatchEvent(new CustomEvent("config:reload")) 触发重载。',
+      );
     }
   }
 
   // 通知配置变更
   private notifyConfigChange(newConfig: Config, oldConfig: Config): void {
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener) => {
       try {
         listener(newConfig, oldConfig);
       } catch (error) {
         const developerConfig = this.getConfig().developer;
         if (developerConfig.mode || developerConfig.consoleLogging) {
-          console.error('配置变更监听器执行失败:', error);
+          console.error("配置变更监听器执行失败:", error);
         }
       }
     });
@@ -148,7 +150,7 @@ export class ConfigManager {
 
     const config: Config = {
       ...baseConfig,
-      tokens
+      tokens,
     };
 
     // 验证配置
@@ -165,7 +167,9 @@ export class ConfigManager {
    * @param env - 可选的环境变量源
    * @returns PAT环境变量对象
    */
-  getPATsForViteDefine(env?: Record<string, string | boolean | null | undefined>): Record<string, string> {
+  getPATsForViteDefine(
+    env?: Record<string, string | boolean | null | undefined>,
+  ): Record<string, string> {
     const processEnv = this.loader.getProcessEnv();
     const envSource = env ?? processEnv ?? {};
     return this.tokenLoader.getPATsForViteDefine(envSource);
@@ -184,13 +188,13 @@ export class ConfigManager {
     const stringEnv = this.loader.getStringEnvRecord(env);
 
     // 生成token源信息
-    const tokenSources: {key: string; hasValue: boolean; isValid: boolean}[] = [];
-    CONFIG_DEFAULTS.PAT_PREFIXES.forEach(prefix => {
+    const tokenSources: { key: string; hasValue: boolean; isValid: boolean }[] = [];
+    CONFIG_DEFAULTS.PAT_PREFIXES.forEach((prefix) => {
       const baseToken = this.tokenLoader.getEnvString(env, prefix);
       tokenSources.push({
         key: prefix,
         hasValue: baseToken !== undefined,
-        isValid: baseToken !== undefined && EnvParser.validateToken(baseToken)
+        isValid: baseToken !== undefined && EnvParser.validateToken(baseToken),
       });
 
       // 检查带数字的版本
@@ -200,34 +204,34 @@ export class ConfigManager {
         tokenSources.push({
           key: tokenKey,
           hasValue: token !== undefined,
-          isValid: token !== undefined && EnvParser.validateToken(token)
+          isValid: token !== undefined && EnvParser.validateToken(token),
         });
       }
     });
 
     return {
       loadedAt: new Date().toISOString(),
-      environment: config.runtime.isDev ? 'development' : 'production',
+      environment: config.runtime.isDev ? "development" : "production",
       configSummary: {
         siteTitle: config.site.title,
         repoOwner: config.github.repoOwner,
         repoName: config.github.repoName,
         developerMode: config.developer.mode,
         tokenMode: config.access.useTokenMode,
-        tokenCount: config.tokens.totalCount
+        tokenCount: config.tokens.totalCount,
       },
       envVarStatus: {
-        VITE_SITE_TITLE: hasEnvValue(stringEnv, ['VITE_SITE_TITLE']),
-        VITE_GITHUB_REPO_OWNER: hasEnvValue(stringEnv, ['VITE_GITHUB_REPO_OWNER']),
-        GITHUB_REPO_OWNER: hasEnvValue(stringEnv, ['GITHUB_REPO_OWNER']),
-        VITE_GITHUB_REPO_NAME: hasEnvValue(stringEnv, ['VITE_GITHUB_REPO_NAME']),
-        GITHUB_REPO_NAME: hasEnvValue(stringEnv, ['GITHUB_REPO_NAME']),
-        VITE_GITHUB_REPO_BRANCH: hasEnvValue(stringEnv, ['VITE_GITHUB_REPO_BRANCH']),
-        GITHUB_REPO_BRANCH: hasEnvValue(stringEnv, ['GITHUB_REPO_BRANCH']),
-        VITE_DEVELOPER_MODE: hasEnvValue(stringEnv, ['VITE_DEVELOPER_MODE']),
-        VITE_USE_TOKEN_MODE: hasEnvValue(stringEnv, ['VITE_USE_TOKEN_MODE'])
+        VITE_SITE_TITLE: hasEnvValue(stringEnv, ["VITE_SITE_TITLE"]),
+        VITE_GITHUB_REPO_OWNER: hasEnvValue(stringEnv, ["VITE_GITHUB_REPO_OWNER"]),
+        GITHUB_REPO_OWNER: hasEnvValue(stringEnv, ["GITHUB_REPO_OWNER"]),
+        VITE_GITHUB_REPO_NAME: hasEnvValue(stringEnv, ["VITE_GITHUB_REPO_NAME"]),
+        GITHUB_REPO_NAME: hasEnvValue(stringEnv, ["GITHUB_REPO_NAME"]),
+        VITE_GITHUB_REPO_BRANCH: hasEnvValue(stringEnv, ["VITE_GITHUB_REPO_BRANCH"]),
+        GITHUB_REPO_BRANCH: hasEnvValue(stringEnv, ["GITHUB_REPO_BRANCH"]),
+        VITE_DEVELOPER_MODE: hasEnvValue(stringEnv, ["VITE_DEVELOPER_MODE"]),
+        VITE_USE_TOKEN_MODE: hasEnvValue(stringEnv, ["VITE_USE_TOKEN_MODE"]),
       },
-      tokenSources: tokenSources.filter(source => source.hasValue)
+      tokenSources: tokenSources.filter((source) => source.hasValue),
     };
   }
 }
@@ -241,7 +245,7 @@ export class ConfigManager {
 export const configManager = ConfigManager.getInstance();
 
 // 在开发环境中自动启用热更新
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   // 延迟启用，确保配置已加载
   window.setTimeout(() => {
     const config = configManager.getConfig();

@@ -6,6 +6,5 @@ export {
   sortContents,
   filterHomepageContents,
   processContents,
-  type HomepageFilterConfig
-} from './contentFilters';
-
+  type HomepageFilterConfig,
+} from "./contentFilters";

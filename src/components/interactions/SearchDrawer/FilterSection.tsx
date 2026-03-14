@@ -17,10 +17,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import {
-  Clear as ClearIcon,
-  FilterList as FilterListIcon,
-} from "@mui/icons-material";
+import { Clear as ClearIcon, FilterList as FilterListIcon } from "@mui/icons-material";
 import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 import { useI18n } from "@/contexts/I18nContext";
 import React from "react";
@@ -76,11 +73,11 @@ interface FilterToggleButtonProps {
  */
 export const FilterToggleButton: React.FC<FilterToggleButtonProps> = ({ expanded, onToggle }) => {
   const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const { t } = useI18n();
 
   return (
-    <Tooltip title={expanded ? t('search.filter.collapse') : t('search.filter.toggle')}>
+    <Tooltip title={expanded ? t("search.filter.collapse") : t("search.filter.toggle")}>
       <IconButton
         onClick={onToggle}
         sx={{
@@ -120,7 +117,7 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
   onPathPrefixClear,
 }) => {
   const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const { t } = useI18n();
 
   return (
@@ -136,18 +133,20 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
       >
         <Stack spacing={isSmallScreen ? 1 : 1.5}>
           <Typography variant="subtitle2" color="text.secondary">
-            {t('search.filter.title')}
+            {t("search.filter.title")}
           </Typography>
 
           <Stack direction="row" spacing={isSmallScreen ? 0.75 : 1} flexWrap="wrap" useFlexGap>
             {availableBranches.length === 0 ? (
               <Typography variant="body2" color="text.secondary">
-                {t('search.filter.noBranches')}
+                {t("search.filter.noBranches")}
               </Typography>
             ) : (
               availableBranches.map((branch) => {
-                const isCurrentBranch = branch === currentBranch || (currentBranch === "" && branch === defaultBranch);
-                const selected = branchFilter.length === 0 ? isCurrentBranch : branchFilter.includes(branch);
+                const isCurrentBranch =
+                  branch === currentBranch || (currentBranch === "" && branch === defaultBranch);
+                const selected =
+                  branchFilter.length === 0 ? isCurrentBranch : branchFilter.includes(branch);
                 return (
                   <Chip
                     key={branch}
@@ -155,7 +154,9 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
                     color={selected ? "primary" : "default"}
                     variant={selected ? "filled" : "outlined"}
                     size={isSmallScreen ? "small" : "medium"}
-                    onClick={() => { onBranchToggle(branch); }}
+                    onClick={() => {
+                      onBranchToggle(branch);
+                    }}
                     sx={{ borderRadius: g3BorderRadius({ radius: 14, smoothness: 0.8 }) }}
                   />
                 );
@@ -163,7 +164,7 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
             )}
             {branchFilter.length > 0 && (
               <Chip
-                label={t('search.filter.clear')}
+                label={t("search.filter.clear")}
                 onClick={onClearBranches}
                 onDelete={onClearBranches}
                 color="secondary"
@@ -175,72 +176,78 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
           </Stack>
 
           <TextField
-            label={t('search.filter.extensionLabel')}
+            label={t("search.filter.extensionLabel")}
             value={extensionInput}
-            onChange={(event) => { onExtensionInputChange(event.target.value); }}
+            onChange={(event) => {
+              onExtensionInputChange(event.target.value);
+            }}
             onBlur={onExtensionApply}
             onKeyDown={(event) => {
-              if (event.key === 'Enter') {
+              if (event.key === "Enter") {
                 event.preventDefault();
                 onExtensionApply();
               }
             }}
-            placeholder={t('search.filter.extensionPlaceholder')}
+            placeholder={t("search.filter.extensionPlaceholder")}
             size={isSmallScreen ? "small" : "medium"}
             fullWidth
             sx={{
-              '& .MuiOutlinedInput-root': {
+              "& .MuiOutlinedInput-root": {
                 borderRadius: g3BorderRadius(G3_PRESETS.button),
               },
-              '& .MuiOutlinedInput-input': {
-                paddingLeft: isSmallScreen ? '16px' : '25px',
-              }
+              "& .MuiOutlinedInput-input": {
+                paddingLeft: isSmallScreen ? "16px" : "25px",
+              },
             }}
             slotProps={{
               input: {
-                endAdornment: extensionInput.trim().length > 0 ? (
-                  <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      onClick={onExtensionClear}
-                      sx={{ borderRadius: g3BorderRadius(G3_PRESETS.button) }}
-                    >
-                      <ClearIcon fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                ) : undefined,
+                endAdornment:
+                  extensionInput.trim().length > 0 ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={onExtensionClear}
+                        sx={{ borderRadius: g3BorderRadius(G3_PRESETS.button) }}
+                      >
+                        <ClearIcon fontSize="small" />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : undefined,
               },
             }}
           />
 
           <TextField
-            label={t('search.filter.pathLabel')}
+            label={t("search.filter.pathLabel")}
             value={pathPrefix}
-            onChange={(event) => { onPathPrefixChange(event.target.value); }}
-            placeholder={t('search.filter.pathPlaceholder')}
+            onChange={(event) => {
+              onPathPrefixChange(event.target.value);
+            }}
+            placeholder={t("search.filter.pathPlaceholder")}
             size={isSmallScreen ? "small" : "medium"}
             fullWidth
             sx={{
-              '& .MuiOutlinedInput-root': {
+              "& .MuiOutlinedInput-root": {
                 borderRadius: g3BorderRadius(G3_PRESETS.button),
               },
-              '& .MuiOutlinedInput-input': {
-                paddingLeft: isSmallScreen ? '16px' : '25px',
-              }
+              "& .MuiOutlinedInput-input": {
+                paddingLeft: isSmallScreen ? "16px" : "25px",
+              },
             }}
             slotProps={{
               input: {
-                endAdornment: pathPrefix.trim().length > 0 ? (
-                  <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      onClick={onPathPrefixClear}
-                      sx={{ borderRadius: g3BorderRadius(G3_PRESETS.button) }}
-                    >
-                      <ClearIcon fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                ) : undefined,
+                endAdornment:
+                  pathPrefix.trim().length > 0 ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={onPathPrefixClear}
+                        sx={{ borderRadius: g3BorderRadius(G3_PRESETS.button) }}
+                      >
+                        <ClearIcon fontSize="small" />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : undefined,
               },
             }}
           />

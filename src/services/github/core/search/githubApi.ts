@@ -7,24 +7,20 @@
  * @module search/githubApi
  */
 
-import axios from 'axios';
+import axios from "axios";
 
-import type { GitHubContent } from '@/types';
-import { logger } from '@/utils';
+import type { GitHubContent } from "@/types";
+import { logger } from "@/utils";
 
-import { RequestBatcher } from '../../RequestBatcher';
-import { shouldUseServerAPI } from '../../config';
+import { RequestBatcher } from "../../RequestBatcher";
+import { shouldUseServerAPI } from "../../config";
 import {
   safeValidateGitHubSearchResponse,
   filterAndNormalizeGitHubContents,
-  transformGitHubSearchResponse
-} from '../../schemas';
-import { getAuthHeaders } from '../Auth';
-import {
-  GITHUB_API_BASE,
-  GITHUB_REPO_NAME,
-  GITHUB_REPO_OWNER
-} from '../Config';
+  transformGitHubSearchResponse,
+} from "../../schemas";
+import { getAuthHeaders } from "../Auth";
+import { GITHUB_API_BASE, GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "../Config";
 
 /** 请求批处理器实例 */
 const batcher = new RequestBatcher();
@@ -39,18 +35,22 @@ const batcher = new RequestBatcher();
  * @param fileTypeFilter - 可选的文件类型过滤（扩展名）
  * @returns 构建好的查询字符串
  */
-function buildSearchQuery(searchTerm: string, currentPath?: string, fileTypeFilter?: string): string {
+function buildSearchQuery(
+  searchTerm: string,
+  currentPath?: string,
+  fileTypeFilter?: string,
+): string {
   const trimmedTerm = searchTerm.trim();
-  const safeTerm = trimmedTerm.replace(/"/g, '');
+  const safeTerm = trimmedTerm.replace(/"/g, "");
   const keyword = /\s/.test(safeTerm) ? `"${safeTerm}"` : safeTerm;
 
   let query = `repo:${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME} ${keyword} in:path`;
 
-  if (currentPath !== undefined && currentPath !== '' && currentPath !== '/') {
+  if (currentPath !== undefined && currentPath !== "" && currentPath !== "/") {
     query += ` path:${currentPath}`;
   }
 
-  if (fileTypeFilter !== undefined && fileTypeFilter !== '') {
+  if (fileTypeFilter !== undefined && fileTypeFilter !== "") {
     query += ` extension:${fileTypeFilter}`;
   }
 
@@ -80,27 +80,31 @@ async function searchViaServerApi(query: string): Promise<unknown> {
 async function searchViaDirectApi(query: string): Promise<unknown> {
   const apiUrl = `${GITHUB_API_BASE}/search/code`;
   const urlWithParams = new URL(apiUrl);
-  urlWithParams.searchParams.append('q', query);
-  urlWithParams.searchParams.append('per_page', '100');
+  urlWithParams.searchParams.append("q", query);
+  urlWithParams.searchParams.append("per_page", "100");
 
   const fetchUrl = urlWithParams.toString();
-  const result = await batcher.enqueue(fetchUrl, async () => {
-    logger.debug(`搜索API请求: ${fetchUrl}`);
-    const response = await fetch(fetchUrl, {
-      method: 'GET',
-      headers: getAuthHeaders()
-    });
+  const result = await batcher.enqueue(
+    fetchUrl,
+    async () => {
+      logger.debug(`搜索API请求: ${fetchUrl}`);
+      const response = await fetch(fetchUrl, {
+        method: "GET",
+        headers: getAuthHeaders(),
+      });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status.toString()}: ${response.statusText}`);
-    }
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status.toString()}: ${response.statusText}`);
+      }
 
-    return (await response.json()) as unknown;
-  }, {
-    priority: 'medium',
-    method: 'GET',
-    headers: getAuthHeaders() as Record<string, string>
-  });
+      return (await response.json()) as unknown;
+    },
+    {
+      priority: "medium",
+      method: "GET",
+      headers: getAuthHeaders() as Record<string, string>,
+    },
+  );
 
   logger.debug(`直接请求GitHub API搜索: ${query}`);
   return result;
@@ -120,8 +124,8 @@ async function searchViaDirectApi(query: string): Promise<unknown> {
  */
 export async function searchWithGitHubApi(
   searchTerm: string,
-  currentPath = '',
-  fileTypeFilter?: string
+  currentPath = "",
+  fileTypeFilter?: string,
 ): Promise<GitHubContent[]> {
   try {
     const query = buildSearchQuery(searchTerm, currentPath, fileTypeFilter);
@@ -140,10 +144,10 @@ export async function searchWithGitHubApi(
 
     return filterAndNormalizeGitHubContents(searchContents, {
       excludeHidden: false,
-      includeOnlyTypes: ['file']
+      includeOnlyTypes: ["file"],
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : '未知错误';
+    const message = error instanceof Error ? error.message : "未知错误";
     logger.error(`搜索失败: ${searchTerm}`, error);
     throw new Error(`搜索失败: ${message}`);
   }

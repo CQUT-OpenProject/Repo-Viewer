@@ -12,7 +12,7 @@ interface LoadingSpinnerProps {
 
 /**
  * 加载旋转器组件
- * 
+ *
  * 显示加载状态的旋转动画和可选消息。
  */
 const LoadingSpinner = memo<LoadingSpinnerProps>(

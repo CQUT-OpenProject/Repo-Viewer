@@ -5,16 +5,16 @@
  */
 
 // 导入各个服务模块
-import * as ContentServiceModule from './github/core/content';
-import * as SearchServiceModule from './github/core/search';
-import * as SearchIndexServiceModule from './github/core/searchIndex';
-import * as BranchServiceModule from './github/core/BranchService';
-import * as StatsServiceModule from './github/core/StatsService';
-import * as PrefetchServiceModule from './github/core/PrefetchService';
-import * as AuthModule from './github/core/Auth';
-import * as ConfigModule from './github/core/Config';
-import { CacheManager as CacheManagerClass } from './github/cache';
-import { GitHubTokenManager } from './github/TokenManager';
+import * as ContentServiceModule from "./github/core/content";
+import * as SearchServiceModule from "./github/core/search";
+import * as SearchIndexServiceModule from "./github/core/searchIndex";
+import * as BranchServiceModule from "./github/core/BranchService";
+import * as StatsServiceModule from "./github/core/StatsService";
+import * as PrefetchServiceModule from "./github/core/PrefetchService";
+import * as AuthModule from "./github/core/Auth";
+import * as ConfigModule from "./github/core/Config";
+import { CacheManager as CacheManagerClass } from "./github/cache";
+import { GitHubTokenManager } from "./github/TokenManager";
 import {
   getProxiedUrl as proxyGetProxiedUrl,
   getProxiedUrlSync as proxyGetProxiedUrlSync,
@@ -22,9 +22,9 @@ import {
   getCurrentProxyService as proxyGetCurrentProxyService,
   resetFailedProxyServices as proxyResetFailedProxyServices,
   getProxyHealthStats as proxyGetProxyHealthStats,
-  transformImageUrl as proxyTransformImageUrl
-} from './github/proxy';
-import { RequestBatcher as RequestBatcherClass } from './github/RequestBatcher';
+  transformImageUrl as proxyTransformImageUrl,
+} from "./github/proxy";
+import { RequestBatcher as RequestBatcherClass } from "./github/RequestBatcher";
 
 /**
  * 分组导出
@@ -63,7 +63,7 @@ export const GitHub = {
     prefetchBranch: SearchIndexServiceModule.prefetchSearchIndexForBranch,
     search: SearchIndexServiceModule.searchIndex,
     invalidateCache: SearchIndexServiceModule.invalidateSearchIndexCache,
-    refresh: SearchIndexServiceModule.refreshSearchIndex
+    refresh: SearchIndexServiceModule.refreshSearchIndex,
   },
 
   /** 分支服务 - 管理 Git 分支 */
@@ -119,7 +119,7 @@ export const GitHub = {
 } as const;
 
 // 扁平导出常用函数
-export { searchMultipleBranchesWithTreesApi } from './github/core/search';
+export { searchMultipleBranchesWithTreesApi } from "./github/core/search";
 
 // 导出类型定义
-export type { ConfigInfo } from './github/core/Config';
+export type { ConfigInfo } from "./github/core/Config";

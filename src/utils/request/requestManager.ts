@@ -1,10 +1,10 @@
 /**
  * 统一的请求管理器
- * 
+ *
  * 提供请求取消、防抖和竞态条件处理。
  */
 
-import { logger } from '@/utils';
+import { logger } from "@/utils";
 
 /**
  * 请求选项
@@ -14,12 +14,12 @@ export interface RequestOptions {
    * 防抖延迟（毫秒）
    */
   debounce?: number;
-  
+
   /**
    * 请求优先级
    */
-  priority?: 'high' | 'medium' | 'low';
-  
+  priority?: "high" | "medium" | "low";
+
   /**
    * 是否记录详细日志
    */
@@ -28,7 +28,7 @@ export interface RequestOptions {
 
 /**
  * 请求管理器类
- * 
+ *
  * 统一管理 HTTP 请求，提供以下功能：
  * - 自动取消重复的请求
  * - 防抖机制减少请求频率
@@ -40,16 +40,12 @@ export class RequestManager {
   private debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
   private createAbortError(): Error {
-    const error = new Error('Request aborted');
-    error.name = 'AbortError';
+    const error = new Error("Request aborted");
+    error.name = "AbortError";
     return error;
   }
 
-  private async waitForDebounce(
-    key: string,
-    delay: number,
-    signal: AbortSignal
-  ): Promise<void> {
+  private async waitForDebounce(key: string, delay: number, signal: AbortSignal): Promise<void> {
     if (delay <= 0) {
       return;
     }
@@ -68,7 +64,7 @@ export class RequestManager {
           timer = null;
         }
         this.debounceTimers.delete(key);
-        signal.removeEventListener('abort', abortHandler);
+        signal.removeEventListener("abort", abortHandler);
       };
 
       const finalize = (action: () => void, abortHandler: () => void): void => {
@@ -90,7 +86,7 @@ export class RequestManager {
         finalize(resolve, onAbort);
       }, delay);
 
-      signal.addEventListener('abort', onAbort, { once: true });
+      signal.addEventListener("abort", onAbort, { once: true });
       this.debounceTimers.set(key, timer);
 
       if (signal.aborted) {
@@ -101,14 +97,14 @@ export class RequestManager {
 
   /**
    * 发起请求
-   * 
+   *
    * 自动管理请求的生命周期，包括取消、防抖等。
-   * 
+   *
    * @param key - 请求的唯一标识符
    * @param fetcher - 请求函数，接收 AbortSignal 参数
    * @param options - 请求选项
    * @returns Promise，解析为请求结果
-   * 
+   *
    * @example
    * ```typescript
    * const contents = await requestManager.request(
@@ -121,7 +117,7 @@ export class RequestManager {
   async request<T>(
     key: string,
     fetcher: (signal: AbortSignal) => Promise<T>,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<T> {
     const { debounce, verbose = false } = options;
 
@@ -151,21 +147,21 @@ export class RequestManager {
 
     try {
       const result = await fetcher(controller.signal);
-      
+
       // 请求成功，清理
       this.pendingRequests.delete(key);
-      
+
       if (verbose) {
         logger.debug(`请求成功: ${key}`);
       }
-      
+
       return result;
     } catch (error) {
       // 清理
       this.pendingRequests.delete(key);
 
       // 如果是取消错误，不记录日志
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (error instanceof Error && error.name === "AbortError") {
         if (verbose) {
           logger.debug(`请求已取消: ${key}`);
         }
@@ -180,7 +176,7 @@ export class RequestManager {
 
   /**
    * 取消指定的请求
-   * 
+   *
    * @param key - 请求的唯一标识符
    * @returns 是否成功取消（如果请求不存在则返回 false）
    */
@@ -206,7 +202,7 @@ export class RequestManager {
 
   /**
    * 取消所有进行中的请求
-   * 
+   *
    * @returns 取消的请求数量
    */
   cancelAll(): number {
@@ -232,7 +228,7 @@ export class RequestManager {
 
   /**
    * 清理资源
-   * 
+   *
    * 取消所有请求并清理定时器。
    */
   cleanup(): void {
@@ -248,8 +244,8 @@ export const requestManager = new RequestManager();
 /**
  * 在应用卸载时清理资源
  */
-if (typeof window !== 'undefined') {
-  window.addEventListener('beforeunload', () => {
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeunload", () => {
     requestManager.cleanup();
   });
 }

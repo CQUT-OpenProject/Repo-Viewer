@@ -1,14 +1,14 @@
-import { useCallback, useEffect } from 'react';
-import type { GitHubContent } from '@/types';
-import type { NavigationDirection } from '@/contexts/unified';
-import { getGithubConfig } from '@/config';
-import { usePathManagement } from './github/usePathManagement';
-import { useBranchManagement } from './github/useBranchManagement';
-import { useContentLoading } from './github/useContentLoading';
-import { useReadmeContent } from './github/useReadmeContent';
-import { GitHub } from '@/services/github';
-import { useRepoSearch } from './github/useRepoSearch';
-import type { RepoSearchState } from './github/useRepoSearch';
+import { useCallback, useEffect } from "react";
+import type { GitHubContent } from "@/types";
+import type { NavigationDirection } from "@/contexts/unified";
+import { getGithubConfig } from "@/config";
+import { usePathManagement } from "./github/usePathManagement";
+import { useBranchManagement } from "./github/useBranchManagement";
+import { useContentLoading } from "./github/useContentLoading";
+import { useReadmeContent } from "./github/useReadmeContent";
+import { GitHub } from "@/services/github";
+import { useRepoSearch } from "./github/useRepoSearch";
+import type { RepoSearchState } from "./github/useRepoSearch";
 
 // 获取仓库信息
 const githubConfig = getGithubConfig();
@@ -56,26 +56,33 @@ export const useGitHubContent = (): {
   const contentState = useContentLoading(pathState.currentPath, branchState.currentBranch);
 
   // 使用 README 内容 Hook
-  const readmeState = useReadmeContent(contentState.contents, pathState.currentPath, branchState.currentBranch);
+  const readmeState = useReadmeContent(
+    contentState.contents,
+    pathState.currentPath,
+    branchState.currentBranch,
+  );
 
   const searchState = useRepoSearch({
     currentBranch: branchState.currentBranch,
     defaultBranch: DEFAULT_BRANCH,
-    branches: branchState.branches
+    branches: branchState.branches,
   });
 
   // 处理分支切换时的副作用
-  const handleBranchChange = useCallback((branch: string) => {
-    branchState.setCurrentBranch(branch);
-    // 切换分支时导航到根目录
-    pathState.setCurrentPath('', 'none');
-  }, [branchState, pathState]);
+  const handleBranchChange = useCallback(
+    (branch: string) => {
+      branchState.setCurrentBranch(branch);
+      // 切换分支时导航到根目录
+      pathState.setCurrentPath("", "none");
+    },
+    [branchState, pathState],
+  );
 
   // 处理刷新内容
   const refreshContents = useCallback(() => {
     pathState.setRefreshState(true, pathState.currentPath);
     contentState.refresh();
-    pathState.setNavigationDirection('none');
+    pathState.setNavigationDirection("none");
   }, [pathState, contentState]);
 
   // 同步刷新状态

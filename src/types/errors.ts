@@ -3,26 +3,26 @@
  */
 export enum ErrorLevel {
   /** 信息 */
-  INFO = 'info',
+  INFO = "info",
   /** 警告 */
-  WARNING = 'warning',
+  WARNING = "warning",
   /** 错误 */
-  ERROR = 'error',
+  ERROR = "error",
   /** 严重错误 */
-  CRITICAL = 'critical'
+  CRITICAL = "critical",
 }
 
 /**
  * 错误类别枚举
  */
 export enum ErrorCategory {
-  NETWORK = 'network',
-  API = 'api',
-  AUTH = 'auth',
-  VALIDATION = 'validation',
-  FILE_OPERATION = 'file_operation',
-  COMPONENT = 'component',
-  SYSTEM = 'system'
+  NETWORK = "network",
+  API = "api",
+  AUTH = "auth",
+  VALIDATION = "validation",
+  FILE_OPERATION = "file_operation",
+  COMPONENT = "component",
+  SYSTEM = "system",
 }
 
 /**
@@ -77,7 +77,7 @@ export interface FileOperationError extends BaseError {
   category: ErrorCategory.FILE_OPERATION;
   fileName: string;
   fileSize?: number;
-  operation: 'read' | 'write' | 'download' | 'compress' | 'parse';
+  operation: "read" | "write" | "download" | "compress" | "parse";
 }
 
 /**
@@ -95,7 +95,7 @@ export interface ComponentError extends BaseError {
  */
 export interface AuthError extends BaseError {
   category: ErrorCategory.AUTH;
-  tokenType?: 'github_pat' | 'session';
+  tokenType?: "github_pat" | "session";
   tokenIndex?: number;
 }
 
@@ -134,23 +134,19 @@ export type AppError =
 
 // 类型守卫函数
 export function isNetworkError(error: AppError): error is NetworkError {
-  return error.category === ErrorCategory.NETWORK && 'url' in error;
+  return error.category === ErrorCategory.NETWORK && "url" in error;
 }
 
 export function isGitHubError(error: AppError): error is GitHubError {
   return (
     error.category === ErrorCategory.API &&
-    ('rateLimitRemaining' in error ||
-     'rateLimitReset' in error ||
-     'documentationUrl' in error)
+    ("rateLimitRemaining" in error || "rateLimitReset" in error || "documentationUrl" in error)
   );
 }
 
 export function isFileOperationError(error: AppError): error is FileOperationError {
   return (
-    error.category === ErrorCategory.FILE_OPERATION &&
-    'fileName' in error &&
-    'operation' in error
+    error.category === ErrorCategory.FILE_OPERATION && "fileName" in error && "operation" in error
   );
 }
 

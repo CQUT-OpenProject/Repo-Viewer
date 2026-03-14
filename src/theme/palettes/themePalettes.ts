@@ -5,8 +5,8 @@
  * 包括浅色模式和深色模式的完整调色板定义。
  */
 
-import { alpha } from '@mui/material/styles';
-import type { ThemeColorConfig } from './themeColors';
+import { alpha } from "@mui/material/styles";
+import type { ThemeColorConfig } from "./themeColors";
 
 /**
  * 调色板配置接口
@@ -51,19 +51,19 @@ export function getLightPalette(themeConfig: ThemeColorConfig): PaletteConfig {
     primary: themeConfig.light.primary,
     secondary: themeConfig.light.secondary,
     error: {
-      main: '#B3261E',
-      light: '#F9DEDC',
-      dark: '#601410',
-      contrastText: '#FFFFFF',
+      main: "#B3261E",
+      light: "#F9DEDC",
+      dark: "#601410",
+      contrastText: "#FFFFFF",
     },
     background: {
-      default: '#FFFBFE',
-      paper: '#FFFFFF',
+      default: "#FFFBFE",
+      paper: "#FFFFFF",
     },
     text: {
-      primary: '#1C1B1F',
-      secondary: '#49454F',
-      disabled: alpha('#1C1B1F', 0.38),
+      primary: "#1C1B1F",
+      secondary: "#49454F",
+      disabled: alpha("#1C1B1F", 0.38),
     },
   };
 }
@@ -76,20 +76,19 @@ export function getDarkPalette(themeConfig: ThemeColorConfig): PaletteConfig {
     primary: themeConfig.dark.primary,
     secondary: themeConfig.dark.secondary,
     error: {
-      main: '#F2B8B5',
-      light: '#F9DEDC',
-      dark: '#B3261E',
-      contrastText: '#601410',
+      main: "#F2B8B5",
+      light: "#F9DEDC",
+      dark: "#B3261E",
+      contrastText: "#601410",
     },
     background: {
-      default: '#1C1B1F',
-      paper: '#2D2C34',
+      default: "#1C1B1F",
+      paper: "#2D2C34",
     },
     text: {
-      primary: '#E6E1E5',
-      secondary: '#CAC4D0',
-      disabled: alpha('#E6E1E5', 0.38),
+      primary: "#E6E1E5",
+      secondary: "#CAC4D0",
+      disabled: alpha("#E6E1E5", 0.38),
     },
   };
 }
-

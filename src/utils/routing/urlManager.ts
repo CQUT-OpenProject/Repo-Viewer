@@ -1,5 +1,5 @@
-import { GitHub } from '@/services/github';
-import { logger } from '../index';
+import { GitHub } from "@/services/github";
+import { logger } from "../index";
 
 /**
  * 验证路径格式
@@ -28,36 +28,36 @@ export function getPathFromUrl(): string {
     let pathname = window.location.pathname;
 
     // 移除开头的斜杠
-    if (pathname.startsWith('/')) {
+    if (pathname.startsWith("/")) {
       pathname = pathname.substring(1);
     }
 
     // 如果路径段不为空，解码并验证
-    if (pathname.length > 0 && pathname !== '/') {
+    if (pathname.length > 0 && pathname !== "/") {
       try {
         const decodedPath = decodeURIComponent(pathname);
 
         // 验证路径格式
         if (!isValidPath(decodedPath)) {
           logger.warn(`URL 路径包含非法字符，已忽略: ${pathname}`);
-          return '';
+          return "";
         }
 
         return decodedPath;
       } catch (decodeError) {
-        logger.error('URL 路径解码失败:', decodeError);
+        logger.error("URL 路径解码失败:", decodeError);
         // 尝试返回原始路径（可能已经解码）
         if (isValidPath(pathname)) {
           return pathname;
         }
-        return '';
+        return "";
       }
     }
 
-    return '';
+    return "";
   } catch (error) {
-    logger.error('解析 URL 路径参数失败:', error);
-    return '';
+    logger.error("解析 URL 路径参数失败:", error);
+    return "";
   }
 }
 
@@ -73,14 +73,14 @@ export function getBranchFromUrl(): string {
     const state = window.history.state as { branch?: string } | null;
     const stateBranch = state?.branch;
 
-    if (typeof stateBranch === 'string' && stateBranch.trim().length > 0) {
+    if (typeof stateBranch === "string" && stateBranch.trim().length > 0) {
       return stateBranch.trim();
     }
 
-    return '';
+    return "";
   } catch (error) {
-    logger.error('解析 URL 分支参数失败:', error);
-    return '';
+    logger.error("解析 URL 分支参数失败:", error);
+    return "";
   }
 }
 
@@ -95,14 +95,14 @@ export function getPreviewFromUrl(): string {
   try {
     // 如果没有查询参数，检查是否有 #preview 哈希标记
     const hash = window.location.hash;
-    if (hash.length > 0 && hash.startsWith('#preview=')) {
-      return decodeURIComponent(hash.substring('#preview='.length));
+    if (hash.length > 0 && hash.startsWith("#preview=")) {
+      return decodeURIComponent(hash.substring("#preview=".length));
     }
 
-    return '';
+    return "";
   } catch (error) {
-    logger.error('解析 URL 预览参数失败:', error);
-    return '';
+    logger.error("解析 URL 预览参数失败:", error);
+    return "";
   }
 }
 
@@ -130,7 +130,7 @@ interface UrlBuildResult {
  */
 function buildUrl(path: string, preview?: string, branch?: string): UrlBuildResult {
   // 将路径编码为 URL 路径段
-  const encodedPath = path.length > 0 ? encodeURI(path) : '';
+  const encodedPath = path.length > 0 ? encodeURI(path) : "";
 
   // 基础 URL 是路径
   let url = `/${encodedPath}`;
@@ -141,8 +141,8 @@ function buildUrl(path: string, preview?: string, branch?: string): UrlBuildResu
   // 如果有预览参数，添加为哈希部分，但仅使用文件名
   if (preview !== undefined && preview.length > 0) {
     // 从路径中提取文件名
-    const fileName = preview.split('/').pop();
-    url += `#preview=${encodeURI(fileName ?? '')}`;
+    const fileName = preview.split("/").pop();
+    url += `#preview=${encodeURI(fileName ?? "")}`;
   }
 
   return {
@@ -150,8 +150,8 @@ function buildUrl(path: string, preview?: string, branch?: string): UrlBuildResu
     state: {
       path,
       ...(preview !== undefined ? { preview } : {}),
-      branch: activeBranch
-    }
+      branch: activeBranch,
+    },
   };
 }
 
@@ -168,10 +168,10 @@ function buildUrl(path: string, preview?: string, branch?: string): UrlBuildResu
 export function updateUrlWithoutHistory(path: string, preview?: string, branch?: string): void {
   try {
     const { url, state } = buildUrl(path, preview, branch);
-    window.history.replaceState(state, '', url);
+    window.history.replaceState(state, "", url);
     logger.debug(`URL 已更新（不添加历史记录）: ${url}`);
   } catch (error) {
-    logger.error('更新 URL 失败:', error);
+    logger.error("更新 URL 失败:", error);
   }
 }
 
@@ -188,10 +188,10 @@ export function updateUrlWithoutHistory(path: string, preview?: string, branch?:
 export function updateUrlWithHistory(path: string, preview?: string, branch?: string): void {
   try {
     const { url, state } = buildUrl(path, preview, branch);
-    window.history.pushState(state, '', url);
+    window.history.pushState(state, "", url);
     logger.debug(`URL 已更新（添加历史记录）: ${url}`);
   } catch (error) {
-    logger.error('更新 URL 失败:', error);
+    logger.error("更新 URL 失败:", error);
   }
 }
 
@@ -206,9 +206,9 @@ export function hasPreviewParam(): boolean {
   try {
     // 检查哈希部分
     const hash = window.location.hash;
-    return hash.startsWith('#preview=');
+    return hash.startsWith("#preview=");
   } catch (error) {
-    logger.error('检查 URL 预览参数失败:', error);
+    logger.error("检查 URL 预览参数失败:", error);
     return false;
   }
 }

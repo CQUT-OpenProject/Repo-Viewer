@@ -10,7 +10,7 @@
  * @see {@link FeatureErrorBoundary} 功能级错误边界快捷组件
  */
 
-import React from 'react';
+import React from "react";
 import {
   Box,
   Card,
@@ -21,20 +21,20 @@ import {
   Alert,
   AlertTitle,
   Chip,
-  Collapse
-} from '@mui/material';
-import { g3BorderRadius, G3_PRESETS } from '@/theme/g3Curves';
+  Collapse,
+} from "@mui/material";
+import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 import {
   ErrorOutline,
   Refresh,
   BugReport,
   Home,
   ExpandLess,
-  ExpandMore
-} from '@mui/icons-material';
-import { ErrorManager } from '@/utils/error';
-import { isDeveloperMode } from '@/config';
-import { useI18n } from '@/contexts/I18nContext';
+  ExpandMore,
+} from "@mui/icons-material";
+import { ErrorManager } from "@/utils/error";
+import { isDeveloperMode } from "@/config";
+import { useI18n } from "@/contexts/I18nContext";
 
 type ErrorInfo = React.ErrorInfo;
 
@@ -52,7 +52,7 @@ export interface ErrorBoundaryProps {
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
   resetOnPropsChange?: boolean;
   resetKeys?: (string | number)[];
-  level?: 'page' | 'component' | 'feature';
+  level?: "page" | "component" | "feature";
   componentName?: string;
 }
 
@@ -61,7 +61,7 @@ export interface ErrorFallbackProps {
   errorInfo: ErrorInfo;
   resetError: () => void;
   retryCount: number;
-  level: 'page' | 'component' | 'feature';
+  level: "page" | "component" | "feature";
 }
 
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
@@ -74,19 +74,19 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       error: null,
       errorInfo: null,
       showDetails: false,
-      retryCount: 0
+      retryCount: 0,
     };
   }
 
   static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return {
       hasError: true,
-      error
+      error,
     };
   }
 
   override componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    const { onError, componentName = 'Unknown' } = this.props;
+    const { onError, componentName = "Unknown" } = this.props;
 
     // 创建组件错误并交给ErrorManager处理
     const componentError = ErrorManager.createComponentError(
@@ -96,8 +96,8 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       {
         componentStack: errorInfo.componentStack,
         stack: error.stack,
-        retryCount: this.state.retryCount
-      }
+        retryCount: this.state.retryCount,
+      },
     );
 
     ErrorManager.captureError(componentError);
@@ -105,7 +105,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     // 更新状态
     this.setState({
       errorInfo,
-      retryCount: this.state.retryCount + 1
+      retryCount: this.state.retryCount + 1,
     });
 
     // 调用自定义错误处理器
@@ -123,9 +123,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       Array.isArray(resetKeys) &&
       Array.isArray(prevProps.resetKeys)
     ) {
-      const hasResetKeyChanged = resetKeys.some(
-        (key, idx) => prevProps.resetKeys?.[idx] !== key
-      );
+      const hasResetKeyChanged = resetKeys.some((key, idx) => prevProps.resetKeys?.[idx] !== key);
 
       if (hasResetKeyChanged) {
         this.resetError();
@@ -144,16 +142,15 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       hasError: false,
       error: null,
       errorInfo: null,
-      showDetails: false
+      showDetails: false,
     });
   };
 
   // 延迟重置，给用户时间看到错误信息
 
-
   toggleDetails = (): void => {
-    this.setState(prevState => ({
-      showDetails: !prevState.showDetails
+    this.setState((prevState) => ({
+      showDetails: !prevState.showDetails,
     }));
   };
 
@@ -162,18 +159,18 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   };
 
   goHome = (): void => {
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   override render(): React.ReactNode {
     const { hasError, error, errorInfo, showDetails, retryCount } = this.state;
-    const { children, fallback: CustomFallback, level = 'component' } = this.props;
+    const { children, fallback: CustomFallback, level = "component" } = this.props;
 
     if (hasError && error !== null) {
-      const resolvedErrorInfo: ErrorInfo = errorInfo ?? { componentStack: '' };
+      const resolvedErrorInfo: ErrorInfo = errorInfo ?? { componentStack: "" };
 
       // 使用自定义fallback组件
-      if (typeof CustomFallback === 'function') {
+      if (typeof CustomFallback === "function") {
         return (
           <CustomFallback
             error={error}
@@ -206,12 +203,14 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 }
 
 // 默认错误回退组件
-const DefaultErrorFallback: React.FC<ErrorFallbackProps & {
-  toggleDetails: () => void;
-  showDetails: boolean;
-  reloadPage: () => void;
-  goHome: () => void;
-}> = ({
+const DefaultErrorFallback: React.FC<
+  ErrorFallbackProps & {
+    toggleDetails: () => void;
+    showDetails: boolean;
+    reloadPage: () => void;
+    goHome: () => void;
+  }
+> = ({
   error,
   errorInfo,
   resetError,
@@ -220,88 +219,83 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps & {
   toggleDetails,
   showDetails,
   reloadPage,
-  goHome
+  goHome,
 }) => {
-  const isPageLevel = level === 'page';
+  const isPageLevel = level === "page";
   const isDev = isDeveloperMode();
   const { t } = useI18n();
 
   const getErrorTitle = (): string => {
     switch (level) {
-      case 'page':
-        return t('error.boundary.title.page');
-      case 'feature':
-        return t('error.boundary.title.feature');
+      case "page":
+        return t("error.boundary.title.page");
+      case "feature":
+        return t("error.boundary.title.feature");
       default:
-        return t('error.boundary.title.component');
+        return t("error.boundary.title.component");
     }
   };
 
   const getErrorMessage = (): string => {
     if (retryCount > 3) {
-      return t('error.boundary.retryExceeded');
+      return t("error.boundary.retryExceeded");
     }
-    if (error.message !== '') {
+    if (error.message !== "") {
       return error.message;
     }
-    return t('error.boundary.unknownError');
+    return t("error.boundary.unknownError");
   };
 
   return (
     <Box
       sx={{
         p: isPageLevel ? 4 : 2,
-        minHeight: isPageLevel ? '50vh' : 'auto',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        minHeight: isPageLevel ? "50vh" : "auto",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       <Card
         sx={{
           maxWidth: isPageLevel ? 600 : 400,
-          width: '100%',
-          boxShadow: isPageLevel ? 3 : 1
+          width: "100%",
+          boxShadow: isPageLevel ? 3 : 1,
         }}
       >
         <CardContent sx={{ p: 3 }}>
           <Stack spacing={2} alignItems="center">
             {/* 错误图标和标题 */}
-            <Box sx={{ textAlign: 'center' }}>
+            <Box sx={{ textAlign: "center" }}>
               <ErrorOutline
                 sx={{
                   fontSize: isPageLevel ? 64 : 48,
-                  color: 'error.main',
-                  mb: 1
+                  color: "error.main",
+                  mb: 1,
                 }}
               />
-              <Typography variant={isPageLevel ? 'h4' : 'h6'} gutterBottom>
+              <Typography variant={isPageLevel ? "h4" : "h6"} gutterBottom>
                 {getErrorTitle()}
               </Typography>
             </Box>
 
             {/* 错误信息 */}
-            <Alert severity="error" sx={{ width: '100%' }}>
-              <AlertTitle>{t('error.boundary.details')}</AlertTitle>
+            <Alert severity="error" sx={{ width: "100%" }}>
+              <AlertTitle>{t("error.boundary.details")}</AlertTitle>
               {getErrorMessage()}
             </Alert>
 
             {/* 重试次数显示 */}
             {retryCount > 0 && (
               <Chip
-                label={t('error.boundary.retryCount', { count: retryCount })}
+                label={t("error.boundary.retryCount", { count: retryCount })}
                 color="warning"
                 size="small"
               />
             )}
 
             {/* 操作按钮 */}
-            <Stack
-              direction="row"
-              spacing={2}
-              sx={{ width: '100%' }}
-              justifyContent="center"
-            >
+            <Stack direction="row" spacing={2} sx={{ width: "100%" }} justifyContent="center">
               <Button
                 variant="contained"
                 startIcon={<Refresh />}
@@ -313,17 +307,10 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps & {
 
               {isPageLevel && (
                 <>
-                  <Button
-                    variant="outlined"
-                    startIcon={<Home />}
-                    onClick={goHome}
-                  >
+                  <Button variant="outlined" startIcon={<Home />} onClick={goHome}>
                     回到首页
                   </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={reloadPage}
-                  >
+                  <Button variant="outlined" onClick={reloadPage}>
                     刷新页面
                   </Button>
                 </>
@@ -332,14 +319,14 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps & {
 
             {/* 开发模式下的详细信息 */}
             {isDev && (
-              <Box sx={{ width: '100%' }}>
+              <Box sx={{ width: "100%" }}>
                 <Button
                   startIcon={showDetails ? <ExpandLess /> : <ExpandMore />}
                   onClick={toggleDetails}
                   size="small"
                   endIcon={<BugReport />}
                 >
-                  {showDetails ? '隐藏' : '显示'}堆栈详情
+                  {showDetails ? "隐藏" : "显示"}堆栈详情
                 </Button>
 
                 <Collapse in={showDetails}>
@@ -349,32 +336,32 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps & {
                       <Box
                         component="pre"
                         sx={{
-                          fontSize: '0.75rem',
+                          fontSize: "0.75rem",
                           maxHeight: 200,
-                          overflow: 'auto',
-                          backgroundColor: 'grey.100',
+                          overflow: "auto",
+                          backgroundColor: "grey.100",
                           p: 1,
                           borderRadius: g3BorderRadius(G3_PRESETS.card),
-                          mt: 1
+                          mt: 1,
                         }}
                       >
                         {error.stack}
                       </Box>
                     </Alert>
 
-                    {errorInfo.componentStack !== '' && (
+                    {errorInfo.componentStack !== "" && (
                       <Alert severity="info" sx={{ mt: 1 }}>
                         <AlertTitle>组件堆栈</AlertTitle>
                         <Box
                           component="pre"
                           sx={{
-                            fontSize: '0.75rem',
+                            fontSize: "0.75rem",
                             maxHeight: 200,
-                            overflow: 'auto',
-                            backgroundColor: 'grey.100',
+                            overflow: "auto",
+                            backgroundColor: "grey.100",
                             p: 1,
                             borderRadius: g3BorderRadius(G3_PRESETS.card),
-                            mt: 1
+                            mt: 1,
                           }}
                         >
                           {errorInfo.componentStack}
@@ -392,15 +379,9 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps & {
   );
 };
 
-
-
 // 页面级错误边界
 export const PageErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <ErrorBoundary
-    level="page"
-    componentName="PageLevel"
-    resetOnPropsChange={true}
-  >
+  <ErrorBoundary level="page" componentName="PageLevel" resetOnPropsChange={true}>
     {children}
   </ErrorBoundary>
 );
@@ -410,13 +391,7 @@ export const FeatureErrorBoundary: React.FC<{
   children: React.ReactNode;
   featureName: string;
 }> = ({ children, featureName }) => (
-  <ErrorBoundary
-    level="feature"
-    componentName={featureName}
-    resetOnPropsChange={true}
-  >
+  <ErrorBoundary level="feature" componentName={featureName} resetOnPropsChange={true}>
     {children}
   </ErrorBoundary>
 );
-
-

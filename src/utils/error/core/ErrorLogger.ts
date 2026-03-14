@@ -1,6 +1,6 @@
-import type { AppError } from '@/types/errors';
-import { ErrorLevel } from '@/types/errors';
-import { createScopedLogger } from '../../logging/logger';
+import type { AppError } from "@/types/errors";
+import { ErrorLevel } from "@/types/errors";
+import { createScopedLogger } from "../../logging/logger";
 
 /**
  * 错误日志记录器类
@@ -9,7 +9,7 @@ import { createScopedLogger } from '../../logging/logger';
  */
 export class ErrorLogger {
   private readonly enableLogging: boolean;
-  private readonly scopedLogger = createScopedLogger('ErrorManager');
+  private readonly scopedLogger = createScopedLogger("ErrorManager");
 
   constructor(enableLogging = true) {
     this.enableLogging = enableLogging;

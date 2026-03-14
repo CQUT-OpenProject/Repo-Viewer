@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import type { GitHubContent } from '@/types';
-import { GitHub } from '@/services/github';
-import { GITHUB_REPO_OWNER, GITHUB_REPO_NAME } from '@/services/github/core/Config';
-import { logger } from '@/utils';
-import { handleError } from '@/utils/error/errorHandler';
-import type { ReadmeContentState } from './types';
+import { useState, useEffect, useCallback, useRef } from "react";
+import type { GitHubContent } from "@/types";
+import { GitHub } from "@/services/github";
+import { GITHUB_REPO_OWNER, GITHUB_REPO_NAME } from "@/services/github/core/Config";
+import { logger } from "@/utils";
+import { handleError } from "@/utils/error/errorHandler";
+import type { ReadmeContentState } from "./types";
 
 /**
  * README 内容管理 Hook
@@ -16,7 +16,11 @@ import type { ReadmeContentState } from './types';
  * @param currentBranch - 当前分支
  * @returns README 内容状态
  */
-export function useReadmeContent(contents: GitHubContent[], currentPath: string, currentBranch: string): ReadmeContentState {
+export function useReadmeContent(
+  contents: GitHubContent[],
+  currentPath: string,
+  currentBranch: string,
+): ReadmeContentState {
   const [readmeContent, setReadmeContent] = useState<string | null>(null);
   const [loadingReadme, setLoadingReadme] = useState<boolean>(false);
   const [readmeLoaded, setReadmeLoaded] = useState<boolean>(false);
@@ -49,86 +53,84 @@ export function useReadmeContent(contents: GitHubContent[], currentPath: string,
       return url;
     }
 
-    const separator = url.includes('?') ? '&' : '?';
+    const separator = url.includes("?") ? "&" : "?";
     return `${url}${separator}v=${encodeURIComponent(value)}`;
   }, []);
 
-  const loadReadmeContent = useCallback(async (
-    readmeItem: GitHubContent,
-    requestKey: string,
-    preserveContent: boolean
-  ) => {
-    if (readmeItem.path.trim() === '') {
-      return;
-    }
-
-    const readmeDir = readmeItem.path.includes('/')
-      ? readmeItem.path.split('/').slice(0, -1).join('/')
-      : '';
-
-    const hasExistingContent = typeof readmeContentRef.current === 'string' &&
-      readmeContentRef.current.trim().length > 0;
-    const shouldPreserve = preserveContent && hasExistingContent;
-
-    setLoadingReadme(true);
-    if (!shouldPreserve) {
-      setReadmeContent(null);
-      setReadmeLoaded(false);
-    }
-
-    try {
-      const encodedPath = readmeItem.path
-        .split('/')
-        .map(segment => encodeURIComponent(segment))
-        .join('/');
-      const cacheTag = readmeItem.sha.length > 0
-        ? readmeItem.sha
-        : requestKey;
-      const baseUrl = `https://raw.githubusercontent.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/${encodeURIComponent(currentBranchRef.current)}/${encodedPath}`;
-      const fileUrl = appendCacheBuster(baseUrl, cacheTag);
-      const content = await GitHub.Content.getFileContent(fileUrl);
-
-      // 检查路径是否已经变更
-      if (currentPathRef.current !== readmeDir) {
-        logger.debug(`README 路径已变更，忽略: ${readmeItem.path}`);
+  const loadReadmeContent = useCallback(
+    async (readmeItem: GitHubContent, requestKey: string, preserveContent: boolean) => {
+      if (readmeItem.path.trim() === "") {
         return;
       }
 
-      // 检查请求期间标识是否已变更（例如分支切换），避免旧响应覆盖新内容
-      if (lastReadmeKeyRef.current !== requestKey) {
-        logger.debug(`README 标识已变更，忽略响应: ${readmeItem.path}`);
-        return;
-      }
+      const readmeDir = readmeItem.path.includes("/")
+        ? readmeItem.path.split("/").slice(0, -1).join("/")
+        : "";
 
-      setReadmeContent(content);
-      setReadmeLoaded(true); // 设置为已加载完成
-    } catch (e: unknown) {
-      handleError(e, 'useReadmeContent.loadReadmeContent', {
-        silent: true,
-        userMessage: `加载 README 失败: ${e instanceof Error ? e.message : '未知错误'}`
-      });
-      logger.error(`加载 README 失败: ${e instanceof Error ? e.message : '未知错误'}`);
+      const hasExistingContent =
+        typeof readmeContentRef.current === "string" && readmeContentRef.current.trim().length > 0;
+      const shouldPreserve = preserveContent && hasExistingContent;
+
+      setLoadingReadme(true);
       if (!shouldPreserve) {
         setReadmeContent(null);
+        setReadmeLoaded(false);
       }
-      setReadmeLoaded(true); // 出错时也设置为已加载完成
-    } finally {
-      setLoadingReadme(false);
-    }
-  }, [appendCacheBuster]);
+
+      try {
+        const encodedPath = readmeItem.path
+          .split("/")
+          .map((segment) => encodeURIComponent(segment))
+          .join("/");
+        const cacheTag = readmeItem.sha.length > 0 ? readmeItem.sha : requestKey;
+        const baseUrl = `https://raw.githubusercontent.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/${encodeURIComponent(currentBranchRef.current)}/${encodedPath}`;
+        const fileUrl = appendCacheBuster(baseUrl, cacheTag);
+        const content = await GitHub.Content.getFileContent(fileUrl);
+
+        // 检查路径是否已经变更
+        if (currentPathRef.current !== readmeDir) {
+          logger.debug(`README 路径已变更，忽略: ${readmeItem.path}`);
+          return;
+        }
+
+        // 检查请求期间标识是否已变更（例如分支切换），避免旧响应覆盖新内容
+        if (lastReadmeKeyRef.current !== requestKey) {
+          logger.debug(`README 标识已变更，忽略响应: ${readmeItem.path}`);
+          return;
+        }
+
+        setReadmeContent(content);
+        setReadmeLoaded(true); // 设置为已加载完成
+      } catch (e: unknown) {
+        handleError(e, "useReadmeContent.loadReadmeContent", {
+          silent: true,
+          userMessage: `加载 README 失败: ${e instanceof Error ? e.message : "未知错误"}`,
+        });
+        logger.error(`加载 README 失败: ${e instanceof Error ? e.message : "未知错误"}`);
+        if (!shouldPreserve) {
+          setReadmeContent(null);
+        }
+        setReadmeLoaded(true); // 出错时也设置为已加载完成
+      } finally {
+        setLoadingReadme(false);
+      }
+    },
+    [appendCacheBuster],
+  );
 
   // 监听内容变化，自动加载 README
   useEffect(() => {
     // 查找 README 文件
-    const readmeItem = contents.find(item =>
-      item.type === 'file' &&
-      item.name.toLowerCase().includes('readme') &&
-      item.name.toLowerCase().endsWith('.md')
+    const readmeItem = contents.find(
+      (item) =>
+        item.type === "file" &&
+        item.name.toLowerCase().includes("readme") &&
+        item.name.toLowerCase().endsWith(".md"),
     );
 
     if (readmeItem !== undefined) {
       const nextReadmePath = readmeItem.path;
-      const nextReadmeKey = `${currentBranchRef.current}:${readmeItem.path}:${readmeItem.sha}:${readmeItem.download_url ?? ''}`;
+      const nextReadmeKey = `${currentBranchRef.current}:${readmeItem.path}:${readmeItem.sha}:${readmeItem.download_url ?? ""}`;
       const isSameReadme = lastReadmeKeyRef.current === nextReadmeKey;
 
       if (isSameReadme && (loadingReadmeRef.current || readmeLoadedRef.current)) {
@@ -165,6 +167,6 @@ export function useReadmeContent(contents: GitHubContent[], currentPath: string,
   return {
     readmeContent,
     loadingReadme,
-    readmeLoaded
+    readmeLoaded,
   };
 }

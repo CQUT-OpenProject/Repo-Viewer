@@ -6,8 +6,8 @@
  * @module hooks/github/types
  */
 
-import type { NavigationDirection } from '@/contexts/unified';
-import type { GitHubContent } from '@/types';
+import type { NavigationDirection } from "@/contexts/unified";
+import type { GitHubContent } from "@/types";
 
 /**
  * 路径管理 Hook 的返回类型

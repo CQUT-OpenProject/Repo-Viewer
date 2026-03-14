@@ -16,7 +16,9 @@ interface LayoutMetricsParams {
   viewportHeight: number | null;
 }
 
-export const getRowMetrics = (isSmallScreen: boolean): {
+export const getRowMetrics = (
+  isSmallScreen: boolean,
+): {
   rowHeight: number;
   rowPaddingBottom: number;
 } => {
@@ -32,7 +34,10 @@ export const getRowMetrics = (isSmallScreen: boolean): {
   };
 };
 
-export const getListPadding = (needsScrolling: boolean, isSmallScreen: boolean): {
+export const getListPadding = (
+  needsScrolling: boolean,
+  isSmallScreen: boolean,
+): {
   paddingTop: number;
   paddingBottom: number;
 } => {
@@ -71,8 +76,7 @@ export const calculateLayoutMetrics = ({
   );
 
   const contentHeight = fileCount * rowHeight;
-  const requiresScroll =
-    contentHeight > maxAvailableHeight || (!isSmallScreen && fileCount >= 10);
+  const requiresScroll = contentHeight > maxAvailableHeight || (!isSmallScreen && fileCount >= 10);
 
   if (!requiresScroll) {
     let paddingMultiplier;
@@ -97,10 +101,7 @@ export const calculateLayoutMetrics = ({
   let scrollModeHeight: number;
 
   if (fileCount <= LIST_HEIGHT_CONFIG.maxVisibleItems) {
-    scrollModeHeight = Math.min(
-      contentHeight + hoverExtraSpace,
-      maxAvailableHeight,
-    );
+    scrollModeHeight = Math.min(contentHeight + hoverExtraSpace, maxAvailableHeight);
   } else {
     scrollModeHeight = Math.min(
       LIST_HEIGHT_CONFIG.maxVisibleItems * rowHeight + hoverExtraSpace,

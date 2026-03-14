@@ -1,10 +1,10 @@
-import React, { useMemo, useEffect, useRef, useState, useCallback } from 'react';
-import { useTheme, useMediaQuery } from '@mui/material';
-import FullScreenPreview from '@/components/file/FullScreenPreview';
-import ImageThumbnail from './ImageThumbnail';
-import ImagePreviewContent from './ImagePreviewContent';
-import { useImagePreview } from './hooks/useImagePreview';
-import type { ImagePreviewProps, ImageToolbarProps } from './types';
+import React, { useMemo, useEffect, useRef, useState, useCallback } from "react";
+import { useTheme, useMediaQuery } from "@mui/material";
+import FullScreenPreview from "@/components/file/FullScreenPreview";
+import ImageThumbnail from "./ImageThumbnail";
+import ImagePreviewContent from "./ImagePreviewContent";
+import { useImagePreview } from "./hooks/useImagePreview";
+import type { ImagePreviewProps, ImageToolbarProps } from "./types";
 
 const NOOP: () => void = () => undefined;
 
@@ -20,7 +20,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
   onClose,
   isFullScreen = false,
   thumbnailMode = false,
-  thumbnailSize = { width: '200px', height: '150px' },
+  thumbnailSize = { width: "200px", height: "150px" },
   lazyLoad = true,
   className,
   style,
@@ -30,9 +30,10 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
   onNext,
 }) => {
   const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
-  const normalizedFileName = typeof fileName === 'string' && fileName.trim().length > 0 ? fileName : undefined;
-  const displayFileName = normalizedFileName ?? '未知文件';
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const normalizedFileName =
+    typeof fileName === "string" && fileName.trim().length > 0 ? fileName : undefined;
+  const displayFileName = normalizedFileName ?? "未知文件";
   const prevImageUrlRef = useRef<string>(imageUrl);
   const [lastKnownAspectRatio, setLastKnownAspectRatio] = useState<number | null>(null);
 
@@ -86,7 +87,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
   // 计算关闭按钮边框半径
   const closeButtonBorderRadius = useMemo(() => {
     const radius = theme.shape.borderRadius;
-    if (typeof radius === 'number') {
+    if (typeof radius === "number") {
       return radius * 2;
     }
     const trimmedRadius = radius.trim();
@@ -164,7 +165,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
     return (
       <FullScreenPreview
         onClose={handleClosePreview}
-        backgroundColor={theme.palette.mode === 'dark' ? '#1a1a1a' : '#f5f5f5'}
+        backgroundColor={theme.palette.mode === "dark" ? "#1a1a1a" : "#f5f5f5"}
         disablePadding={true}
         data-oid=":0opztf"
       >

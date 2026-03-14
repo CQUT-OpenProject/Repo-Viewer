@@ -1,8 +1,8 @@
-import React from 'react';
-import { Box, Button, useTheme } from '@mui/material';
-import { g3BorderRadius, G3_PRESETS } from '@/theme/g3Curves';
-import type { ImageThumbnailProps } from './types';
-import { useI18n } from '@/contexts/I18nContext';
+import React from "react";
+import { Box, Button, useTheme } from "@mui/material";
+import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
+import type { ImageThumbnailProps } from "./types";
+import { useI18n } from "@/contexts/I18nContext";
 
 /**
  * 图片缩略图组件
@@ -22,15 +22,16 @@ const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
 }) => {
   const theme = useTheme();
   const { t } = useI18n();
-  const normalizedFileName = typeof fileName === 'string' && fileName.trim().length > 0 ? fileName : undefined;
-  const altText = normalizedFileName ?? '缩略图';
+  const normalizedFileName =
+    typeof fileName === "string" && fileName.trim().length > 0 ? fileName : undefined;
+  const altText = normalizedFileName ?? "缩略图";
 
   return (
     <Box
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
         gap: 2,
       }}
       data-oid="sma03t:"
@@ -40,18 +41,18 @@ const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
         sx={{
           width: thumbnailSize.width,
           height: thumbnailSize.height,
-          overflow: 'hidden',
-          cursor: 'pointer',
-          border: '1px solid',
-          borderColor: 'divider',
+          overflow: "hidden",
+          cursor: "pointer",
+          border: "1px solid",
+          borderColor: "divider",
           borderRadius: g3BorderRadius(G3_PRESETS.image),
-          ...(typeof aspectRatio === 'number' && aspectRatio > 0
+          ...(typeof aspectRatio === "number" && aspectRatio > 0
             ? {
                 aspectRatio,
-                height: 'auto',
+                height: "auto",
               }
             : {}),
-          '&:hover': {
+          "&:hover": {
             boxShadow: theme.shadows[2],
           },
         }}
@@ -60,13 +61,13 @@ const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
       >
         <img
           ref={imgRef}
-          src={shouldLoad ? imageUrl : ''}
+          src={shouldLoad ? imageUrl : ""}
           alt={altText}
           style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            transition: 'transform 0.3s ease',
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            transition: "transform 0.3s ease",
           }}
           onLoad={onLoad}
           onError={onError}
@@ -78,10 +79,10 @@ const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
       <Button
         variant="contained"
         onClick={onOpenPreview}
-        aria-label={t('ui.image.openPreview')}
+        aria-label={t("ui.image.openPreview")}
         data-oid="otw7voa"
       >
-        {t('ui.image.openPreview')}
+        {t("ui.image.openPreview")}
       </Button>
     </Box>
   );

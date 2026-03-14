@@ -13,7 +13,7 @@ import { logger } from "@/utils";
 import {
   safeValidateSearchIndexManifest,
   type SearchIndexManifest,
-  type SearchIndexBranchEntry
+  type SearchIndexBranchEntry,
 } from "../../schemas";
 import {
   clearCaches,
@@ -21,7 +21,7 @@ import {
   getModuleCacheEntry,
   setManifestCache,
   setModuleCacheEntry,
-  type DocfindSearchHandler
+  type DocfindSearchHandler,
 } from "./cache";
 import { createSearchIndexError, SearchIndexError, SearchIndexErrorCode } from "./errors";
 
@@ -49,7 +49,11 @@ const buildActionAssetPath = (value: string): string => {
   return `${ACTION_INDEX_ROOT}/${normalized}`;
 };
 
-const buildActionAssetUrl = (path: string, responseType: ActionResponseType, hash?: string): string => {
+const buildActionAssetUrl = (
+  path: string,
+  responseType: ActionResponseType,
+  hash?: string,
+): string => {
   const params = new URLSearchParams();
   params.set("action", "getSearchIndexAsset");
   params.set("indexBranch", ACTION_INDEX_BRANCH);
@@ -74,7 +78,9 @@ const resolveDocfindPath = (entry: SearchIndexBranchEntry): string => {
   return `${basePath}/${entry.docfindPath}`;
 };
 
-const buildDocfindUrls = (entry: SearchIndexBranchEntry): { moduleUrl: string; wasmUrl: string } => {
+const buildDocfindUrls = (
+  entry: SearchIndexBranchEntry,
+): { moduleUrl: string; wasmUrl: string } => {
   const config = getSearchIndexConfig();
   if (config.generationMode === "action") {
     const assetPath = buildActionAssetPath(entry.docfindPath);
@@ -85,7 +91,8 @@ const buildDocfindUrls = (entry: SearchIndexBranchEntry): { moduleUrl: string; w
   }
 
   const baseUrl = resolveUrl(resolveDocfindPath(entry));
-  const moduleUrl = entry.hash.length > 0 ? `${baseUrl}?v=${encodeURIComponent(entry.hash)}` : baseUrl;
+  const moduleUrl =
+    entry.hash.length > 0 ? `${baseUrl}?v=${encodeURIComponent(entry.hash)}` : baseUrl;
   const wasmBase = new URL("docfind_bg.wasm", baseUrl);
   if (entry.hash.length > 0) {
     wasmBase.searchParams.set("v", entry.hash);
@@ -106,27 +113,36 @@ export async function fetchManifest(signal?: AbortSignal): Promise<SearchIndexMa
   }
 
   try {
-    const manifestUrl = config.generationMode === "action"
-      ? buildActionAssetUrl(buildActionAssetPath(config.manifestPath), "json")
-      : config.manifestPath;
+    const manifestUrl =
+      config.generationMode === "action"
+        ? buildActionAssetUrl(buildActionAssetPath(config.manifestPath), "json")
+        : config.manifestPath;
 
     const response = await fetch(manifestUrl, {
       method: "GET",
-      signal: signal ?? null
+      signal: signal ?? null,
     });
 
     if (response.status === 404) {
-      throw createSearchIndexError(SearchIndexErrorCode.MANIFEST_NOT_FOUND, "Search manifest not found", {
-        status: 404,
-        path: config.manifestPath
-      });
+      throw createSearchIndexError(
+        SearchIndexErrorCode.MANIFEST_NOT_FOUND,
+        "Search manifest not found",
+        {
+          status: 404,
+          path: config.manifestPath,
+        },
+      );
     }
 
     if (!response.ok) {
-      throw createSearchIndexError(SearchIndexErrorCode.MANIFEST_NOT_FOUND, "Failed to fetch manifest", {
-        status: response.status,
-        path: config.manifestPath
-      });
+      throw createSearchIndexError(
+        SearchIndexErrorCode.MANIFEST_NOT_FOUND,
+        "Failed to fetch manifest",
+        {
+          status: response.status,
+          path: config.manifestPath,
+        },
+      );
     }
 
     const data: unknown = await response.json();
@@ -143,13 +159,15 @@ export async function fetchManifest(signal?: AbortSignal): Promise<SearchIndexMa
     }
 
     const message = error instanceof Error ? error.message : "Unknown manifest fetch error";
-    throw createSearchIndexError(SearchIndexErrorCode.MANIFEST_NOT_FOUND, message, { cause: error });
+    throw createSearchIndexError(SearchIndexErrorCode.MANIFEST_NOT_FOUND, message, {
+      cause: error,
+    });
   }
 }
 
 async function loadDocfindModule(
   branch: string,
-  entry: SearchIndexBranchEntry
+  entry: SearchIndexBranchEntry,
 ): Promise<DocfindSearchHandler> {
   const cached = getModuleCacheEntry(branch);
   if (cached?.hash === entry.hash) {
@@ -159,7 +177,7 @@ async function loadDocfindModule(
   const { moduleUrl, wasmUrl } = buildDocfindUrls(entry);
 
   try {
-    const module = await import(/* @vite-ignore */ moduleUrl) as DocfindModule;
+    const module = (await import(/* @vite-ignore */ moduleUrl)) as DocfindModule;
     if (typeof module.init === "function") {
       await module.init(wasmUrl);
     }
@@ -176,14 +194,14 @@ async function loadDocfindModule(
     throw createSearchIndexError(SearchIndexErrorCode.INDEX_FILE_NOT_FOUND, message, {
       branch,
       path: entry.docfindPath,
-      cause: error
+      cause: error,
     });
   }
 }
 
 export async function getDocfindSearchHandler(
   branch: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<DocfindSearchHandler> {
   const manifest = await fetchManifest(signal);
   const entry = manifest.branches[branch];
@@ -191,7 +209,7 @@ export async function getDocfindSearchHandler(
     throw createSearchIndexError(
       SearchIndexErrorCode.INDEX_BRANCH_NOT_INDEXED,
       "Branch not indexed",
-      { branch }
+      { branch },
     );
   }
   return loadDocfindModule(branch, entry);
@@ -201,14 +219,16 @@ export function invalidateSearchIndexCache(): void {
   clearCaches();
 }
 
-export async function refreshSearchIndexManifest(signal?: AbortSignal): Promise<SearchIndexManifest> {
+export async function refreshSearchIndexManifest(
+  signal?: AbortSignal,
+): Promise<SearchIndexManifest> {
   clearCaches();
   return fetchManifest(signal);
 }
 
 export async function prefetchSearchIndexForBranch(
   branch: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<boolean> {
   try {
     const manifest = await fetchManifest(signal);

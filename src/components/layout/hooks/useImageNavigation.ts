@@ -1,5 +1,5 @@
-import { useCallback, useMemo } from 'react';
-import type { GitHubContent } from '@/types';
+import { useCallback, useMemo } from "react";
+import type { GitHubContent } from "@/types";
 
 interface UseImageNavigationOptions {
   imageFiles: GitHubContent[];
@@ -23,16 +23,14 @@ interface UseImageNavigationReturn {
 export function useImageNavigation({
   imageFiles,
   currentPreviewingImage,
-  onSelectFile
+  onSelectFile,
 }: UseImageNavigationOptions): UseImageNavigationReturn {
   // 获取当前预览图片的索引
   const currentImageIndex = useMemo(() => {
     if (currentPreviewingImage === null) {
       return -1;
     }
-    return imageFiles.findIndex(
-      (item) => item.path === currentPreviewingImage.path
-    );
+    return imageFiles.findIndex((item) => item.path === currentPreviewingImage.path);
   }, [imageFiles, currentPreviewingImage]);
 
   // 判断是否有上一张
@@ -66,7 +64,6 @@ export function useImageNavigation({
     hasPrevious,
     hasNext,
     handlePreviousImage,
-    handleNextImage
+    handleNextImage,
   };
 }
-

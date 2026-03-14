@@ -4,16 +4,14 @@
  * 将所有类型定义按功能域拆分到不同文件中，并在此统一导出。
  */
 
-
 // 导出错误相关类型
-export * from './errors';
+export * from "./errors";
 
 // 导出预览相关类型
-export type * from './preview';
+export type * from "./preview";
 
 // 导出下载相关类型
-export type * from './download';
-
+export type * from "./download";
 
 /**
  * GitHub仓库内容项接口
@@ -21,7 +19,7 @@ export type * from './download';
 export interface GitHubContent {
   name: string;
   path: string;
-  type: 'file' | 'dir';
+  type: "file" | "dir";
   sha: string;
   size?: number;
   download_url: string | null;
@@ -68,7 +66,7 @@ export interface InitialContentFileEntry {
   /** 文件内容（UTF-8 文本或 Base64） */
   content: string;
   /** 内容编码类型，默认为 utf-8 */
-  encoding?: 'utf-8' | 'base64';
+  encoding?: "utf-8" | "base64";
 }
 
 /**

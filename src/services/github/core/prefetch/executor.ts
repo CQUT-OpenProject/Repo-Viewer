@@ -1,7 +1,7 @@
-import type { GitHubContent } from '@/types';
+import type { GitHubContent } from "@/types";
 
-import { RequestBatcher } from '../../RequestBatcher';
-import { getAuthHeaders } from '../Auth';
+import { RequestBatcher } from "../../RequestBatcher";
+import { getAuthHeaders } from "../Auth";
 
 const batcher = new RequestBatcher();
 
@@ -14,32 +14,35 @@ const batcher = new RequestBatcher();
  */
 export async function prefetchFilesWithPriority(
   files: GitHubContent[],
-  priority: 'high' | 'medium' | 'low'
+  priority: "high" | "medium" | "low",
 ): Promise<void> {
   const fileUrls = files
-    .map(file => file.download_url)
+    .map((file) => file.download_url)
     .filter((url): url is string => Boolean(url));
 
   if (fileUrls.length === 0) {
     return;
   }
 
-  const { getFileContent } = await import('../content');
+  const { getFileContent } = await import("../content");
 
-  const prefetchPromises = fileUrls.map(url =>
+  const prefetchPromises = fileUrls.map((url) =>
     batcher
-      .enqueue(`prefetch:${url}`, async () => {
-        await getFileContent(url);
-        return null;
-      }, {
-        priority,
-        method: 'GET',
-        headers: getAuthHeaders() as Record<string, string>,
-        skipDeduplication: false
-      })
-      .catch(() => null)
+      .enqueue(
+        `prefetch:${url}`,
+        async () => {
+          await getFileContent(url);
+          return null;
+        },
+        {
+          priority,
+          method: "GET",
+          headers: getAuthHeaders() as Record<string, string>,
+          skipDeduplication: false,
+        },
+      )
+      .catch(() => null),
   );
 
   await Promise.allSettled(prefetchPromises);
 }
-

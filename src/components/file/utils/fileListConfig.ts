@@ -42,4 +42,3 @@ export const LIST_HEIGHT_CONFIG = {
 export const TOP_ELEMENTS_ESTIMATE = 180;
 export const BOTTOM_RESERVED_SPACE = 50;
 export const VIEWPORT_FALLBACK_HEIGHT = 720;
-

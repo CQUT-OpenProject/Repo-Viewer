@@ -2,8 +2,7 @@
  * 工具函数：格式化和解析扩展名输入
  */
 
-export const formatExtensionInput = (extensions: string[]): string => 
-  extensions.join(", ");
+export const formatExtensionInput = (extensions: string[]): string => extensions.join(", ");
 
 export const parseExtensionInput = (value: string): string[] => {
   if (value.trim().length === 0) {
@@ -24,12 +23,12 @@ export const parseExtensionInput = (value: string): string[] => {
 export const highlightKeyword = (
   text: string,
   keyword: string,
-  lowerKeywordOverride?: string
+  lowerKeywordOverride?: string,
 ): { text: string; highlight: boolean }[] => {
   if (keyword.trim().length === 0) {
     return [{ text, highlight: false }];
   }
-  
+
   const parts: { text: string; highlight: boolean }[] = [];
   const lowerText = text.toLowerCase();
   const lowerKeyword = lowerKeywordOverride ?? keyword.toLowerCase();
@@ -57,8 +56,7 @@ export const highlightKeyword = (
   return parts;
 };
 
-const escapeRegExp = (value: string): string =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const HIGHLIGHT_REGEX_CACHE_LIMIT = 50;
 // 关键词高亮正则缓存，减少重复编译
@@ -108,7 +106,7 @@ export const getHighlightRegex = (keyword: string): RegExp | null => {
 export const highlightKeywords = (
   text: string,
   keyword: string,
-  regexOverride?: RegExp | null
+  regexOverride?: RegExp | null,
 ): { text: string; highlight: boolean }[] => {
   const regex = regexOverride ?? getHighlightRegex(keyword);
   if (regex === null) {
@@ -141,7 +139,10 @@ export const highlightKeywords = (
 /**
  * 解析搜索结果项的 GitHub URL
  */
-export const resolveItemHtmlUrl = (item: { htmlUrl?: string; html_url?: string }): string | undefined => {
+export const resolveItemHtmlUrl = (item: {
+  htmlUrl?: string;
+  html_url?: string;
+}): string | undefined => {
   if (typeof item.htmlUrl === "string") {
     return item.htmlUrl;
   }

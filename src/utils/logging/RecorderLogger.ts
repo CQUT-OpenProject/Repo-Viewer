@@ -1,4 +1,4 @@
-import type { LogLevel, Logger, LoggerFactory, LoggerArguments } from './types';
+import type { LogLevel, Logger, LoggerFactory, LoggerArguments } from "./types";
 
 export interface LogRecorder {
   record: (entry: LoggerArguments & { timestamp: number }) => void;
@@ -20,41 +20,40 @@ export class InMemoryLogRecorder implements LogRecorder {
   clear(): void {
     this.buffer.length = 0;
   }
-
 }
 
 class RecorderLogger implements Logger {
   constructor(
     private readonly name: string,
-    private readonly recorder: LogRecorder
+    private readonly recorder: LogRecorder,
   ) {}
 
   debug(...args: unknown[]): void {
-    this.record('debug', args);
+    this.record("debug", args);
   }
 
   info(...args: unknown[]): void {
-    this.record('info', args);
+    this.record("info", args);
   }
 
   log(...args: unknown[]): void {
-    this.record('log', args);
+    this.record("log", args);
   }
 
   warn(...args: unknown[]): void {
-    this.record('warn', args);
+    this.record("warn", args);
   }
 
   error(...args: unknown[]): void {
-    this.record('error', args);
+    this.record("error", args);
   }
 
   group(label: string): void {
-    this.record('group', [label]);
+    this.record("group", [label]);
   }
 
   groupEnd(): void {
-    this.record('groupEnd', []);
+    this.record("groupEnd", []);
   }
 
   private record(level: LogLevel, args: unknown[]): void {
@@ -62,7 +61,7 @@ class RecorderLogger implements Logger {
       name: this.name,
       level,
       args,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 }

@@ -1,11 +1,5 @@
 import React, { useMemo } from "react";
-import {
-  Box,
-  Typography,
-  Link,
-  Container,
-  useTheme,
-} from "@mui/material";
+import { Box, Typography, Link, Container, useTheme } from "@mui/material";
 import { BranchSwitcher } from "@/components/ui";
 import { getFeaturesConfig } from "@/config";
 import { useI18n } from "@/contexts/I18nContext";
@@ -19,23 +13,33 @@ declare const __APP_VERSION__: string;
  * - "纯文本" - 显示纯文本
  * - "" - 不显示
  */
-const parseFooterLeftText = (text: string): { type: 'link'; content: string; href: string } | { type: 'text'; content: string } | { type: 'empty' } => {
-  if (text.trim() === '') {
-    return { type: 'empty' };
+const parseFooterLeftText = (
+  text: string,
+):
+  | { type: "link"; content: string; href: string }
+  | { type: "text"; content: string }
+  | { type: "empty" } => {
+  if (text.trim() === "") {
+    return { type: "empty" };
   }
 
   // 匹配 Markdown 链接格式: [文本](链接)
   const linkRegex = /^\[(.+?)\]\((.+?)\)$/;
   const linkMatch = linkRegex.exec(text);
-  if (linkMatch?.[1] !== undefined && linkMatch[1] !== '' && linkMatch[2] !== undefined && linkMatch[2] !== '') {
+  if (
+    linkMatch?.[1] !== undefined &&
+    linkMatch[1] !== "" &&
+    linkMatch[2] !== undefined &&
+    linkMatch[2] !== ""
+  ) {
     return {
-      type: 'link',
+      type: "link",
       content: linkMatch[1],
-      href: linkMatch[2]
+      href: linkMatch[2],
     };
   }
 
-  return { type: 'text', content: text };
+  return { type: "text", content: text };
 };
 
 /**
@@ -50,9 +54,9 @@ const Footer: React.FC = () => {
   const featuresConfig = getFeaturesConfig();
   const footerLeftConfig = useMemo(
     () => parseFooterLeftText(featuresConfig.footer.leftText),
-    [featuresConfig.footer.leftText]
+    [featuresConfig.footer.leftText],
   );
-  const showFooterLeftElement = footerLeftConfig.type !== 'empty';
+  const showFooterLeftElement = footerLeftConfig.type !== "empty";
 
   return (
     <Box
@@ -108,7 +112,7 @@ const Footer: React.FC = () => {
             data-oid="3z6-ik7"
           >
             {/* 自定义左侧信息 */}
-            {showFooterLeftElement && footerLeftConfig.type === 'link' ? (
+            {showFooterLeftElement && footerLeftConfig.type === "link" ? (
               <Link
                 href={footerLeftConfig.href}
                 target="_blank"
@@ -127,7 +131,7 @@ const Footer: React.FC = () => {
               </Link>
             ) : null}
 
-            {showFooterLeftElement && footerLeftConfig.type === 'text' ? (
+            {showFooterLeftElement && footerLeftConfig.type === "text" ? (
               <Typography
                 variant="caption"
                 color="text.secondary"
@@ -164,7 +168,7 @@ const Footer: React.FC = () => {
                 textAlign: "center",
               }}
             >
-              {t('ui.footer.presentedBy')}{" "}
+              {t("ui.footer.presentedBy")}{" "}
               <Link
                 color="primary"
                 href="https://github.com/CQUT-OpenProject/Repo-Viewer"
@@ -181,12 +185,7 @@ const Footer: React.FC = () => {
               >
                 RepoViewer
               </Link>
-              {version !== '' && (
-                <>
-                  {" "}
-                  {version}
-                </>
-              )}
+              {version !== "" && <> {version}</>}
             </Typography>
           </Box>
 
@@ -202,7 +201,7 @@ const Footer: React.FC = () => {
             }}
             data-oid="78vii.:"
           >
-            {t('ui.footer.presentedBy')}{" "}
+            {t("ui.footer.presentedBy")}{" "}
             <Link
               color="primary"
               href="https://github.com/CQUT-OpenProject/Repo-Viewer"
@@ -220,12 +219,7 @@ const Footer: React.FC = () => {
             >
               RepoViewer
             </Link>
-            {version !== '' && (
-              <>
-                {" "}
-                {version}
-              </>
-            )}
+            {version !== "" && <> {version}</>}
           </Typography>
         </Box>
       </Container>

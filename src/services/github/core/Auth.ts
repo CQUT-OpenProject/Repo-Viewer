@@ -1,7 +1,7 @@
-import { GitHubTokenManager } from '../TokenManager';
-import { ErrorManager } from '@/utils/error';
-import type { GitHubError } from '@/types/errors';
-import { shouldUseServerAPI } from '../config';
+import { GitHubTokenManager } from "../TokenManager";
+import { ErrorManager } from "@/utils/error";
+import type { GitHubError } from "@/types/errors";
+import { shouldUseServerAPI } from "../config";
 
 // GitHub认证管理器
 const tokenManager = new GitHubTokenManager();
@@ -48,19 +48,19 @@ export function getAuthHeaders(): HeadersInit {
   if (shouldUseServerAPI()) {
     // 使用服务端API时，不需要在前端添加认证头
     return {
-      'Accept': 'application/vnd.github.v3+json',
-      'Content-Type': 'application/json'
+      Accept: "application/vnd.github.v3+json",
+      "Content-Type": "application/json",
     };
   }
 
   const token = tokenManager.getGitHubPAT();
   const headers: HeadersInit = {
-    'Accept': 'application/vnd.github.v3+json',
-    'Content-Type': 'application/json'
+    Accept: "application/vnd.github.v3+json",
+    "Content-Type": "application/json",
   };
 
-  if (token !== '') {
-    headers['Authorization'] = `token ${token}`;
+  if (token !== "") {
+    headers["Authorization"] = `token ${token}`;
   }
 
   return headers;
@@ -76,12 +76,12 @@ export function getAuthHeaders(): HeadersInit {
  */
 export function updateTokenRateLimitFromResponse(response: Response): void {
   const currentToken = tokenManager.getCurrentToken();
-  if (currentToken === '') {
+  if (currentToken === "") {
     return;
   }
 
-  const remainingHeader = response.headers.get('x-ratelimit-remaining');
-  const resetHeader = response.headers.get('x-ratelimit-reset');
+  const remainingHeader = response.headers.get("x-ratelimit-remaining");
+  const resetHeader = response.headers.get("x-ratelimit-reset");
 
   if (remainingHeader !== null && resetHeader !== null) {
     const remaining = parseInt(remainingHeader, 10);
@@ -104,27 +104,28 @@ export function updateTokenRateLimitFromResponse(response: Response): void {
  * @param method - HTTP请求方法，默认为'GET'
  * @returns 格式化的GitHubError对象
  */
-export function handleApiError(error: Response, endpoint: string, method = 'GET'): GitHubError {
+export function handleApiError(error: Response, endpoint: string, method = "GET"): GitHubError {
   // 先调用原有的token管理器错误处理
   tokenManager.handleApiError(error);
 
   // 创建详细的GitHub错误
-  const remainingHeader = error.headers.get('x-ratelimit-remaining');
-  const resetHeader = error.headers.get('x-ratelimit-reset');
+  const remainingHeader = error.headers.get("x-ratelimit-remaining");
+  const resetHeader = error.headers.get("x-ratelimit-reset");
 
   const gitHubError = ErrorManager.createGitHubError(
-    error.statusText !== '' ? error.statusText : `HTTP ${error.status.toString()} 错误`,
+    error.statusText !== "" ? error.statusText : `HTTP ${error.status.toString()} 错误`,
     error.status,
     endpoint,
     method,
     {
-      remaining: remainingHeader !== null && remainingHeader !== '' ? parseInt(remainingHeader, 10) : 0,
-      reset: resetHeader !== null && resetHeader !== '' ? parseInt(resetHeader, 10) : 0
+      remaining:
+        remainingHeader !== null && remainingHeader !== "" ? parseInt(remainingHeader, 10) : 0,
+      reset: resetHeader !== null && resetHeader !== "" ? parseInt(resetHeader, 10) : 0,
     },
     {
       url: error.url,
-      headers: Object.fromEntries(error.headers.entries())
-    }
+      headers: Object.fromEntries(error.headers.entries()),
+    },
   );
 
   // 记录错误
