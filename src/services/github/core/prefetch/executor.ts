@@ -37,7 +37,7 @@ export async function prefetchFilesWithPriority(
           priority,
           method: "GET",
           headers: getAuthHeaders() as Record<string, string>,
-          skipDeduplication: false,
+          fingerprintCache: "use",
         },
       )
       .catch(() => null),

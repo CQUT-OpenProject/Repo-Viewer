@@ -461,6 +461,14 @@ const createVercelApiHandlerPlugin = (logger: Logger) => ({
   },
 });
 
+const createBuildArtifactsPlugin = (logger: Logger) => ({
+  name: "repo-build-artifacts",
+  apply: "build" as const,
+  async buildStart() {
+    await generateBuildArtifacts(logger);
+  },
+});
+
 const mode = process.env.MODE ?? process.env.NODE_ENV ?? "development";
 const env = loadEnv(mode, process.cwd(), "");
 const isProdLike = mode === "production" || process.env.NODE_ENV === "production";
@@ -471,12 +479,7 @@ const DEVELOPER_MODE = (env.VITE_DEVELOPER_MODE || env.DEVELOPER_MODE) === "true
 const logger = createLogger(DEVELOPER_MODE);
 const requestLogger = createRequestLoggerMiddleware(logger);
 
-export default defineConfig(async ({ command }) => {
-  if (command === "build") {
-    await generateBuildArtifacts(logger);
-  }
-
-  return {
+export default defineConfig({
   lint: {
     plugins: ["typescript", "unicorn", "react"],
     ignorePatterns: [
@@ -551,6 +554,7 @@ export default defineConfig(async ({ command }) => {
     "*": "vp check --fix",
   },
   plugins: [
+    createBuildArtifactsPlugin(logger),
     createRuntimeConfigPlugin(requestLogger),
     createVercelApiHandlerPlugin(logger),
   ],
@@ -600,5 +604,4 @@ export default defineConfig(async ({ command }) => {
     ...getAllGithubPATs(),
     __APP_VERSION__: JSON.stringify(getPackageVersion()),
   },
-  };
 });

@@ -109,9 +109,13 @@ export const GitHub = {
   SearchIndex: {
     isEnabled: (): boolean => getSearchIndexConfig().enabled,
     getManifest: (...args: Parameters<SearchIndexServiceModule["getSearchIndexManifest"]>) =>
-      loadSearchIndexService().then(({ getSearchIndexManifest }) => getSearchIndexManifest(...args)),
+      loadSearchIndexService().then(({ getSearchIndexManifest }) =>
+        getSearchIndexManifest(...args),
+      ),
     ensureReady: (...args: Parameters<SearchIndexServiceModule["ensureSearchIndexReady"]>) =>
-      loadSearchIndexService().then(({ ensureSearchIndexReady }) => ensureSearchIndexReady(...args)),
+      loadSearchIndexService().then(({ ensureSearchIndexReady }) =>
+        ensureSearchIndexReady(...args),
+      ),
     getIndexedBranches: (...args: Parameters<SearchIndexServiceModule["getIndexedBranches"]>) =>
       loadSearchIndexService().then(({ getIndexedBranches }) => getIndexedBranches(...args)),
     prefetchBranch: (
@@ -144,7 +148,8 @@ export const GitHub = {
   Cache: {
     clearCache: (...args: Parameters<StatsServiceModule["clearCache"]>) =>
       loadStatsService().then(({ clearCache }) => clearCache(...args)),
-    getCacheStats: (): ReturnType<CacheManagerClass["getCacheStats"]> => CacheManagerClass.getCacheStats(),
+    getCacheStats: (): ReturnType<CacheManagerClass["getCacheStats"]> =>
+      CacheManagerClass.getCacheStats(),
     getNetworkStats: (...args: Parameters<StatsServiceModule["getNetworkStats"]>) =>
       loadStatsService().then(({ getNetworkStats }) => getNetworkStats(...args)),
     CacheManager: CacheManagerClass,
@@ -162,9 +167,7 @@ export const GitHub = {
     prefetchRelatedContent: (
       ...args: Parameters<PrefetchServiceModule["prefetchRelatedContent"]>
     ) =>
-      loadPrefetchService().then(({ prefetchRelatedContent }) =>
-        prefetchRelatedContent(...args),
-      ),
+      loadPrefetchService().then(({ prefetchRelatedContent }) => prefetchRelatedContent(...args)),
   },
 
   /** 认证服务 - Token 和授权管理 */

@@ -129,6 +129,7 @@ export async function getContents(
           priority: "high",
           method: "GET",
           headers: getAuthHeaders() as Record<string, string>,
+          fingerprintCache: forceRefresh ? "bypass" : "use",
         },
       );
 
