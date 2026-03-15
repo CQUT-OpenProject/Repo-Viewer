@@ -69,7 +69,7 @@ const App = React.memo(() => {
         (event.target === titleRef.current || titleRef.current.contains(event.target as Node))
       ) {
         void resetApplicationState();
-        window.location.href = "/";
+        window.dispatchEvent(new Event("navigate-to-home"));
       }
     },
     [isSmallScreen, resetApplicationState],
