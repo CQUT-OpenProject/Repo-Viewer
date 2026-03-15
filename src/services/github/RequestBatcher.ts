@@ -1,4 +1,5 @@
 import { logger } from "@/utils";
+import { isAbortError } from "@/utils/network/abort";
 import { createTimeWheel } from "@/utils/data-structures/TimeWheel";
 import type { TimeWheel } from "@/utils/data-structures/TimeWheel";
 
@@ -205,7 +206,15 @@ export class RequestBatcher {
 
       // 如果是队列中的第一个请求，执行它
       if (isFirstRequest) {
-        void this.executeWithRetry(requestKey, key, executeRequest, fingerprint, fingerprintCache);
+        void this.executeWithRetry(
+          requestKey,
+          key,
+          executeRequest,
+          fingerprint,
+          fingerprintCache,
+        ).catch(() => {
+          // 请求结果会通过队列中的 promise 向调用方传递，这里只避免未处理 rejection。
+        });
       }
     });
   }
@@ -257,6 +266,7 @@ export class RequestBatcher {
     const retryOptions: RetryOptions = {
       maxRetries: this.maxRetries,
       backoff: (attempt) => Math.min(1000 * Math.pow(2, attempt), 5000), // 指数退避，最大5秒
+      shouldRetry: (error) => !isAbortError(error),
       onRetry: (attempt, error) => {
         const errorMessage = error instanceof Error ? error.message : String(error);
         logger.warn(

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { createAbortError } from "@/utils/network/abort";
 
 vi.mock("@/utils", () => ({
   logger: {
@@ -96,5 +97,21 @@ describe("RequestBatcher", () => {
     const [firstResult, secondResult] = await Promise.all([firstPromise, secondPromise]);
     expect(firstResult).toEqual({ value: 1 });
     expect(secondResult).toEqual({ value: 1 });
+  });
+
+  it("does not retry aborted requests", async () => {
+    const batcher = new RequestBatcher();
+    const executeRequest = vi.fn(async () => {
+      throw createAbortError("Request aborted");
+    });
+
+    await expect(
+      batcher.enqueue("https://example.com/repos", executeRequest, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      }),
+    ).rejects.toMatchObject({ name: "AbortError" });
+
+    expect(executeRequest).toHaveBeenCalledTimes(1);
   });
 });

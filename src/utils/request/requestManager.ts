@@ -5,6 +5,7 @@
  */
 
 import { logger } from "@/utils";
+import { createAbortError, isAbortError } from "@/utils/network/abort";
 
 /**
  * 请求选项
@@ -24,6 +25,11 @@ export interface RequestOptions {
    * 是否记录详细日志
    */
   verbose?: boolean;
+
+  /**
+   * 外部中止信号
+   */
+  signal?: AbortSignal;
 }
 
 /**
@@ -39,19 +45,13 @@ export class RequestManager {
   private pendingRequests = new Map<string, AbortController>();
   private debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
-  private createAbortError(): Error {
-    const error = new Error("Request aborted");
-    error.name = "AbortError";
-    return error;
-  }
-
   private async waitForDebounce(key: string, delay: number, signal: AbortSignal): Promise<void> {
     if (delay <= 0) {
       return;
     }
 
     if (signal.aborted) {
-      throw this.createAbortError();
+      throw createAbortError();
     }
 
     await new Promise<void>((resolve, reject) => {
@@ -78,7 +78,7 @@ export class RequestManager {
 
       const onAbort = (): void => {
         finalize(() => {
-          reject(this.createAbortError());
+          reject(createAbortError());
         }, onAbort);
       };
 
@@ -119,7 +119,7 @@ export class RequestManager {
     fetcher: (signal: AbortSignal) => Promise<T>,
     options: RequestOptions = {},
   ): Promise<T> {
-    const { debounce, verbose = false } = options;
+    const { debounce, verbose = false, signal: externalSignal } = options;
 
     // 取消之前的同 key 请求
     this.cancel(key);
@@ -127,25 +127,36 @@ export class RequestManager {
     // 创建新的 AbortController
     const controller = new AbortController();
     this.pendingRequests.set(key, controller);
+    const abortFromExternal = (): void => {
+      controller.abort();
+    };
 
-    // 如果设置了防抖，等待防抖延迟
-    if (debounce !== undefined && debounce > 0) {
-      if (verbose) {
-        logger.debug(`请求防抖: ${key}, 延迟 ${debounce.toString()}ms`);
+    if (externalSignal !== undefined) {
+      if (externalSignal.aborted) {
+        controller.abort();
+      } else {
+        externalSignal.addEventListener("abort", abortFromExternal, { once: true });
       }
-
-      await this.waitForDebounce(key, debounce, controller.signal);
-    }
-
-    if (controller.signal.aborted) {
-      throw this.createAbortError();
-    }
-
-    if (verbose) {
-      logger.debug(`开始请求: ${key}`);
     }
 
     try {
+      // 如果设置了防抖，等待防抖延迟
+      if (debounce !== undefined && debounce > 0) {
+        if (verbose) {
+          logger.debug(`请求防抖: ${key}, 延迟 ${debounce.toString()}ms`);
+        }
+
+        await this.waitForDebounce(key, debounce, controller.signal);
+      }
+
+      if (controller.signal.aborted) {
+        throw createAbortError();
+      }
+
+      if (verbose) {
+        logger.debug(`开始请求: ${key}`);
+      }
+
       const result = await fetcher(controller.signal);
 
       // 请求成功，清理
@@ -161,16 +172,20 @@ export class RequestManager {
       this.pendingRequests.delete(key);
 
       // 如果是取消错误，不记录日志
-      if (error instanceof Error && error.name === "AbortError") {
+      if (isAbortError(error)) {
         if (verbose) {
           logger.debug(`请求已取消: ${key}`);
         }
-        throw error;
+        throw createAbortError();
       }
 
       // 其他错误正常记录
       logger.error(`请求失败: ${key}`, error);
       throw error;
+    } finally {
+      if (externalSignal !== undefined) {
+        externalSignal.removeEventListener("abort", abortFromExternal);
+      }
     }
   }
 

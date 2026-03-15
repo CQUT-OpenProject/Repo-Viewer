@@ -8,12 +8,18 @@
  */
 
 import { useReducer, useCallback, useRef } from "react";
-import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import type { DownloadState, DownloadAction, GitHubContent } from "@/types";
 import { GitHub } from "@/services/github";
 import { logger } from "@/utils";
+import { isAbortError } from "@/utils/network/abort";
 import { requestManager } from "@/utils/request/requestManager";
+import {
+  downloadFolderAsZip,
+  prepareZipOutputSink,
+  type FolderDownloadEntry,
+  type ZipOutputSink,
+} from "@/utils/download/folderZipPipeline";
 import { getForceServerProxy } from "@/services/github/config/ProxyForceManager";
 import { useI18n } from "@/contexts/I18nContext";
 
@@ -216,7 +222,7 @@ export const useDownload = (
   const collectFiles = useCallback(
     async function collectFilesInner(
       folderPath: string,
-      fileList: { path: string; url: string }[],
+      fileList: FolderDownloadEntry[],
       basePath: string,
       signal: AbortSignal,
     ): Promise<void> {
@@ -226,6 +232,7 @@ export const useDownload = (
         const contents = await requestManager.request(
           `download-folder-${folderPath}`,
           (requestSignal) => GitHub.Content.getContents(folderPath, requestSignal),
+          { signal },
         );
 
         // 检查是否已取消 (ref可在异步期间被cancelDownload修改)
@@ -258,6 +265,7 @@ export const useDownload = (
             fileList.push({
               path: relativePath,
               url: downloadUrl,
+              size: item.size,
             });
           } else {
             // 递归处理子文件夹 (type === 'dir')
@@ -297,16 +305,22 @@ export const useDownload = (
       // 创建新的AbortController
       abortControllerRef.current = new AbortController();
       const signal = abortControllerRef.current.signal;
+      let outputSink: ZipOutputSink | null = null;
+      let zipPipelineStarted = false;
 
       try {
-        const zip = new JSZip();
+        outputSink = await prepareZipOutputSink({
+          archiveName: `${folderName}.zip`,
+          saveAsImpl: saveAs,
+        });
 
         // 递归获取文件夹内容
-        const allFiles: { path: string; url: string }[] = [];
+        const allFiles: FolderDownloadEntry[] = [];
         await collectFiles(path, allFiles, path, signal);
 
         // 检查是否已取消 (ref可在异步期间被cancelDownload修改)
         if (hasBeenCancelled()) {
+          await outputSink.abort();
           logger.info("文件夹下载已取消");
           return;
         }
@@ -314,78 +328,39 @@ export const useDownload = (
         dispatch({ type: "SET_TOTAL_FILES", count: allFiles.length });
         logger.info(`需要下载的文件总数: ${String(allFiles.length)}`);
 
-        // 下载并添加到zip
         let processedCount = 0;
-        for (const file of allFiles) {
-          try {
-            // 检查是否已取消 (ref可在异步期间被cancelDownload修改)
-            if (hasBeenCancelled()) {
-              logger.info("文件夹下载已取消");
-              return;
-            }
-
-            const response = await fetch(file.url, { signal });
-
-            if (!response.ok) {
-              logger.error(
-                `文件 ${file.path} 下载失败:`,
-                new Error(`下载失败: ${String(response.status)}`),
-              );
-              continue;
-            }
-
-            const blob = await response.blob();
-            zip.file(file.path, blob);
-
-            processedCount++;
-            dispatch({ type: "SET_PROCESSING_FILES", count: processedCount });
+        zipPipelineStarted = true;
+        await downloadFolderAsZip({
+          files: allFiles,
+          signal,
+          archiveName: `${folderName}.zip`,
+          outputSink,
+          onFileComplete: (count, total) => {
+            processedCount = count;
+            dispatch({ type: "SET_PROCESSING_FILES", count });
             dispatch({
               type: "SET_FOLDER_PROGRESS",
-              progress: Math.round((processedCount / allFiles.length) * 100),
+              progress: total > 0 ? Math.round((count / total) * 100) : 100,
             });
-          } catch (e) {
-            // 检查是否是取消导致的错误
-            if (e instanceof Error && (e.name === "AbortError" || hasBeenCancelled())) {
-              logger.info("文件夹下载已取消");
-              return;
-            }
-            logger.error(`文件 ${file.path} 下载失败:`, e);
-          }
+          },
+          onFileError: (file, error) => {
+            logger.error(`文件 ${file.path} 下载失败:`, error);
+          },
+        });
 
-          // 检查是否已取消 (ref可在异步期间被cancelDownload修改)
-          if (hasBeenCancelled()) {
-            logger.info("文件夹下载已取消");
-            return;
-          }
+        if (!hasBeenCancelled()) {
+          dispatch({ type: "SET_PROCESSING_FILES", count: processedCount });
+          dispatch({ type: "SET_FOLDER_PROGRESS", progress: 100 });
         }
 
-        // 生成zip文件
-        const zipBlob = await zip.generateAsync(
-          {
-            type: "blob",
-            compression: "DEFLATE",
-            compressionOptions: { level: 6 },
-          },
-          (metadata: { percent: number }) => {
-            // 检查是否已取消 (ref可在异步期间被cancelDownload修改)
-            if (hasBeenCancelled()) {
-              return;
-            }
-            dispatch({ type: "SET_FOLDER_PROGRESS", progress: Math.round(metadata.percent) });
-          },
-        );
-
-        // 最后一次检查是否已取消 (ref可在异步期间被cancelDownload修改)
-        if (hasBeenCancelled()) {
-          logger.info("文件夹下载已取消");
-          return;
-        }
-
-        saveAs(zipBlob, `${folderName}.zip`);
         logger.info(`文件夹下载完成: ${path}`);
       } catch (e: unknown) {
         const error = e as Error;
-        if (error.name === "AbortError" || hasBeenCancelled()) {
+        if (outputSink !== null && !zipPipelineStarted) {
+          await outputSink.abort(error);
+        }
+
+        if (isAbortError(error) || hasBeenCancelled()) {
           logger.info("文件夹下载已取消");
         } else {
           logger.error("下载文件夹失败:", error);

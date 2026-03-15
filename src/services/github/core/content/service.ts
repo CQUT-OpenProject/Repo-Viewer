@@ -2,6 +2,7 @@ import axios from "axios";
 
 import type { GitHubContent, InitialContentHydrationPayload } from "@/types";
 import { logger } from "@/utils";
+import { createAbortError, isAbortError } from "@/utils/network/abort";
 
 import { RequestBatcher } from "../../RequestBatcher";
 import { getForceServerProxy, shouldUseServerAPI } from "../../config";
@@ -97,7 +98,7 @@ export async function getContents(
       query.set("action", "getContents");
       query.set("path", path);
       query.set("branch", branch);
-      const { data } = await axios.get<unknown>(`/api/github?${query.toString()}`);
+      const { data } = await axios.get<unknown>(`/api/github?${query.toString()}`, { signal });
       rawData = data;
       logger.debug(`通过服务端API获取内容: ${path}`);
     } else {
@@ -160,6 +161,10 @@ export async function getContents(
     return contents;
   } catch (unknownError) {
     const cause = unknownError instanceof Error ? unknownError : new Error(String(unknownError));
+    if (isAbortError(cause)) {
+      throw createAbortError("Request aborted");
+    }
+
     logger.error(`获取内容失败: ${path}`, cause);
     throw new Error(`获取内容失败: ${cause.message}`);
   }
@@ -221,6 +226,10 @@ export async function getFileContent(fileUrl: string): Promise<string> {
     return content;
   } catch (unknownError) {
     const cause = unknownError instanceof Error ? unknownError : new Error(String(unknownError));
+    if (isAbortError(cause)) {
+      throw createAbortError("Request aborted");
+    }
+
     logger.error(`获取文件内容失败: ${fileUrl}`, cause);
     throw new Error(`获取文件内容失败: ${cause.message}`);
   }
