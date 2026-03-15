@@ -5,7 +5,7 @@
  * 虚拟滚动优化、复制到剪贴板等特性。支持大文件的性能优化渲染。
  */
 
-import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
   CircularProgress,
@@ -26,7 +26,7 @@ import TextRotationNoneIcon from "@mui/icons-material/TextRotationNone";
 import type { TextPreviewProps } from "./types";
 import { formatFileSize } from "@/utils/format/formatters";
 import { useI18n } from "@/contexts/I18nContext";
-import { highlightLines } from "@/utils/content/prismHighlighter";
+import { encodeLines, normalizeContentLines } from "@/utils/content/textPreviewLines";
 import { detectLanguage } from "@/utils/content/languageDetector";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 import { useContainerSize } from "@/components/preview/image/hooks";
@@ -34,6 +34,8 @@ import { useContainerSize } from "@/components/preview/image/hooks";
 /** 等宽字体栈 */
 const MONO_FONT_STACK =
   "'JetBrains Mono', 'Fira Code', 'SFMono-Regular', ui-monospace, 'Source Code Pro', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace";
+const MAX_SYNTACTIC_HIGHLIGHT_CHARS = 400_000;
+const MAX_SYNTACTIC_HIGHLIGHT_LINES = 15_000;
 
 /**
  * 文本预览内容组件属性接口
@@ -55,18 +57,17 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = memo(
     const theme = useTheme();
     const { t } = useI18n();
     const [wrapText, setWrapText] = useState<boolean>(false);
+    const highlightRequestIdRef = useRef(0);
     const { copied, copy } = useCopyToClipboard();
     // 小屏/桌面字号与控件尺寸统一管理，避免分散调整
     const contentFontSize = isSmallScreen ? "0.78rem" : "0.9rem";
     const lineNumberFontSize = isSmallScreen ? "0.7rem" : "0.9rem";
     const controlButtonSize = isSmallScreen ? 26 : 32;
     const controlIconSize = isSmallScreen ? 14 : 18;
+    const charCount = useMemo(() => content.length, [content]);
 
     const normalizedLines = useMemo(() => {
-      if (typeof content !== "string") {
-        return [];
-      }
-      return content.replace(/\r\n/g, "\n").split("\n");
+      return normalizeContentLines(content);
     }, [content]);
 
     const lineCount = normalizedLines.length === 0 ? 1 : normalizedLines.length;
@@ -79,22 +80,97 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = memo(
     }, [previewingName]);
 
     const [highlightedLines, setHighlightedLines] = useState<string[]>([]);
+    const shouldBypassSyntaxHighlight = useMemo(() => {
+      return charCount > MAX_SYNTACTIC_HIGHLIGHT_CHARS || lineCount > MAX_SYNTACTIC_HIGHLIGHT_LINES;
+    }, [charCount, lineCount]);
 
     useEffect(() => {
       let cancelled = false;
+      let worker: Worker | null = null;
+      let timer: number | null = null;
+      let idleHandle: number | null = null;
+      const requestId = highlightRequestIdRef.current + 1;
+      highlightRequestIdRef.current = requestId;
 
-      // 语法高亮计算开销较大，尽量在空闲时间执行以保证首屏响应
-      const runHighlight = (): void => {
-        if (normalizedLines.length === 0) {
-          if (!cancelled) {
-            setHighlightedLines([]);
-          }
+      if (
+        normalizedLines.length === 0 ||
+        language === null ||
+        language === "" ||
+        shouldBypassSyntaxHighlight
+      ) {
+        setHighlightedLines([]);
+        return () => {
+          cancelled = true;
+        };
+      }
+
+      const applyResult = (nextLines: string[], nextRequestId: number): void => {
+        if (cancelled || nextRequestId !== highlightRequestIdRef.current) {
           return;
         }
-        const result = highlightLines(normalizedLines, language);
-        if (!cancelled) {
-          setHighlightedLines(result);
+        setHighlightedLines(nextLines);
+      };
+
+      const runFallbackHighlight = async (): Promise<void> => {
+        const { highlightContent } = await import("@/utils/content/prismHighlighter");
+        if (cancelled) {
+          return;
         }
+        applyResult(highlightContent(content, language), requestId);
+      };
+
+      if (typeof Worker !== "undefined") {
+        try {
+          worker = new Worker(
+            new URL("../../../utils/content/prismHighlighter.worker.ts", import.meta.url),
+            {
+              type: "module",
+            },
+          );
+
+          worker.onmessage = (
+            event: MessageEvent<{ id: number; highlightedLines?: string[]; error?: string }>,
+          ): void => {
+            const { id, highlightedLines: nextLines } = event.data;
+            if (worker !== null) {
+              worker.terminate();
+              worker = null;
+            }
+            if (Array.isArray(nextLines)) {
+              applyResult(nextLines, id);
+              return;
+            }
+            applyResult([], id);
+          };
+
+          worker.onerror = (): void => {
+            if (worker !== null) {
+              worker.terminate();
+              worker = null;
+            }
+
+            void runFallbackHighlight().catch(() => {
+              applyResult([], requestId);
+            });
+          };
+
+          worker.postMessage({ id: requestId, content, language });
+
+          return () => {
+            cancelled = true;
+            if (worker !== null) {
+              worker.terminate();
+            }
+          };
+        } catch {
+          worker = null;
+        }
+      }
+
+      const scheduleFallback = (): void => {
+        void runFallbackHighlight().catch(() => {
+          applyResult([], requestId);
+        });
       };
 
       if (typeof window !== "undefined") {
@@ -104,43 +180,31 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = memo(
         };
 
         if (typeof idleCallback.requestIdleCallback === "function") {
-          const handle = idleCallback.requestIdleCallback(
-            () => {
-              runHighlight();
-            },
-            { timeout: 700 },
-          );
+          idleHandle = idleCallback.requestIdleCallback(scheduleFallback, { timeout: 700 });
 
           return () => {
             cancelled = true;
-            if (typeof idleCallback.cancelIdleCallback === "function") {
-              idleCallback.cancelIdleCallback(handle);
+            if (idleHandle !== null && typeof idleCallback.cancelIdleCallback === "function") {
+              idleCallback.cancelIdleCallback(idleHandle);
             }
           };
         }
       }
 
-      const timer = window.setTimeout(() => {
-        runHighlight();
-      }, 0);
+      timer = window.setTimeout(scheduleFallback, 0);
 
       return () => {
         cancelled = true;
-        window.clearTimeout(timer);
+        if (timer !== null) {
+          window.clearTimeout(timer);
+        }
       };
-    }, [normalizedLines, language]);
+    }, [content, language, normalizedLines.length, shouldBypassSyntaxHighlight]);
 
     // 预先转义文本，避免滚动过程中反复计算
     const escapedLines = useMemo(() => {
-      return normalizedLines.map((line) => {
-        if (line.length === 0) {
-          return "\u00A0";
-        }
-        return line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      });
+      return encodeLines(normalizedLines);
     }, [normalizedLines]);
-
-    const charCount = useMemo(() => (typeof content === "string" ? content.length : 0), [content]);
 
     // 计算实际字节大小（UTF-8 编码）
     const byteSize = useMemo(() => {

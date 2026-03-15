@@ -22,3 +22,4 @@ report
 src/generated/*.generated.ts
 public/search-index/
 public/initial-content/
+/.serena
