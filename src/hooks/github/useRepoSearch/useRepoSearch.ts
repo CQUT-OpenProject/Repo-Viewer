@@ -550,7 +550,7 @@ export function useRepoSearch({
           keyword,
           targetBranches,
           pathPrefixRaw,
-          sanitizedExtensions[0],
+          sanitizedExtensions,
         );
 
         const allItems: RepoSearchItem[] = branchResults.flatMap(
