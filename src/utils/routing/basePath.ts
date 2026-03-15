@@ -22,7 +22,10 @@ export function getAppBasePath(baseUrl: string = import.meta.env.BASE_URL): stri
   return normalizedBaseUrl === ROOT_PATH ? "" : normalizedBaseUrl.slice(0, -1);
 }
 
-export function stripBasePath(pathname: string, baseUrl: string = import.meta.env.BASE_URL): string {
+export function stripBasePath(
+  pathname: string,
+  baseUrl: string = import.meta.env.BASE_URL,
+): string {
   const basePath = getAppBasePath(baseUrl);
 
   if (basePath === "") {

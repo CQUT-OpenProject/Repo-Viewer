@@ -11,8 +11,7 @@ import SEOProvider from "@/contexts/SEOContext";
 import { ResponsiveSnackbarProvider } from "@/components/ui/ResponsiveSnackbarProvider";
 import { getDeveloperConfig } from "@/config";
 import { ErrorManager, setupGlobalErrorHandlers } from "@/utils/error";
-import { initialContentPayload } from "@/generated/initialContent";
-import type { InitialContentHydrationPayload } from "@/types";
+import { loadInitialContentPayload } from "@/services/github/core/content/initialContentLoader";
 
 // 扩展Window接口以支持LaTeX优化清理函数
 declare global {
@@ -53,8 +52,6 @@ if (!allowConsoleOutput) {
 // 设置全局错误处理器
 setupGlobalErrorHandlers(ErrorManager);
 
-GitHub.Content.hydrate(initialContentPayload as InitialContentHydrationPayload | null | undefined);
-
 // 应用LaTeX渲染优化
 // 在应用加载后设置LaTeX优化监听器
 document.addEventListener("DOMContentLoaded", (): void => {
@@ -70,15 +67,22 @@ if (rootElement === null) {
   throw new Error('找不到根元素：请确保 HTML 中存在 id="root" 的元素');
 }
 
-ReactDOM.createRoot(rootElement).render(
-  // 开发环境已启用React严格模式以帮助发现潜在的错误，进行刷新后页面抽动属正常现象
-  <React.StrictMode>
-    <SEOProvider>
-      <ThemeProvider>
-        <ResponsiveSnackbarProvider>
-          <App />
-        </ResponsiveSnackbarProvider>
-      </ThemeProvider>
-    </SEOProvider>
-  </React.StrictMode>,
-);
+async function bootstrap(): Promise<void> {
+  const initialContentPayload = await loadInitialContentPayload();
+  GitHub.Content.hydrate(initialContentPayload);
+
+  ReactDOM.createRoot(rootElement).render(
+    // 开发环境已启用React严格模式以帮助发现潜在的错误，进行刷新后页面抽动属正常现象
+    <React.StrictMode>
+      <SEOProvider>
+        <ThemeProvider>
+          <ResponsiveSnackbarProvider>
+            <App />
+          </ResponsiveSnackbarProvider>
+        </ThemeProvider>
+      </SEOProvider>
+    </React.StrictMode>,
+  );
+}
+
+void bootstrap();

@@ -35,10 +35,7 @@ describe("searchMultipleBranchesWithTreesApi", () => {
       { path: "docs/guide.md", type: "blob", sha: "4", url: "https://example.com/4" },
     ]);
 
-    const results = await searchMultipleBranchesWithTreesApi("readme", ["main"], "", [
-      "md",
-      ".TS",
-    ]);
+    const results = await searchMultipleBranchesWithTreesApi("readme", ["main"], "", ["md", ".TS"]);
 
     expect(results).toHaveLength(1);
     expect(results[0]?.results.map((item) => item.path)).toEqual([
