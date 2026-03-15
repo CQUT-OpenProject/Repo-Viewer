@@ -9,6 +9,7 @@
 
 import { getSearchIndexConfig } from "@/config";
 import { logger } from "@/utils";
+import { buildAbsoluteAppUrl } from "@/utils/routing/basePath";
 
 import {
   safeValidateSearchIndexManifest,
@@ -30,12 +31,14 @@ interface DocfindModule {
   init?: (input?: RequestInfo | URL | Response) => Promise<unknown>;
 }
 
-const resolveUrl = (path: string): string => {
+const resolveApiUrl = (path: string): string => {
   if (typeof window === "undefined") {
     return path;
   }
   return new URL(path, window.location.origin).toString();
 };
+
+const resolveStaticAssetUrl = (path: string): string => buildAbsoluteAppUrl(path);
 
 const ACTION_INDEX_BRANCH = "RV-Index";
 const ACTION_INDEX_ROOT = "public";
@@ -62,7 +65,7 @@ const buildActionAssetUrl = (
   if (typeof hash === "string" && hash.length > 0) {
     params.set("v", hash);
   }
-  return resolveUrl(`/api/github?${params.toString()}`);
+  return resolveApiUrl(`/api/github?${params.toString()}`);
 };
 
 const resolveDocfindPath = (entry: SearchIndexBranchEntry): string => {
@@ -90,7 +93,7 @@ const buildDocfindUrls = (
     return { moduleUrl, wasmUrl };
   }
 
-  const baseUrl = resolveUrl(resolveDocfindPath(entry));
+  const baseUrl = resolveStaticAssetUrl(resolveDocfindPath(entry));
   const moduleUrl =
     entry.hash.length > 0 ? `${baseUrl}?v=${encodeURIComponent(entry.hash)}` : baseUrl;
   const wasmBase = new URL("docfind_bg.wasm", baseUrl);
@@ -116,7 +119,7 @@ export async function fetchManifest(signal?: AbortSignal): Promise<SearchIndexMa
     const manifestUrl =
       config.generationMode === "action"
         ? buildActionAssetUrl(buildActionAssetPath(config.manifestPath), "json")
-        : config.manifestPath;
+        : resolveStaticAssetUrl(config.manifestPath);
 
     const response = await fetch(manifestUrl, {
       method: "GET",

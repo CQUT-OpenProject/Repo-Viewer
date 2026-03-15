@@ -56,6 +56,7 @@ interface ImportMetaEnv {
   readonly VITE_USE_TOKEN_MODE?: string;
   readonly VITE_DEVELOPER_MODE?: string;
   readonly VITE_CONSOLE_LOGGING?: string;
+  readonly VITE_BASE_PATH?: string;
 
   // GitHub仓库变量（双向同步）
   readonly GITHUB_REPO_OWNER?: string;

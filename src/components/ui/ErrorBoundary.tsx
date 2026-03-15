@@ -35,6 +35,7 @@ import {
 import { ErrorManager } from "@/utils/error";
 import { isDeveloperMode } from "@/config";
 import { useI18n } from "@/contexts/I18nContext";
+import { buildAppPath } from "@/utils/routing/basePath";
 
 type ErrorInfo = React.ErrorInfo;
 
@@ -159,7 +160,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   };
 
   goHome = (): void => {
-    window.location.href = "/";
+    window.location.href = buildAppPath();
   };
 
   override render(): React.ReactNode {

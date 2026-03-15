@@ -1,5 +1,6 @@
 import React from "react";
 import { useMetadata } from "@/contexts/MetadataContext/context";
+import { buildAbsoluteAppUrl } from "@/utils/routing/basePath";
 
 /**
  * NativeSEO组件属性接口
@@ -46,7 +47,7 @@ const NativeSEO: React.FC<NativeSEOProps> = ({
   // 确保ogImage是完整URL
   const fullOgImageUrl = metaOgImage.startsWith("http")
     ? metaOgImage
-    : `${window.location.origin}${metaOgImage}`;
+    : buildAbsoluteAppUrl(metaOgImage);
 
   // 获取当前规范URL（canonical）
   const normalizedCanonical = normalizeString(canonical);
