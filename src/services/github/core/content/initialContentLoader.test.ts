@@ -68,11 +68,7 @@ describe("initialContentLoader", () => {
   it("loads payload for the configured branch", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url =
-        input instanceof URL
-          ? input.toString()
-          : typeof input === "string"
-            ? input
-            : input.url;
+        input instanceof URL ? input.toString() : typeof input === "string" ? input : input.url;
 
       if (url === "/initial-content/manifest.json") {
         return new Response(

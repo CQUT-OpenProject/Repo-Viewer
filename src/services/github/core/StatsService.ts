@@ -10,6 +10,7 @@
 import { CacheManager } from "../cache";
 import { getProxyHealthStats, resetFailedProxyServices } from "../proxy";
 import { clearBatcherCache, getBatcher } from "./content";
+import { clearBranchTreeCache } from "./search/trees";
 
 /**
  * 清除所有缓存和重置网络状态
@@ -21,6 +22,7 @@ import { clearBatcherCache, getBatcher } from "./content";
 export async function clearCache(): Promise<void> {
   await CacheManager.clearAllCaches();
   clearBatcherCache();
+  clearBranchTreeCache();
   resetFailedProxyServices();
 }
 
