@@ -158,7 +158,10 @@ export const useDownload = (
 
         // 如果是非开发环境或启用了令牌模式，使用服务端API代理
         if (getForceServerProxy()) {
-          downloadUrl = `/api/github?action=getFileContent&url=${encodeURIComponent(item.download_url)}`;
+          downloadUrl = GitHub.Content.getServerRepoFileProxyUrl(
+            item.path,
+            GitHub.Branch.getCurrentBranch(),
+          );
         }
 
         const response = await fetch(downloadUrl, { signal });
@@ -246,7 +249,10 @@ export const useDownload = (
             // 如果是非开发环境或启用了令牌模式，使用服务端API代理
             let downloadUrl = item.download_url;
             if (getForceServerProxy()) {
-              downloadUrl = `/api/github?action=getFileContent&url=${encodeURIComponent(item.download_url)}`;
+              downloadUrl = GitHub.Content.getServerRepoFileProxyUrl(
+                item.path,
+                GitHub.Branch.getCurrentBranch(),
+              );
             }
 
             fileList.push({

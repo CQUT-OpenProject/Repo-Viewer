@@ -28,6 +28,7 @@ import {
   hydrateInitialContent as hydratePayload,
   INITIAL_CONTENT_EXCLUDE_FILES,
 } from "./hydrationStore";
+import { buildRepoFileContentApiUrl, buildServerApiUrlForGitHubResource } from "./serverApiUrls";
 
 /**
  * 内容服务入口
@@ -192,7 +193,7 @@ export async function getFileContent(fileUrl: string): Promise<string> {
   try {
     const response = await (async () => {
       if (getForceServerProxy()) {
-        const serverApiUrl = `/api/github?action=getFileContent&url=${encodeURIComponent(fileUrl)}`;
+        const serverApiUrl = buildServerApiUrlForGitHubResource(fileUrl, branch);
         return fetch(serverApiUrl);
       }
 
@@ -222,6 +223,28 @@ export async function getFileContent(fileUrl: string): Promise<string> {
     logger.error(`获取文件内容失败: ${fileUrl}`, cause);
     throw new Error(`获取文件内容失败: ${cause.message}`);
   }
+}
+
+/**
+ * 构建仓库文件的服务端代理地址。
+ *
+ * @param filePath - 仓库内文件路径
+ * @param branch - 可选分支，未传时使用当前分支
+ * @returns 服务端代理 URL
+ */
+export function getServerRepoFileProxyUrl(filePath: string, branch?: string): string {
+  return buildRepoFileContentApiUrl(filePath, branch);
+}
+
+/**
+ * 根据资源 URL 构建服务端代理地址。
+ *
+ * @param fileUrl - 原始资源地址
+ * @param branch - 可选分支，用于解析当前仓库 raw 链接
+ * @returns 服务端代理 URL
+ */
+export function getServerResourceProxyUrl(fileUrl: string, branch?: string): string {
+  return buildServerApiUrlForGitHubResource(fileUrl, branch);
 }
 
 /**

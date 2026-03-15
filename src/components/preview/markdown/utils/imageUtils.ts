@@ -60,7 +60,10 @@ export const tryDirectImageLoad = (imgSrc: string): string | null => {
 
   try {
     let directPath: string | null = null;
-    if (imgSrc.includes("/api/github?action=getFileContent&url=")) {
+    if (
+      imgSrc.includes("/api/github?action=getGitHubAsset&url=") ||
+      imgSrc.includes("/api/github?action=getFileContent&url=")
+    ) {
       const encodedUrl = imgSrc.split("url=")[1];
       if (encodedUrl !== undefined && encodedUrl.length > 0) {
         const decodedUrl = decodeURIComponent(encodedUrl);

@@ -26,6 +26,8 @@ export interface PDFPreviewOptions {
   fileName: string;
   /** 下载 URL */
   downloadUrl: string;
+  /** 服务端代理 URL（可选） */
+  serverProxyUrl?: string;
   /** MUI 主题对象 */
   theme: Theme;
   /** 翻译文本 */
@@ -308,7 +310,7 @@ function createFallbackLink(downloadUrl: string): void {
  * ```
  */
 export async function openPDFPreview(options: PDFPreviewOptions): Promise<void> {
-  const { fileName, downloadUrl, theme, translations, isDev = false } = options;
+  const { fileName, downloadUrl, serverProxyUrl, theme, translations, isDev = false } = options;
 
   // 初始化预览窗口
   const newTab = initializePDFWindow(fileName, theme, translations);
@@ -322,9 +324,11 @@ export async function openPDFPreview(options: PDFPreviewOptions): Promise<void> 
   const themeColors = extractPDFThemeColors(theme);
 
   // 根据环境选择下载 URL
-  const finalDownloadUrl = isDev
-    ? downloadUrl
-    : `/api/github?action=getFileContent&url=${encodeURIComponent(downloadUrl)}`;
+  const finalDownloadUrl =
+    serverProxyUrl ??
+    (isDev
+      ? downloadUrl
+      : `/api/github?action=getGitHubAsset&url=${encodeURIComponent(downloadUrl)}`);
 
   // 下载并显示 PDF
   await downloadAndDisplayPDF(newTab, finalDownloadUrl, fileName, themeColors, translations);

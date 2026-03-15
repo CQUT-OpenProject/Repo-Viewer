@@ -44,6 +44,8 @@ export const GitHub = {
   Content: {
     getContents: ContentServiceModule.getContents,
     getFileContent: ContentServiceModule.getFileContent,
+    getServerRepoFileProxyUrl: ContentServiceModule.getServerRepoFileProxyUrl,
+    getServerResourceProxyUrl: ContentServiceModule.getServerResourceProxyUrl,
     hydrate: ContentServiceModule.hydrateInitialContent,
   },
 
