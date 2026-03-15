@@ -8,6 +8,9 @@ import { readFileSync } from "fs";
 import { spawn } from "child_process";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
+const generatedInitialContentImport = "@/generated/initialContent";
+const fallbackInitialContentPath = path.resolve(rootDir, "src/generated/initialContent.ts");
+const buildInitialContentPath = path.resolve(rootDir, "src/generated/initialContent.generated.ts");
 
 const colors = {
   reset: "\x1b[0m",
@@ -568,7 +571,13 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: [{ find: "@", replacement: path.resolve(rootDir, "src") }],
+    alias: [
+      {
+        find: generatedInitialContentImport,
+        replacement: isProdLike ? buildInitialContentPath : fallbackInitialContentPath,
+      },
+      { find: "@", replacement: path.resolve(rootDir, "src") },
+    ],
   },
   optimizeDeps: {
     include: [

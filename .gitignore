@@ -19,5 +19,5 @@ coverage
 .tmp
 .docfind
 report
-src/generated/
+src/generated/*.generated.ts
 public/search-index/

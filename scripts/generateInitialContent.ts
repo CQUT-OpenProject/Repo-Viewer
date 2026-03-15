@@ -28,7 +28,7 @@ interface InitialContentHydrationPayload {
 }
 
 const rootDir = resolveRepoRoot(import.meta.url);
-const outputPath = path.join(rootDir, "src", "generated", "initialContent.ts");
+const outputPath = path.join(rootDir, "src", "generated", "initialContent.generated.ts");
 
 loadEnvFiles(rootDir);
 
