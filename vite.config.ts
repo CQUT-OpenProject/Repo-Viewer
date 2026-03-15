@@ -266,14 +266,6 @@ const generateBuildArtifacts = async (logger: Logger): Promise<void> => {
   );
 };
 
-const createBuildArtifactsPlugin = (logger: Logger) => ({
-  name: "repo-build-artifacts",
-  apply: "build" as const,
-  async buildStart() {
-    await generateBuildArtifacts(logger);
-  },
-});
-
 const createProxyConfig = (requestLogger: ReturnType<typeof createRequestLoggerMiddleware>) => ({
   "/github-api": {
     target: "https://api.github.com",
@@ -479,7 +471,12 @@ const DEVELOPER_MODE = (env.VITE_DEVELOPER_MODE || env.DEVELOPER_MODE) === "true
 const logger = createLogger(DEVELOPER_MODE);
 const requestLogger = createRequestLoggerMiddleware(logger);
 
-export default defineConfig({
+export default defineConfig(async ({ command }) => {
+  if (command === "build") {
+    await generateBuildArtifacts(logger);
+  }
+
+  return {
   lint: {
     plugins: ["typescript", "unicorn", "react"],
     ignorePatterns: [
@@ -554,7 +551,6 @@ export default defineConfig({
     "*": "vp check --fix",
   },
   plugins: [
-    createBuildArtifactsPlugin(logger),
     createRuntimeConfigPlugin(requestLogger),
     createVercelApiHandlerPlugin(logger),
   ],
@@ -604,4 +600,5 @@ export default defineConfig({
     ...getAllGithubPATs(),
     __APP_VERSION__: JSON.stringify(getPackageVersion()),
   },
+  };
 });

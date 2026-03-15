@@ -11,6 +11,7 @@ import type { GitHubContent } from "@/types";
 import { logger } from "@/utils";
 
 import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "../Config";
+import { getContents } from "../content";
 import type { GitTreeItem } from "./trees";
 
 /**
@@ -20,7 +21,6 @@ import type { GitTreeItem } from "./trees";
  * @returns Promise，解析为目录内容数组
  */
 async function loadDirectoryContents(path: string): Promise<GitHubContent[]> {
-  const { getContents } = await import("../content");
   return getContents(path);
 }
 

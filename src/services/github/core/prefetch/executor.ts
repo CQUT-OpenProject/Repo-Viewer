@@ -2,6 +2,7 @@ import type { GitHubContent } from "@/types";
 
 import { RequestBatcher } from "../../RequestBatcher";
 import { getAuthHeaders } from "../Auth";
+import { getFileContent } from "../content";
 
 const batcher = new RequestBatcher();
 
@@ -23,8 +24,6 @@ export async function prefetchFilesWithPriority(
   if (fileUrls.length === 0) {
     return;
   }
-
-  const { getFileContent } = await import("../content");
 
   const prefetchPromises = fileUrls.map((url) =>
     batcher
