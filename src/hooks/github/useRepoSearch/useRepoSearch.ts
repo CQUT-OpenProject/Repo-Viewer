@@ -16,6 +16,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GitHub } from "@/services/github";
 import { SearchIndexError, SearchIndexErrorCode } from "@/services/github/core/searchIndex";
 import { logger } from "@/utils";
+import { isAbortError } from "@/utils/network/abort";
+import { requestManager } from "@/utils/request/requestManager";
 import type { GitHubContent } from "@/types";
 
 import { SEARCH_INDEX_DEFAULT_LIMIT } from "./constants";
@@ -36,6 +38,8 @@ import {
   sanitizeBranchList,
   sanitizeExtensions,
 } from "./utils";
+
+const SEARCH_REQUEST_KEY = "repo-search";
 
 /**
  * 仓库搜索 Hook
@@ -368,6 +372,13 @@ export function useRepoSearch({
   const [searchResult, setSearchResult] = useState<RepoSearchExecutionResult | null>(null);
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [searchError, setSearchError] = useState<RepoSearchError | null>(null);
+  const activeSearchIdRef = useRef<number>(0);
+
+  useEffect(() => {
+    return () => {
+      requestManager.cancel(SEARCH_REQUEST_KEY);
+    };
+  }, []);
 
   const availableModes = useMemo<RepoSearchMode[]>(() => {
     if (indexFeatureEnabled) {
@@ -432,6 +443,9 @@ export function useRepoSearch({
 
   const search = useCallback<RepoSearchState["search"]>(
     async (options) => {
+      const searchId = activeSearchIdRef.current + 1;
+      activeSearchIdRef.current = searchId;
+
       const mergedFilters: RepoSearchFilters = {
         keyword: options?.keyword ?? filters.keyword,
         branches: options?.branches ?? filters.branches,
@@ -448,6 +462,10 @@ export function useRepoSearch({
       const keyword = mergedFilters.keyword.trim();
 
       if (keyword.length === 0) {
+        requestManager.cancel(SEARCH_REQUEST_KEY);
+        if (searchId === activeSearchIdRef.current) {
+          setSearchLoading(false);
+        }
         const emptyResult: RepoSearchExecutionResult = {
           mode: effectiveMode,
           items: [],
@@ -475,113 +493,116 @@ export function useRepoSearch({
       const startedAt = performance.now();
 
       try {
-        if (resolvedMode === "search-index") {
-          const candidateBranches =
-            sanitizedBranches.length > 0 ? sanitizedBranches : computeEffectiveBranches();
+        const pathPrefixRaw = mergedFilters.pathPrefix.trim();
+        const execution = await requestManager.request(SEARCH_REQUEST_KEY, async (signal) => {
+          if (resolvedMode === "search-index") {
+            const candidateBranches =
+              sanitizedBranches.length > 0 ? sanitizedBranches : computeEffectiveBranches();
 
-          const indexedBranches = candidateBranches.filter((branch) => isBranchIndexed(branch));
+            const indexedBranches = candidateBranches.filter((branch) => isBranchIndexed(branch));
 
-          if (indexedBranches.length === 0) {
-            throw new SearchIndexError(
-              SearchIndexErrorCode.INDEX_BRANCH_NOT_INDEXED,
-              "None of the selected branches have available search indexes",
-              { branch: candidateBranches.join(", ") },
-            );
-          }
+            if (indexedBranches.length === 0) {
+              throw new SearchIndexError(
+                SearchIndexErrorCode.INDEX_BRANCH_NOT_INDEXED,
+                "None of the selected branches have available search indexes",
+                { branch: candidateBranches.join(", ") },
+              );
+            }
 
-          const pathPrefixRaw = mergedFilters.pathPrefix.trim();
-          const pathPrefix = pathPrefixRaw === "" ? undefined : pathPrefixRaw;
+            const pathPrefix = pathPrefixRaw === "" ? undefined : pathPrefixRaw;
 
-          const searchIndexOptions: Parameters<typeof GitHub.SearchIndex.search>[0] = {
-            keyword,
-            branches: indexedBranches,
-            limit: SEARCH_INDEX_DEFAULT_LIMIT,
-          };
-
-          if (pathPrefix !== undefined) {
-            searchIndexOptions.pathPrefix = pathPrefix;
-          }
-
-          if (sanitizedExtensions.length > 0) {
-            searchIndexOptions.extensions = sanitizedExtensions;
-          }
-
-          const results = await GitHub.SearchIndex.search(searchIndexOptions);
-
-          const took = performance.now() - startedAt;
-          const items: RepoSearchItem[] = results.map((item) => ({
-            ...item,
-            source: "search-index" as const,
-          }));
-
-          const execution: RepoSearchExecutionResult = {
-            mode: "search-index",
-            items,
-            took,
-            filters: {
+            const searchIndexOptions: Parameters<typeof GitHub.SearchIndex.search>[0] = {
               keyword,
               branches: indexedBranches,
+              limit: SEARCH_INDEX_DEFAULT_LIMIT,
+              signal,
+            };
+
+            if (pathPrefix !== undefined) {
+              searchIndexOptions.pathPrefix = pathPrefix;
+            }
+
+            if (sanitizedExtensions.length > 0) {
+              searchIndexOptions.extensions = sanitizedExtensions;
+            }
+
+            const results = await GitHub.SearchIndex.search(searchIndexOptions);
+            const items: RepoSearchItem[] = results.map((item) => ({
+              ...item,
+              source: "search-index" as const,
+            }));
+
+            return {
+              mode: "search-index",
+              items,
+              took: performance.now() - startedAt,
+              filters: {
+                keyword,
+                branches: indexedBranches,
+                pathPrefix: pathPrefixRaw,
+                extensions: sanitizedExtensions,
+              },
+              completedAt: Date.now(),
+            } satisfies RepoSearchExecutionResult;
+          }
+
+          let targetBranches = sanitizedBranches;
+          if (targetBranches.length === 0) {
+            if (currentBranch !== "") {
+              targetBranches = [currentBranch];
+            } else if (defaultBranch !== "") {
+              targetBranches = [defaultBranch];
+            } else {
+              targetBranches = [defaultBranch];
+            }
+          }
+
+          const branchResults = await GitHub.Search.searchMultipleBranchesWithTreesApi(
+            keyword,
+            targetBranches,
+            pathPrefixRaw,
+            sanitizedExtensions,
+            signal,
+          );
+
+          const items: RepoSearchItem[] = branchResults.flatMap(
+            ({ branch, results }: { branch: string; results: GitHubContent[] }) =>
+              results.map((item: GitHubContent) => ({
+                ...item,
+                source: "github-api" as const,
+                branch,
+              })),
+          );
+
+          return {
+            mode: "github-api",
+            items,
+            took: performance.now() - startedAt,
+            filters: {
+              keyword,
+              branches: targetBranches,
               pathPrefix: pathPrefixRaw,
               extensions: sanitizedExtensions,
             },
             completedAt: Date.now(),
-          };
+          } satisfies RepoSearchExecutionResult;
+        });
 
-          setSearchResult(execution);
-          return execution;
+        if (searchId !== activeSearchIdRef.current) {
+          return null;
         }
-
-        // 确定要搜索的分支列表
-        let targetBranches = sanitizedBranches;
-        if (targetBranches.length === 0) {
-          if (currentBranch !== "") {
-            targetBranches = [currentBranch];
-          } else if (defaultBranch !== "") {
-            targetBranches = [defaultBranch];
-          } else {
-            targetBranches = [defaultBranch];
-          }
-        }
-
-        const pathPrefixRaw = mergedFilters.pathPrefix.trim();
-
-        // 使用 Trees API 进行多分支搜索
-        const branchResults = await GitHub.Search.searchMultipleBranchesWithTreesApi(
-          keyword,
-          targetBranches,
-          pathPrefixRaw,
-          sanitizedExtensions,
-        );
-
-        const allItems: RepoSearchItem[] = branchResults.flatMap(
-          ({ branch, results }: { branch: string; results: GitHubContent[] }) =>
-            results.map((item: GitHubContent) => ({
-              ...item,
-              source: "github-api" as const,
-              branch,
-            })),
-        );
-
-        const took = performance.now() - startedAt;
-
-        const execution: RepoSearchExecutionResult = {
-          mode: "github-api",
-          items: allItems,
-          took,
-          filters: {
-            keyword,
-            branches: targetBranches,
-            pathPrefix: pathPrefixRaw,
-            extensions: sanitizedExtensions,
-          },
-          completedAt: Date.now(),
-        };
 
         setSearchResult(execution);
         return execution;
       } catch (error: unknown) {
+        if (isAbortError(error)) {
+          return null;
+        }
+
         const normalized = normalizeSearchError(error, resolvedMode);
-        setSearchError(normalized);
+        if (searchId === activeSearchIdRef.current) {
+          setSearchError(normalized);
+        }
 
         const enrichedError = new Error(normalized.message);
         enrichedError.name = "RepoSearchError";
@@ -594,7 +615,9 @@ export function useRepoSearch({
 
         throw enrichedError;
       } finally {
-        setSearchLoading(false);
+        if (searchId === activeSearchIdRef.current) {
+          setSearchLoading(false);
+        }
       }
     },
     [

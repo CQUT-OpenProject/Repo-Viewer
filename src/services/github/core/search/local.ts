@@ -9,6 +9,7 @@
 
 import type { GitHubContent } from "@/types";
 import { logger } from "@/utils";
+import { createAbortError, isAbortError } from "@/utils/network/abort";
 
 import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "../Config";
 import { getContents } from "../content";
@@ -175,10 +176,15 @@ export async function searchMultipleBranchesWithTreesApi(
   branches: string[],
   pathPrefix = "",
   fileTypeFilter?: FileTypeFilter,
+  signal?: AbortSignal,
 ): Promise<{ branch: string; results: GitHubContent[] }[]> {
+  if (signal?.aborted === true) {
+    throw createAbortError("Request aborted");
+  }
+
   const searchPromises = branches.map(async (branch) => ({
     branch,
-    results: await searchBranchWithTreesApi(searchTerm, branch, pathPrefix, fileTypeFilter),
+    results: await searchBranchWithTreesApi(searchTerm, branch, pathPrefix, fileTypeFilter, signal),
   }));
 
   return Promise.all(searchPromises);
@@ -201,10 +207,15 @@ async function searchBranchWithTreesApi(
   branch: string,
   pathPrefix = "",
   fileTypeFilter?: FileTypeFilter,
+  signal?: AbortSignal,
 ): Promise<GitHubContent[]> {
   try {
+    if (signal?.aborted === true) {
+      throw createAbortError("Request aborted");
+    }
+
     const { getBranchTree } = await import("./trees");
-    const tree = await getBranchTree(branch);
+    const tree = await getBranchTree(branch, signal);
 
     if (tree === null) {
       return [];
@@ -264,6 +275,10 @@ async function searchBranchWithTreesApi(
         return result;
       });
   } catch (error) {
+    if (isAbortError(error)) {
+      throw createAbortError("Request aborted");
+    }
+
     const message = error instanceof Error ? error.message : "未知错误";
     logger.warn(`使用 Trees API 搜索分支 ${branch} 失败`, message);
     return [];

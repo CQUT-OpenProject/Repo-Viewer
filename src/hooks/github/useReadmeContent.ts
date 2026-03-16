@@ -4,6 +4,7 @@ import { GitHub } from "@/services/github";
 import { GITHUB_REPO_OWNER, GITHUB_REPO_NAME } from "@/services/github/core/Config";
 import { logger } from "@/utils";
 import { handleError } from "@/utils/error/errorHandler";
+import { isAbortError } from "@/utils/network/abort";
 import type { ReadmeContentState } from "./types";
 
 /**
@@ -32,6 +33,15 @@ export function useReadmeContent(
   const readmeLoadedRef = useRef<boolean>(readmeLoaded);
   const readmeContentRef = useRef<string | null>(readmeContent);
   const currentBranchRef = useRef<string>(currentBranch);
+  const readmeRequestControllerRef = useRef<AbortController | null>(null);
+  const readmeRequestIdRef = useRef<number>(0);
+
+  const cancelActiveReadmeRequest = useCallback(() => {
+    if (readmeRequestControllerRef.current !== null) {
+      readmeRequestControllerRef.current.abort();
+      readmeRequestControllerRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
     currentPathRef.current = currentPath;
@@ -39,6 +49,7 @@ export function useReadmeContent(
 
   useEffect(() => {
     if (currentBranchRef.current !== currentBranch) {
+      cancelActiveReadmeRequest();
       currentBranchRef.current = currentBranch;
       setLoadingReadme(true);
       setReadmeLoaded(false);
@@ -46,7 +57,13 @@ export function useReadmeContent(
       lastReadmeKeyRef.current = null;
       lastReadmePathRef.current = null;
     }
-  }, [currentBranch]);
+  }, [cancelActiveReadmeRequest, currentBranch]);
+
+  useEffect(() => {
+    return () => {
+      cancelActiveReadmeRequest();
+    };
+  }, [cancelActiveReadmeRequest]);
 
   const appendCacheBuster = useCallback((url: string, value: string): string => {
     if (value.trim().length === 0) {
@@ -76,6 +93,11 @@ export function useReadmeContent(
         setReadmeContent(null);
         setReadmeLoaded(false);
       }
+      cancelActiveReadmeRequest();
+      const requestId = readmeRequestIdRef.current + 1;
+      readmeRequestIdRef.current = requestId;
+      const abortController = new AbortController();
+      readmeRequestControllerRef.current = abortController;
 
       try {
         const encodedPath = readmeItem.path
@@ -85,7 +107,7 @@ export function useReadmeContent(
         const cacheTag = readmeItem.sha.length > 0 ? readmeItem.sha : requestKey;
         const baseUrl = `https://raw.githubusercontent.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/${encodeURIComponent(currentBranchRef.current)}/${encodedPath}`;
         const fileUrl = appendCacheBuster(baseUrl, cacheTag);
-        const content = await GitHub.Content.getFileContent(fileUrl);
+        const content = await GitHub.Content.getFileContent(fileUrl, abortController.signal);
 
         // 检查路径是否已经变更
         if (currentPathRef.current !== readmeDir) {
@@ -102,6 +124,9 @@ export function useReadmeContent(
         setReadmeContent(content);
         setReadmeLoaded(true); // 设置为已加载完成
       } catch (e: unknown) {
+        if (isAbortError(e)) {
+          return;
+        }
         handleError(e, "useReadmeContent.loadReadmeContent", {
           silent: true,
           userMessage: `加载 README 失败: ${e instanceof Error ? e.message : "未知错误"}`,
@@ -112,10 +137,16 @@ export function useReadmeContent(
         }
         setReadmeLoaded(true); // 出错时也设置为已加载完成
       } finally {
-        setLoadingReadme(false);
+        if (
+          readmeRequestIdRef.current === requestId &&
+          readmeRequestControllerRef.current === abortController
+        ) {
+          readmeRequestControllerRef.current = null;
+          setLoadingReadme(false);
+        }
       }
     },
-    [appendCacheBuster],
+    [appendCacheBuster, cancelActiveReadmeRequest],
   );
 
   // 监听内容变化，自动加载 README
@@ -142,6 +173,7 @@ export function useReadmeContent(
       lastReadmeKeyRef.current = nextReadmeKey;
       void loadReadmeContent(readmeItem, nextReadmeKey, shouldPreserve);
     } else {
+      cancelActiveReadmeRequest();
       lastReadmePathRef.current = null;
       lastReadmeKeyRef.current = null;
       setReadmeContent(null);
@@ -149,7 +181,7 @@ export function useReadmeContent(
       // README 不存在时也设置为已加载完成
       setReadmeLoaded(true);
     }
-  }, [contents, currentBranch, loadReadmeContent]);
+  }, [cancelActiveReadmeRequest, contents, currentBranch, loadReadmeContent]);
 
   // 同步加载状态到 ref，避免将其加入主 effect 依赖
   useEffect(() => {

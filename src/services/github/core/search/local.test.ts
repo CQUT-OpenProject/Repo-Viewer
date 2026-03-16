@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { createAbortError } from "@/utils/network/abort";
 
 vi.mock("@/utils", () => ({
   logger: {
@@ -53,5 +54,17 @@ describe("searchMultipleBranchesWithTreesApi", () => {
     const results = await searchMultipleBranchesWithTreesApi("component", ["main"], "", "tsx");
 
     expect(results[0]?.results.map((item) => item.path)).toEqual(["src/component.tsx"]);
+  });
+
+  it("forwards abort signals to branch tree loading", async () => {
+    const controller = new AbortController();
+    mockedGetBranchTree.mockImplementation(async (_branch, signal) => {
+      expect(signal).toBe(controller.signal);
+      throw createAbortError("Request aborted");
+    });
+
+    await expect(
+      searchMultipleBranchesWithTreesApi("component", ["main"], "", "tsx", controller.signal),
+    ).rejects.toMatchObject({ name: "AbortError" });
   });
 });

@@ -14,6 +14,7 @@ import type { PreviewState, PreviewAction, GitHubContent } from "@/types";
 import { GitHub } from "@/services/github";
 import { logger, pdf } from "@/utils";
 import { isImageFile, isMarkdownFile, isPdfFile, isTextFile } from "@/utils/files/fileHelpers";
+import { isAbortError } from "@/utils/network/abort";
 import {
   getPreviewFromUrl,
   updateUrlWithHistory,
@@ -132,6 +133,15 @@ export const useFilePreview = (
   const hasActivePreviewRef = useRef<boolean>(false);
   const isHandlingNavigationRef = useRef<boolean>(false);
   const loadingPreviewPathRef = useRef<string | null>(null);
+  const previewRequestControllerRef = useRef<AbortController | null>(null);
+  const previewRequestIdRef = useRef<number>(0);
+
+  const cancelActivePreviewRequest = useCallback(() => {
+    if (previewRequestControllerRef.current !== null) {
+      previewRequestControllerRef.current.abort();
+      previewRequestControllerRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
     const hasActivePreview =
@@ -159,6 +169,12 @@ export const useFilePreview = (
     }
   }, []);
 
+  useEffect(() => {
+    return () => {
+      cancelActivePreviewRequest();
+    };
+  }, [cancelActivePreviewRequest]);
+
   const selectFile = useCallback(
     async (item: GitHubContent) => {
       if (item.download_url === null || item.download_url === "") {
@@ -178,6 +194,7 @@ export const useFilePreview = (
         return;
       }
 
+      cancelActivePreviewRequest();
       loadingPreviewPathRef.current = targetPath;
 
       logger.debug(`正在选择文件预览: ${item.path}`);
@@ -201,36 +218,68 @@ export const useFilePreview = (
         if (isMarkdownFile(fileNameLower)) {
           updateUrlWithHistory(dirPath, item.path);
           dispatch({ type: "SET_PREVIEW_LOADING", loading: true });
+          const requestId = previewRequestIdRef.current + 1;
+          previewRequestIdRef.current = requestId;
+          const abortController = new AbortController();
+          previewRequestControllerRef.current = abortController;
 
           try {
-            const content = await GitHub.Content.getFileContent(item.download_url);
+            const content = await GitHub.Content.getFileContent(
+              item.download_url,
+              abortController.signal,
+            );
             if (!isCurrentTarget()) {
               logger.debug(`加载完成时目标已切换，忽略 Markdown 结果: ${targetPath}`);
               return;
             }
             dispatch({ type: "SET_MD_PREVIEW", content, item });
           } catch (error: unknown) {
+            if (isAbortError(error)) {
+              return;
+            }
             const errorMessage = error instanceof Error ? error.message : t("error.unknown");
             onError(t("error.preview.markdownLoadFailed", { message: errorMessage }));
           } finally {
-            dispatch({ type: "SET_PREVIEW_LOADING", loading: false });
+            if (
+              previewRequestIdRef.current === requestId &&
+              previewRequestControllerRef.current === abortController
+            ) {
+              previewRequestControllerRef.current = null;
+              dispatch({ type: "SET_PREVIEW_LOADING", loading: false });
+            }
           }
         } else if (isTextFile(item.name)) {
           updateUrlWithHistory(dirPath, item.path);
           dispatch({ type: "SET_PREVIEW_LOADING", loading: true });
+          const requestId = previewRequestIdRef.current + 1;
+          previewRequestIdRef.current = requestId;
+          const abortController = new AbortController();
+          previewRequestControllerRef.current = abortController;
 
           try {
-            const content = await GitHub.Content.getFileContent(item.download_url);
+            const content = await GitHub.Content.getFileContent(
+              item.download_url,
+              abortController.signal,
+            );
             if (!isCurrentTarget()) {
               logger.debug(`加载完成时目标已切换，忽略文本结果: ${targetPath}`);
               return;
             }
             dispatch({ type: "SET_TEXT_PREVIEW", content, item });
           } catch (error: unknown) {
+            if (isAbortError(error)) {
+              return;
+            }
             const errorMessage = error instanceof Error ? error.message : t("error.unknown");
             onError(t("error.preview.textLoadFailed", { message: errorMessage }));
           } finally {
-            dispatch({ type: "SET_PREVIEW_LOADING", loading: false });
+            if (
+              previewRequestIdRef.current === requestId &&
+              previewRequestControllerRef.current === abortController
+            ) {
+              previewRequestControllerRef.current = null;
+              dispatch({ type: "SET_PREVIEW_LOADING", loading: false });
+            }
           }
         } else if (isPdfFile(fileNameLower)) {
           // 使用新的 PDF 预览工具函数
@@ -296,12 +345,14 @@ export const useFilePreview = (
         }
       }
     },
-    [onError, useTokenMode, muiTheme, t],
+    [cancelActivePreviewRequest, onError, useTokenMode, muiTheme, t],
   );
 
   // 关闭预览
   const closePreview = useCallback(() => {
     logger.debug("关闭预览组件");
+    cancelActivePreviewRequest();
+    loadingPreviewPathRef.current = null;
 
     // 获取当前预览的项目
     const currentItem = currentPreviewItemRef.current;
@@ -324,7 +375,7 @@ export const useFilePreview = (
     // 重置预览状态
     dispatch({ type: "RESET_PREVIEW" });
     hasActivePreviewRef.current = false;
-  }, []);
+  }, [cancelActivePreviewRequest]);
 
   // 图像全屏切换
   const toggleImageFullscreen = useCallback(() => {
@@ -371,6 +422,8 @@ export const useFilePreview = (
         // 如果当前有预览，但 URL 不再包含预览参数，则关闭预览（后退操作）
         if (hasActivePreview && !urlHasPreview) {
           logger.debug("检测到后退关闭预览操作");
+          cancelActivePreviewRequest();
+          loadingPreviewPathRef.current = null;
 
           // 重置预览状态
           dispatch({ type: "RESET_PREVIEW" });
@@ -427,7 +480,7 @@ export const useFilePreview = (
       window.removeEventListener("popstate", handlePopState);
       logger.debug("已移除 popstate 事件监听器");
     };
-  }, [selectFile, findFileItemByPath]);
+  }, [cancelActivePreviewRequest, selectFile, findFileItemByPath]);
 
   return {
     previewState,
