@@ -7,6 +7,8 @@
 export {
   getContents,
   getFileContent,
+  getServerRepoFileProxyUrl,
+  getServerResourceProxyUrl,
   getBatcher,
   clearBatcherCache,
   hydrateInitialContent,

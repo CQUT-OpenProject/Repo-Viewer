@@ -1,5 +1,6 @@
 import { GitHub } from "@/services/github";
 import { logger } from "../index";
+import { buildAppPath, stripBasePath } from "./basePath";
 
 /**
  * 验证路径格式
@@ -25,7 +26,7 @@ function isValidPath(path: string): boolean {
 export function getPathFromUrl(): string {
   try {
     // 首先尝试从路径段获取
-    let pathname = window.location.pathname;
+    let pathname = stripBasePath(window.location.pathname);
 
     // 移除开头的斜杠
     if (pathname.startsWith("/")) {
@@ -133,7 +134,7 @@ function buildUrl(path: string, preview?: string, branch?: string): UrlBuildResu
   const encodedPath = path.length > 0 ? encodeURI(path) : "";
 
   // 基础 URL 是路径
-  let url = `/${encodedPath}`;
+  let url = buildAppPath(encodedPath);
 
   const branchValue = branch ?? GitHub.Branch.getCurrentBranch();
   const activeBranch = branchValue.trim();

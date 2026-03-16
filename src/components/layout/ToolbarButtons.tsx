@@ -14,6 +14,7 @@ import { getGithubConfig } from "@/config";
 import { logger } from "@/utils";
 import { useContentContext, usePreviewContext } from "@/contexts/unified";
 import { useI18n } from "@/contexts/I18nContext";
+import { getPreviewFromUrl } from "@/utils/routing/urlManager";
 
 // 懒加载搜索组件
 const SearchDrawer = lazy(async () => import("@/components/interactions/SearchDrawer"));
@@ -353,8 +354,6 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
   const onGitHubClick = useCallback(() => {
     const { repoOwner, repoName } = repoInfo;
 
-    const pathname = window.location.pathname.slice(1);
-    const hash = window.location.hash;
     const activeBranch = currentBranch !== "" ? currentBranch : defaultBranch;
     const encodedBranch = encodeURIComponent(activeBranch);
 
@@ -367,7 +366,7 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
       }
     };
 
-    const safePath = pathname
+    const safePath = currentPath
       .split("/")
       .filter((segment) => segment.length > 0)
       .map(encodeSegment)
@@ -375,9 +374,7 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
 
     let githubUrl = `https://github.com/${repoOwner}/${repoName}`;
 
-    const previewRegex = /#preview=([^&]+)/;
-    const previewMatch = previewRegex.exec(hash);
-    const previewTarget = previewMatch?.[1];
+    const previewTarget = getPreviewFromUrl();
     const hasPathname = safePath.length > 0;
 
     if (typeof previewTarget === "string" && previewTarget.length > 0 && hasPathname) {
@@ -396,7 +393,7 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
     }
 
     window.open(githubUrl, "_blank");
-  }, [repoInfo, currentBranch, defaultBranch]);
+  }, [repoInfo, currentBranch, defaultBranch, currentPath]);
 
   const openSearchDrawer = useCallback(() => {
     setSearchDrawerOpen(true);

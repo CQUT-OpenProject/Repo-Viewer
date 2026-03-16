@@ -1,4 +1,5 @@
 import { logger } from "@/utils";
+import { isAbortError } from "@/utils/network/abort";
 import { createTimeWheel } from "@/utils/data-structures/TimeWheel";
 import type { TimeWheel } from "@/utils/data-structures/TimeWheel";
 
@@ -31,6 +32,9 @@ interface RetryOptions {
   onRetry?: (attempt: number, error: unknown) => void;
   silent?: boolean;
 }
+
+type FingerprintCachePolicy = "use" | "bypass";
+type InFlightDeduplicationPolicy = "merge" | "isolate";
 
 /**
  * 请求批处理器类
@@ -127,7 +131,8 @@ export class RequestBatcher {
    * @param options.priority - 请求优先级，默认为'medium'
    * @param options.method - HTTP方法，默认为'GET'
    * @param options.headers - 请求头
-   * @param options.skipDeduplication - 是否跳过去重检查
+   * @param options.fingerprintCache - 是否复用已完成请求的指纹缓存
+   * @param options.inFlightDeduplication - 是否合并相同的进行中请求
    * @returns Promise，解析为请求结果
    */
   public enqueue<T>(
@@ -137,26 +142,32 @@ export class RequestBatcher {
       priority?: "high" | "medium" | "low";
       method?: string;
       headers?: Record<string, string>;
-      skipDeduplication?: boolean;
+      fingerprintCache?: FingerprintCachePolicy;
+      inFlightDeduplication?: InFlightDeduplicationPolicy;
     } = {},
   ): Promise<T> {
     const {
       priority = "medium",
       method = "GET",
       headers = {},
-      skipDeduplication = false,
+      fingerprintCache = "use",
+      inFlightDeduplication = "merge",
     } = options;
+    const requestKey =
+      inFlightDeduplication === "merge"
+        ? key
+        : `${key}::${method}:${Date.now().toString()}:${Math.random().toString(36).slice(2)}`;
 
     // 检查是否有重复请求正在进行
-    if (this.pendingRequests.has(key)) {
+    if (inFlightDeduplication === "merge" && this.pendingRequests.has(requestKey)) {
       logger.debug(`请求合并: ${key}`);
-      return this.pendingRequests.get(key) as Promise<T>;
+      return this.pendingRequests.get(requestKey) as Promise<T>;
     }
 
-    // 生成请求指纹并检查缓存，避免不必要的指纹生成
+    // 生成请求指纹并检查结果缓存，避免不必要的网络请求
     const fingerprint = this.generateFingerprint(key, method, headers);
 
-    if (!skipDeduplication) {
+    if (fingerprintCache === "use") {
       const cachedData = this.fingerprintWheel.get(fingerprint);
       if (cachedData !== undefined) {
         // 增加命中次数
@@ -168,8 +179,8 @@ export class RequestBatcher {
 
     return new Promise<T>((resolve, reject) => {
       // 如果还没有这个键的请求队列，创建它
-      if (!this.batchedRequests.has(key)) {
-        this.batchedRequests.set(key, []);
+      if (!this.batchedRequests.has(requestKey)) {
+        this.batchedRequests.set(requestKey, []);
 
         // 设置超时以批量处理请求
         this.batchTimeout ??= window.setTimeout(() => {
@@ -178,7 +189,7 @@ export class RequestBatcher {
       }
 
       // 添加到队列
-      const queue = this.batchedRequests.get(key);
+      const queue = this.batchedRequests.get(requestKey);
       if (queue === undefined) {
         reject(new Error(`队列不存在: ${key}`));
         return;
@@ -195,39 +206,55 @@ export class RequestBatcher {
 
       // 如果是队列中的第一个请求，执行它
       if (isFirstRequest) {
-        void this.executeWithRetry(key, executeRequest, fingerprint, skipDeduplication);
+        void this.executeWithRetry(
+          requestKey,
+          key,
+          executeRequest,
+          fingerprint,
+          fingerprintCache,
+        ).catch(() => {
+          // 请求结果会通过队列中的 promise 向调用方传递，这里只避免未处理 rejection。
+        });
       }
     });
   }
 
   // 带重试机制的请求执行
   private async executeWithRetry<T>(
+    requestKey: string,
     key: string,
     executeRequest: () => Promise<T>,
     fingerprint: string,
-    skipDeduplication: boolean,
-  ): Promise<void> {
-    const requestPromise = this.performRequest(key, executeRequest, fingerprint, skipDeduplication);
+    fingerprintCache: FingerprintCachePolicy,
+  ): Promise<T> {
+    const requestPromise = this.performRequest(
+      requestKey,
+      key,
+      executeRequest,
+      fingerprint,
+      fingerprintCache,
+    );
 
     // 添加到进行中的请求
-    this.pendingRequests.set(key, requestPromise);
+    this.pendingRequests.set(requestKey, requestPromise);
 
     try {
-      await requestPromise;
+      return await requestPromise;
     } finally {
       // 清理进行中的请求记录
-      this.pendingRequests.delete(key);
+      this.pendingRequests.delete(requestKey);
     }
   }
 
   // 执行请求
   private async performRequest<T>(
+    requestKey: string,
     key: string,
     executeRequest: () => Promise<T>,
     fingerprint: string,
-    skipDeduplication: boolean,
-  ): Promise<void> {
-    const queue = this.batchedRequests.get(key) ?? [];
+    fingerprintCache: FingerprintCachePolicy,
+  ): Promise<T> {
+    const queue = this.batchedRequests.get(requestKey) ?? [];
 
     // 按优先级排序
     queue.sort((a, b) => {
@@ -239,6 +266,7 @@ export class RequestBatcher {
     const retryOptions: RetryOptions = {
       maxRetries: this.maxRetries,
       backoff: (attempt) => Math.min(1000 * Math.pow(2, attempt), 5000), // 指数退避，最大5秒
+      shouldRetry: (error) => !isAbortError(error),
       onRetry: (attempt, error) => {
         const errorMessage = error instanceof Error ? error.message : String(error);
         logger.warn(
@@ -253,7 +281,7 @@ export class RequestBatcher {
       const result = await this.withRetry(executeRequest, retryOptions);
 
       // 缓存成功响应的结果
-      if (!skipDeduplication) {
+      if (fingerprintCache === "use") {
         this.fingerprintWheel.add(
           fingerprint,
           {
@@ -268,7 +296,8 @@ export class RequestBatcher {
       queue.forEach((request) => {
         request.resolve(result);
       });
-      this.batchedRequests.delete(key);
+      this.batchedRequests.delete(requestKey);
+      return result;
     } catch (lastError: unknown) {
       // 所有重试都失败了
       logger.error(`请求最终失败: ${key}`, lastError);
@@ -276,7 +305,8 @@ export class RequestBatcher {
         request.retryCount++;
         request.reject(lastError);
       });
-      this.batchedRequests.delete(key);
+      this.batchedRequests.delete(requestKey);
+      throw lastError;
     }
   }
 

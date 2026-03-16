@@ -11,7 +11,26 @@ import type { GitHubContent } from "@/types";
 import { logger } from "@/utils";
 
 import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "../Config";
+import { getContents } from "../content";
 import type { GitTreeItem } from "./trees";
+
+type FileTypeFilter = string | string[] | undefined;
+
+function normalizeFileTypeFilters(fileTypeFilter: FileTypeFilter): Set<string> {
+  const values = Array.isArray(fileTypeFilter) ? fileTypeFilter : [fileTypeFilter];
+  const normalized = new Set<string>();
+
+  for (const value of values) {
+    const trimmed = value?.trim().toLowerCase();
+    if (trimmed === undefined || trimmed === "") {
+      continue;
+    }
+
+    normalized.add(trimmed.startsWith(".") ? trimmed.slice(1) : trimmed);
+  }
+
+  return normalized;
+}
 
 /**
  * 加载目录内容
@@ -20,7 +39,6 @@ import type { GitTreeItem } from "./trees";
  * @returns Promise，解析为目录内容数组
  */
 async function loadDirectoryContents(path: string): Promise<GitHubContent[]> {
-  const { getContents } = await import("../content");
   return getContents(path);
 }
 
@@ -31,13 +49,15 @@ async function loadDirectoryContents(path: string): Promise<GitHubContent[]> {
  * @param fileTypeFilter - 文件类型过滤器（扩展名）
  * @returns 如果匹配或无需过滤返回 true
  */
-function matchesFileType(file: GitHubContent, fileTypeFilter?: string): boolean {
-  if (fileTypeFilter === undefined || fileTypeFilter === "" || file.type !== "file") {
+function matchesFileType(file: GitHubContent, fileTypeFilter?: FileTypeFilter): boolean {
+  const filters = normalizeFileTypeFilters(fileTypeFilter);
+
+  if (filters.size === 0 || file.type !== "file") {
     return true;
   }
 
   const extension = file.name.split(".").pop()?.toLowerCase();
-  return extension === fileTypeFilter.toLowerCase();
+  return extension !== undefined && filters.has(extension);
 }
 
 /**
@@ -51,7 +71,7 @@ function matchesFileType(file: GitHubContent, fileTypeFilter?: string): boolean 
 function filterFilesByName(
   contents: GitHubContent[],
   searchTerm: string,
-  fileTypeFilter?: string,
+  fileTypeFilter?: FileTypeFilter,
 ): GitHubContent[] {
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
@@ -76,7 +96,7 @@ function filterFilesByName(
 async function searchSubdirectories(
   directories: GitHubContent[],
   searchTerm: string,
-  fileTypeFilter?: string,
+  fileTypeFilter?: FileTypeFilter,
 ): Promise<GitHubContent[]> {
   if (directories.length === 0) {
     return [];
@@ -112,7 +132,7 @@ export async function searchFiles(
   searchTerm: string,
   currentPath = "",
   recursive = false,
-  fileTypeFilter?: string,
+  fileTypeFilter?: FileTypeFilter,
 ): Promise<GitHubContent[]> {
   if (searchTerm.trim() === "") {
     return [];
@@ -154,7 +174,7 @@ export async function searchMultipleBranchesWithTreesApi(
   searchTerm: string,
   branches: string[],
   pathPrefix = "",
-  fileTypeFilter?: string,
+  fileTypeFilter?: FileTypeFilter,
 ): Promise<{ branch: string; results: GitHubContent[] }[]> {
   const searchPromises = branches.map(async (branch) => ({
     branch,
@@ -180,7 +200,7 @@ async function searchBranchWithTreesApi(
   searchTerm: string,
   branch: string,
   pathPrefix = "",
-  fileTypeFilter?: string,
+  fileTypeFilter?: FileTypeFilter,
 ): Promise<GitHubContent[]> {
   try {
     const { getBranchTree } = await import("./trees");
@@ -192,6 +212,7 @@ async function searchBranchWithTreesApi(
 
     const normalizedSearchTerm = searchTerm.trim().toLowerCase();
     const normalizedPrefix = pathPrefix.trim().toLowerCase();
+    const normalizedFileTypeFilters = normalizeFileTypeFilters(fileTypeFilter);
 
     return tree
       .filter((item: GitTreeItem) => item.type === "blob")
@@ -209,11 +230,11 @@ async function searchBranchWithTreesApi(
           return false;
         }
 
-        if (fileTypeFilter !== undefined && fileTypeFilter !== "") {
+        if (normalizedFileTypeFilters.size > 0) {
           const ext = fileName.includes(".")
             ? fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase()
             : "";
-          if (ext !== fileTypeFilter.toLowerCase()) {
+          if (!normalizedFileTypeFilters.has(ext)) {
             return false;
           }
         }

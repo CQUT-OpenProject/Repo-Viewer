@@ -15,6 +15,17 @@ const colors = {
 
 // 配置常量
 const GITHUB_API_BASE = "https://api.github.com";
+const PROXY_REQUEST_TIMEOUT_MS = 15000;
+const GITHUB_ASSET_ALLOWED_HOSTS = new Set([
+  "api.github.com",
+  "raw.githubusercontent.com",
+  "user-images.githubusercontent.com",
+  "objects.githubusercontent.com",
+  "avatars.githubusercontent.com",
+  "camo.githubusercontent.com",
+  "media.githubusercontent.com",
+  "github.githubassets.com",
+]);
 
 const parseBooleanFlag = (value?: string | null): boolean => {
   if (typeof value !== "string") {
@@ -254,6 +265,55 @@ const parsePositiveInt = (
   }
 
   return parsed;
+};
+
+const isAllowedGitHubAssetHost = (hostname: string): boolean =>
+  GITHUB_ASSET_ALLOWED_HOSTS.has(hostname.toLowerCase());
+
+const getPublicGitHubHeaders = (accept: string): Record<string, string> => ({
+  Accept: accept,
+  "User-Agent": "Repo-Viewer",
+});
+
+const getResponseHeader = (
+  responseHeaders: AxiosResponse<ArrayBuffer>["headers"],
+  name: string,
+): string | undefined => {
+  const normalizedName = name.toLowerCase();
+  if (typeof responseHeaders.get === "function") {
+    const value = responseHeaders.get(normalizedName);
+    return typeof value === "string" ? value : undefined;
+  }
+
+  const rawHeaders = responseHeaders as Record<string, unknown>;
+  const direct = rawHeaders[normalizedName];
+  if (typeof direct === "string") {
+    return direct;
+  }
+
+  const fallback = rawHeaders[name];
+  return typeof fallback === "string" ? fallback : undefined;
+};
+
+const copyFileResponseHeaders = (
+  res: VercelResponse,
+  response: AxiosResponse<ArrayBuffer>,
+): void => {
+  const upstreamContentType = getResponseHeader(response.headers, "content-type");
+  const upstreamContentLength = getResponseHeader(response.headers, "content-length");
+  const upstreamDisposition = getResponseHeader(response.headers, "content-disposition");
+  const upstreamCacheControl = getResponseHeader(response.headers, "cache-control");
+
+  res.setHeader("Content-Type", upstreamContentType ?? "application/octet-stream");
+  if (upstreamContentLength !== undefined) {
+    res.setHeader("Content-Length", upstreamContentLength);
+  }
+  if (upstreamDisposition !== undefined) {
+    res.setHeader("Content-Disposition", upstreamDisposition);
+  }
+  if (upstreamCacheControl !== undefined) {
+    res.setHeader("Cache-Control", upstreamCacheControl);
+  }
 };
 
 // 构建认证头
@@ -633,13 +693,40 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
     // 获取文件内容
     if (actionParam === "getFileContent") {
-      const urlParam = Array.isArray(url) ? (url.length > 0 ? url[0] : undefined) : url;
-      if (typeof urlParam !== "string" || urlParam.trim().length === 0) {
-        res.status(400).json({ error: "Missing url parameter" });
+      if (typeof getSingleQueryParam(url) === "string") {
+        res.status(400).json({
+          error: "The url parameter is deprecated. Use path and optional branch instead.",
+        });
         return;
       }
 
-      const urlString = urlParam;
+      const pathParam = getSingleQueryParam(path);
+      if (pathParam === undefined || pathParam.trim().length === 0) {
+        res.status(400).json({ error: "Missing path parameter" });
+        return;
+      }
+
+      const { repoOwner, repoName, repoBranch } = getRepoEnvConfig();
+      if (repoOwner.length === 0 || repoName.length === 0) {
+        res.status(500).json({
+          error: "Repository configuration missing",
+          message: "Missing GITHUB_REPO_OWNER or GITHUB_REPO_NAME environment variable",
+        });
+        return;
+      }
+
+      const branchToUse =
+        parseBranchOverride(branch) ?? (repoBranch.length > 0 ? repoBranch : "main");
+      const normalizedPath = pathParam.trim().replace(/^\/+/u, "");
+      if (normalizedPath.length === 0) {
+        res.status(400).json({ error: "Missing path parameter" });
+        return;
+      }
+
+      const encodedBranch = encodePathSegments(branchToUse);
+      const encodedPath = encodePathSegments(normalizedPath);
+      const rawUrl = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${encodedBranch}/${encodedPath}`;
+
       try {
         const headers = {
           ...getAuthHeaders(),
@@ -647,57 +734,79 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         };
 
         const response = await handleRequestWithRetry<AxiosResponse<ArrayBuffer>>(() =>
-          axios.get<ArrayBuffer>(urlString, {
+          axios.get<ArrayBuffer>(rawUrl, {
             headers,
             responseType: "arraybuffer",
+            timeout: PROXY_REQUEST_TIMEOUT_MS,
+            maxRedirects: 0,
           }),
         );
 
-        const getHeader = (name: string): string | undefined => {
-          if (typeof response.headers.get === "function") {
-            const value = response.headers.get(name);
-            return typeof value === "string" ? value : undefined;
-          }
-          const rawValue = (response.headers as Record<string, unknown>)[name];
-          return typeof rawValue === "string" ? rawValue : undefined;
-        };
-
-        const upstreamContentType = getHeader("content-type");
-        const upstreamContentLength = getHeader("content-length");
-        const upstreamDisposition = getHeader("content-disposition");
-        const upstreamCacheControl = getHeader("cache-control");
-
-        res.setHeader("Content-Type", upstreamContentType ?? "application/octet-stream");
-        if (upstreamContentLength !== undefined) {
-          res.setHeader("Content-Length", upstreamContentLength);
-        }
-        if (upstreamDisposition !== undefined) {
-          res.setHeader("Content-Disposition", upstreamDisposition);
-        }
-        if (upstreamCacheControl !== undefined) {
-          res.setHeader("Cache-Control", upstreamCacheControl);
-        }
-
+        copyFileResponseHeaders(res, response);
         const buffer = Buffer.from(response.data);
         res.status(200).send(buffer);
         return;
       } catch (error) {
         const axiosError = error as AxiosErrorResponse;
-        const decodedUrl = (() => {
-          try {
-            return decodeURIComponent(urlString);
-          } catch {
-            return urlString;
-          }
-        })();
         apiLogger.error(
           "Failed to fetch file content:",
-          decodedUrl,
+          `${branchToUse}/${normalizedPath}`,
           axiosError.message ?? "Unknown error",
         );
         res.status(axiosError.response?.status ?? 500).json({
           error: "Failed to fetch file content",
-          message: axiosError.message ?? "Unknown error",
+        });
+        return;
+      }
+    }
+
+    // 获取 GitHub 静态资源（禁止带认证头）
+    if (actionParam === "getGitHubAsset") {
+      const urlParam = getSingleQueryParam(url);
+      if (urlParam === undefined || urlParam.trim().length === 0) {
+        res.status(400).json({ error: "Missing url parameter" });
+        return;
+      }
+
+      let parsedUrl: URL;
+      try {
+        parsedUrl = new URL(urlParam);
+      } catch {
+        res.status(400).json({ error: "Invalid url parameter" });
+        return;
+      }
+
+      if (parsedUrl.protocol !== "https:") {
+        res.status(400).json({ error: "Only https protocol is allowed" });
+        return;
+      }
+
+      if (!isAllowedGitHubAssetHost(parsedUrl.hostname)) {
+        res.status(400).json({ error: "Host is not allowed" });
+        return;
+      }
+
+      try {
+        const response = await axios.get<ArrayBuffer>(parsedUrl.toString(), {
+          headers: getPublicGitHubHeaders("application/vnd.github.v3.raw"),
+          responseType: "arraybuffer",
+          timeout: PROXY_REQUEST_TIMEOUT_MS,
+          maxRedirects: 0,
+        });
+
+        copyFileResponseHeaders(res, response);
+        res.status(200).send(Buffer.from(response.data));
+        return;
+      } catch (error) {
+        const axiosError = error as AxiosErrorResponse;
+        const status = axiosError.response?.status ?? 500;
+        apiLogger.error(
+          "Failed to fetch GitHub asset:",
+          parsedUrl.toString(),
+          axiosError.message ?? "Unknown error",
+        );
+        res.status(status).json({
+          error: "Failed to fetch GitHub asset",
         });
         return;
       }

@@ -118,6 +118,17 @@ const decodeUrl = (url: string | undefined): string => {
   }
 };
 
+const normalizeBaseUrl = (value: string | undefined): string => {
+  const trimmed = value?.trim() ?? "";
+
+  if (trimmed === "" || trimmed === "/") {
+    return "/";
+  }
+
+  const withLeadingSlash = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return withLeadingSlash.endsWith("/") ? withLeadingSlash : `${withLeadingSlash}/`;
+};
+
 const createRequestLoggerMiddleware = (logger: Logger) => ({
   onProxyReq(_proxyReq: http.ClientRequest, req: http.IncomingMessage) {
     const method = req.method || "UNKNOWN";
@@ -262,14 +273,6 @@ const generateBuildArtifacts = async (logger: Logger): Promise<void> => {
     "generateDocfindIndex",
   );
 };
-
-const createBuildArtifactsPlugin = (logger: Logger) => ({
-  name: "repo-build-artifacts",
-  apply: "build" as const,
-  async buildStart() {
-    await generateBuildArtifacts(logger);
-  },
-});
 
 const createProxyConfig = (requestLogger: ReturnType<typeof createRequestLoggerMiddleware>) => ({
   "/github-api": {
@@ -466,6 +469,14 @@ const createVercelApiHandlerPlugin = (logger: Logger) => ({
   },
 });
 
+const createBuildArtifactsPlugin = (logger: Logger) => ({
+  name: "repo-build-artifacts",
+  apply: "build" as const,
+  async buildStart() {
+    await generateBuildArtifacts(logger);
+  },
+});
+
 const mode = process.env.MODE ?? process.env.NODE_ENV ?? "development";
 const env = loadEnv(mode, process.cwd(), "");
 const isProdLike = mode === "production" || process.env.NODE_ENV === "production";
@@ -473,10 +484,12 @@ const isProdLike = mode === "production" || process.env.NODE_ENV === "production
 applyEnvMappingForVite(env, isProdLike);
 
 const DEVELOPER_MODE = (env.VITE_DEVELOPER_MODE || env.DEVELOPER_MODE) === "true";
+const APP_BASE_URL = normalizeBaseUrl(env.VITE_BASE_PATH ?? process.env.VITE_BASE_PATH);
 const logger = createLogger(DEVELOPER_MODE);
 const requestLogger = createRequestLoggerMiddleware(logger);
 
 export default defineConfig({
+  base: APP_BASE_URL,
   lint: {
     plugins: ["typescript", "unicorn", "react"],
     ignorePatterns: [
@@ -525,7 +538,7 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["src/**/*.test.ts"],
+    include: ["src/**/*.test.ts", "api/**/*.test.ts"],
     environment: "node",
   },
   run: {

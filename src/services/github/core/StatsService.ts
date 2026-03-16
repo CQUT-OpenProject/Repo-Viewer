@@ -9,6 +9,8 @@
 
 import { CacheManager } from "../cache";
 import { getProxyHealthStats, resetFailedProxyServices } from "../proxy";
+import { clearBatcherCache, getBatcher } from "./content";
+import { clearBranchTreeCache } from "./search/trees";
 
 /**
  * 清除所有缓存和重置网络状态
@@ -19,8 +21,8 @@ import { getProxyHealthStats, resetFailedProxyServices } from "../proxy";
  */
 export async function clearCache(): Promise<void> {
   await CacheManager.clearAllCaches();
-  const { clearBatcherCache } = await import("./content");
   clearBatcherCache();
+  clearBranchTreeCache();
   resetFailedProxyServices();
 }
 
@@ -45,7 +47,6 @@ export async function getNetworkStats(): Promise<{
   proxy: ReturnType<typeof getProxyHealthStats>;
   cache: ReturnType<typeof getCacheStats>;
 }> {
-  const { getBatcher } = await import("./content");
   return {
     batcher: getBatcher().getStats(),
     proxy: getProxyHealthStats(),

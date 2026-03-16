@@ -27,8 +27,24 @@ interface InitialContentHydrationPayload {
   metadata?: Record<string, JsonValue>;
 }
 
+interface InitialContentManifest {
+  version: number;
+  generatedAt: string;
+  repo: {
+    owner: string;
+    name: string;
+  };
+  branches: Record<
+    string,
+    {
+      payloadPath: string;
+    }
+  >;
+}
+
 const rootDir = resolveRepoRoot(import.meta.url);
-const outputPath = path.join(rootDir, "src", "generated", "initialContent.ts");
+const outputDir = path.join(rootDir, "public", "initial-content");
+const manifestOutputPath = path.join(outputDir, "manifest.json");
 
 loadEnvFiles(rootDir);
 
@@ -108,26 +124,50 @@ const readOptionalString = (record: Record<string, unknown>, key: string): strin
   return typeof value === "string" ? value : null;
 };
 
-const buildOutput = (payload: InitialContentHydrationPayload | null): string => {
-  const serialize = (value: InitialContentHydrationPayload | null): string =>
-    JSON.stringify(value, null, 2)
-      .replace(/\u2028/g, "\\u2028")
-      .replace(/\u2029/g, "\\u2029");
+const serializeJson = (
+  value: JsonValue | InitialContentHydrationPayload | InitialContentManifest,
+): string =>
+  `${JSON.stringify(value, null, 2)
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029")}\n`;
 
-  const content = payload ? serialize(payload) : "null";
-
-  return [
-    'import type { InitialContentHydrationPayload } from "@/types";',
-    "",
-    `export const initialContentPayload: InitialContentHydrationPayload | null = ${content};`,
-    "",
-  ].join("\n");
-};
+const buildManifest = (
+  repoOwner: string,
+  repoName: string,
+  generatedAt: string,
+  branchEntries: InitialContentManifest["branches"],
+): InitialContentManifest => ({
+  version: 1,
+  generatedAt,
+  repo: {
+    owner: repoOwner,
+    name: repoName,
+  },
+  branches: branchEntries,
+});
 
 const writeOutput = async (payload: InitialContentHydrationPayload | null): Promise<void> => {
-  const output = buildOutput(payload);
-  await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
-  await fs.promises.writeFile(outputPath, output, "utf8");
+  await fs.promises.rm(outputDir, { recursive: true, force: true });
+  await fs.promises.mkdir(outputDir, { recursive: true });
+
+  const generatedAt = new Date().toISOString();
+  const manifest = buildManifest(owner, repo, generatedAt, {});
+
+  if (payload !== null) {
+    const payloadFileName = `${encodeURIComponent(payload.branch)}.json`;
+    const payloadPath = path.join(outputDir, payloadFileName);
+    const payloadUrlPath = `/initial-content/${payloadFileName}`;
+
+    payload.generatedAt = generatedAt;
+    manifest.generatedAt = generatedAt;
+    manifest.branches[payload.branch] = {
+      payloadPath: payloadUrlPath,
+    };
+
+    await fs.promises.writeFile(payloadPath, serializeJson(payload), "utf8");
+  }
+
+  await fs.promises.writeFile(manifestOutputPath, serializeJson(manifest), "utf8");
 };
 
 const run = async (): Promise<void> => {
@@ -180,7 +220,7 @@ const run = async (): Promise<void> => {
 
     const payload: InitialContentHydrationPayload = {
       version: 1,
-      generatedAt: new Date().toISOString(),
+      generatedAt: "",
       branch,
       repo: {
         owner,

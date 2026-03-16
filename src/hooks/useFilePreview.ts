@@ -189,8 +189,9 @@ export const useFilePreview = (
       dispatch({ type: "RESET_PREVIEW" });
 
       try {
+        const currentBranch = GitHub.Branch.getCurrentBranch();
         const proxyUrl = getForceServerProxy()
-          ? `/api/github?action=getFileContent&url=${encodeURIComponent(item.download_url)}`
+          ? GitHub.Content.getServerRepoFileProxyUrl(item.path, currentBranch)
           : (GitHub.Proxy.transformImageUrl(item.download_url, item.path, useTokenMode) ??
             item.download_url);
 
@@ -237,6 +238,9 @@ export const useFilePreview = (
             await pdf.openPDFPreview({
               fileName: item.name,
               downloadUrl: item.download_url,
+              serverProxyUrl: getForceServerProxy()
+                ? GitHub.Content.getServerRepoFileProxyUrl(item.path, currentBranch)
+                : undefined,
               theme: muiTheme,
               translations: {
                 loading: t("ui.pdf.loading"),

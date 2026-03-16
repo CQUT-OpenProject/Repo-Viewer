@@ -2,6 +2,7 @@ import { logger } from "@/utils";
 import { getGithubConfig, getRuntimeConfig } from "@/config";
 import { getCurrentBranch } from "../core/Config";
 import { getForceServerProxy } from "../config";
+import { buildGitHubAssetApiUrl } from "../core/content/serverApiUrls";
 
 const githubConfig = getGithubConfig();
 const runtimeConfig = getRuntimeConfig();
@@ -127,7 +128,7 @@ function transformImageUrl(
         logger.warn("强制模式解析URL失败，按GitHub域名处理");
       }
 
-      const proxyUrl = `/api/github?action=getFileContent&url=${encodeURIComponent(normalizedSrc)}`;
+      const proxyUrl = buildGitHubAssetApiUrl(normalizedSrc);
       logger.debug("使用服务端API代理:", proxyUrl);
       return proxyUrl;
     }

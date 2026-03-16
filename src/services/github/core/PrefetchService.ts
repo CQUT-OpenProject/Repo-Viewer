@@ -10,6 +10,7 @@
 import type { GitHubContent } from "@/types";
 import { logger } from "@/utils";
 import { CacheManager } from "../cache";
+import { getContents } from "./content";
 import {
   prefetchFilesWithPriority,
   selectPriorityDirectories,
@@ -29,16 +30,9 @@ export function prefetchContents(path: string, priority: "high" | "medium" | "lo
   // 使用低优先级预加载，不影响用户操作
   const delay = priority === "high" ? 0 : priority === "medium" ? 100 : 200;
   setTimeout(() => {
-    // 动态导入避免循环依赖
-    void import("./content")
-      .then(({ getContents }) => {
-        void getContents(path).catch(() => {
-          // 忽略错误
-        });
-      })
-      .catch(() => {
-        // 忽略动态导入错误
-      });
+    void getContents(path).catch(() => {
+      // 忽略错误
+    });
   }, delay);
 }
 
@@ -55,9 +49,6 @@ export async function batchPrefetchContents(paths: string[], maxConcurrency = 3)
   if (paths.length === 0) {
     return;
   }
-
-  // 动态导入避免循环依赖
-  const { getContents } = await import("./content");
 
   // 限制并发数量防止网络资源过耗
   for (let i = 0; i < paths.length; i += maxConcurrency) {
