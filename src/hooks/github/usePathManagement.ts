@@ -61,14 +61,8 @@ export function usePathManagement(branch: string): PathManagementState {
   const currentBranchRef = useRef<string>(branch);
   const isRefreshInProgressRef = useRef(false);
   const refreshTargetPathRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    currentPathRef.current = currentPath;
-  }, [currentPath]);
-
-  useEffect(() => {
-    currentBranchRef.current = branch;
-  }, [branch]);
+  currentPathRef.current = currentPath;
+  currentBranchRef.current = branch;
 
   const setCurrentPath = useCallback((path: string, direction: NavigationDirection = "none") => {
     if (isRefreshInProgressRef.current && refreshTargetPathRef.current !== null) {

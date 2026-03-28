@@ -52,14 +52,7 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
   const { selectFile } = usePreviewContext();
 
   // 解构搜索相关状态
-  const {
-    branchFilter,
-    availableBranches,
-    indexStatus,
-    pathPrefix,
-    refreshIndexStatus,
-    setPathPrefix,
-  } = search;
+  const { branchFilter, availableBranches, indexStatus, pathPrefix, refreshIndexStatus } = search;
   const { enabled, loading, error, ready, indexedBranches, lastUpdatedAt } = indexStatus;
 
   // 使用自定义 hooks
@@ -80,11 +73,10 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
   });
 
   // 初始化逻辑
-  useSearchDrawerInit({
-    open,
+  const handleDialogEntered = useSearchDrawerInit({
     currentPath,
     search,
-    setPathPrefix,
+    setPathPrefix: search.setPathPrefix,
     setExtensionInput,
     setFiltersExpanded,
   });
@@ -161,6 +153,11 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
                 ? g3BorderRadius({ radius: 20, smoothness: 0.8 })
                 : g3BorderRadius(G3_PRESETS.dialog),
               m: isSmallScreen ? 2 : 3,
+            },
+          },
+          transition: {
+            onEntered: () => {
+              handleDialogEntered();
             },
           },
         }}

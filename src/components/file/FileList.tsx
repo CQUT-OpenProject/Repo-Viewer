@@ -64,13 +64,7 @@ const FileList = React.memo<FileListProps>(
     const [showAlphabetIndex, setShowAlphabetIndex] = React.useState(false);
     const [highlightedIndex, setHighlightedIndex] = React.useState<number | null>(null);
     const highlightTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-
-    // 当预览状态变化时，自动关闭字母索引
-    React.useEffect(() => {
-      if (isPreviewActive) {
-        setShowAlphabetIndex(false);
-      }
-    }, [isPreviewActive]);
+    const visibleAlphabetIndex = showAlphabetIndex && !isPreviewActive;
 
     // 计算每个文件项的高度（包括间距）
     // 这个计算需要与 FileListItem 的实际高度保持一致
@@ -390,7 +384,7 @@ const FileList = React.memo<FileListProps>(
           <AlphabetIndex
             contents={contents}
             onScrollToIndex={handleScrollToIndex}
-            visible={showAlphabetIndex}
+            visible={visibleAlphabetIndex}
           />
         </Box>
       </Box>

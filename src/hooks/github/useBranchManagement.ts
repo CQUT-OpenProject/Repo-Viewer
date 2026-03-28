@@ -32,10 +32,7 @@ export function useBranchManagement(): BranchManagementState {
   const [branchError, setBranchError] = useState<string | null>(null);
 
   const currentBranchRef = useRef<string>(currentBranch);
-
-  useEffect(() => {
-    currentBranchRef.current = currentBranch;
-  }, [currentBranch]);
+  currentBranchRef.current = currentBranch;
 
   const mergeBranchList = useCallback((branchesToMerge: string[]) => {
     setBranches((prev) => {

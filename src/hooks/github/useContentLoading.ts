@@ -39,14 +39,6 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
   const forceRefreshRef = useRef<boolean>(false);
   const revalidateKeyRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    currentPathRef.current = path;
-  }, [path]);
-
-  useEffect(() => {
-    currentBranchRef.current = branch;
-  }, [branch]);
-
   const buildContentsSignature = useCallback((data: GitHubContent[]): string => {
     if (data.length === 0) {
       return "";
@@ -55,10 +47,10 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
     return data.map((item) => `${item.path}:${item.sha}:${item.type}`).join("|");
   }, []);
 
-  useEffect(() => {
-    contentsRef.current = contents;
-    lastSignatureRef.current = buildContentsSignature(contents);
-  }, [contents, buildContentsSignature]);
+  currentPathRef.current = path;
+  currentBranchRef.current = branch;
+  contentsRef.current = contents;
+  lastSignatureRef.current = buildContentsSignature(contents);
 
   const displayError = useCallback((message: string) => {
     setError(message);

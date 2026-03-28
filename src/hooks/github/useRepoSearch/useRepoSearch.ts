@@ -24,8 +24,6 @@ import { SEARCH_INDEX_DEFAULT_LIMIT } from "./constants";
 import type {
   RepoSearchError,
   RepoSearchExecutionResult,
-  RepoSearchFallbackReason,
-  RepoSearchFilters,
   RepoSearchIndexStatus,
   RepoSearchItem,
   RepoSearchMode,
@@ -35,11 +33,21 @@ import type {
 import {
   normalizeSearchError,
   normalizeSearchIndexError,
+  resolveBranchSelection,
+  resolveModeAndFallback,
   sanitizeBranchList,
   sanitizeExtensions,
+  type BranchSelectionMode,
 } from "./utils";
 
 const SEARCH_REQUEST_KEY = "repo-search";
+
+interface RepoSearchInputFilters {
+  keyword: string;
+  manualBranches: string[];
+  pathPrefix: string;
+  extensions: string[];
+}
 
 /**
  * 仓库搜索 Hook
@@ -90,74 +98,17 @@ export function useRepoSearch({
     };
   }, [branches, currentBranch, defaultBranch]);
 
-  const [filters, setFilters] = useState<RepoSearchFilters>(() => ({
+  const [inputFilters, setInputFilters] = useState<RepoSearchInputFilters>(() => ({
     keyword: "",
-    branches: currentBranch !== "" ? [currentBranch] : [],
+    manualBranches: [],
     pathPrefix: "",
     extensions: [],
   }));
-
-  useEffect(() => {
-    setFilters((prev) => {
-      const sanitizedBranches = sanitizeBranchList(prev.branches, availableBranchSet, branchOrder);
-      const unchanged =
-        sanitizedBranches.length === prev.branches.length &&
-        sanitizedBranches.every((branch, index) => branch === prev.branches[index]);
-
-      if (unchanged) {
-        return prev;
-      }
-
-      return {
-        ...prev,
-        branches: sanitizedBranches,
-      } satisfies RepoSearchFilters;
-    });
-  }, [availableBranchSet, branchOrder]);
-
-  const previousBranchRef = useRef<string>(currentBranch);
-
-  useEffect(() => {
-    const previous = previousBranchRef.current;
-    if (currentBranch === previous) {
-      return;
-    }
-
-    previousBranchRef.current = currentBranch;
-
-    setFilters((prev) => {
-      const hasCustomSelection = prev.branches.length > 1 && previous !== "";
-      const branchMatched = prev.branches.length === 1 && prev.branches[0] === previous;
-
-      if (!hasCustomSelection && branchMatched) {
-        const nextBranches = currentBranch !== "" ? [currentBranch] : [];
-        return {
-          ...prev,
-          branches: nextBranches,
-        } satisfies RepoSearchFilters;
-      }
-
-      if (prev.branches.length === 0) {
-        const nextBranches = currentBranch !== "" ? [currentBranch] : [];
-        return {
-          ...prev,
-          branches: nextBranches,
-        } satisfies RepoSearchFilters;
-      }
-
-      return prev;
-    });
-  }, [currentBranch]);
+  const [branchSelectionMode, setBranchSelectionMode] = useState<BranchSelectionMode>("auto");
 
   const [preferredMode, setPreferredMode] = useState<RepoSearchMode>(
     indexFeatureEnabled ? "search-index" : "github-api",
   );
-
-  useEffect(() => {
-    if (!indexFeatureEnabled && preferredMode !== "github-api") {
-      setPreferredMode("github-api");
-    }
-  }, [indexFeatureEnabled, preferredMode]);
 
   const [indexStatus, setIndexStatus] = useState<RepoSearchIndexStatus>(() => ({
     enabled: indexFeatureEnabled,
@@ -256,60 +207,52 @@ export function useRepoSearch({
     [indexStatus.indexedBranches],
   );
 
-  const computeEffectiveBranches = useCallback((): string[] => {
-    if (filters.branches.length > 0) {
-      return sanitizeBranchList(filters.branches, availableBranchSet, branchOrder);
-    }
+  const branchSelection = useMemo(
+    () =>
+      resolveBranchSelection({
+        selectionMode: branchSelectionMode,
+        manualBranches: inputFilters.manualBranches,
+        currentBranch,
+        defaultBranch,
+        availableBranches: availableBranchSet,
+        branchOrder,
+      }),
+    [
+      branchSelectionMode,
+      inputFilters.manualBranches,
+      currentBranch,
+      defaultBranch,
+      availableBranchSet,
+      branchOrder,
+    ],
+  );
 
-    const fallbackCandidates: string[] = [];
-    if (currentBranch !== "") {
-      fallbackCandidates.push(currentBranch);
-    } else if (defaultBranch !== "") {
-      fallbackCandidates.push(defaultBranch);
-    }
+  const branchFilter = useMemo<string[]>(
+    () =>
+      branchSelection.effectiveSelectionMode === "manual" ? branchSelection.manualBranches : [],
+    [branchSelection.effectiveSelectionMode, branchSelection.manualBranches],
+  );
+  const effectiveBranches = branchSelection.effectiveBranches;
 
-    return sanitizeBranchList(fallbackCandidates, availableBranchSet, branchOrder);
-  }, [filters.branches, availableBranchSet, branchOrder, currentBranch, defaultBranch]);
-
-  const fallbackReason = useMemo<RepoSearchFallbackReason | null>(() => {
-    if (preferredMode !== "search-index") {
-      return null;
-    }
-
-    if (!indexFeatureEnabled) {
-      return "index-disabled";
-    }
-
-    if (indexStatus.error !== null) {
-      return "index-error";
-    }
-
-    if (!indexStatus.ready) {
-      return "index-not-ready";
-    }
-
-    const targetBranches = computeEffectiveBranches();
-
-    if (targetBranches.length === 0) {
-      return null;
-    }
-
-    if (!targetBranches.some((branch) => isBranchIndexed(branch))) {
-      return "branch-not-indexed";
-    }
-
-    return null;
-  }, [
-    preferredMode,
-    indexFeatureEnabled,
-    indexStatus.error,
-    indexStatus.ready,
-    computeEffectiveBranches,
-    isBranchIndexed,
-  ]);
-
-  const effectiveMode: RepoSearchMode =
-    preferredMode === "search-index" && fallbackReason !== null ? "github-api" : preferredMode;
+  const { effectiveMode, fallbackReason } = useMemo(
+    () =>
+      resolveModeAndFallback({
+        preferredMode,
+        indexFeatureEnabled,
+        indexReady: indexStatus.ready,
+        hasIndexError: indexStatus.error !== null,
+        effectiveBranches,
+        isBranchIndexed,
+      }),
+    [
+      preferredMode,
+      indexFeatureEnabled,
+      indexStatus.ready,
+      indexStatus.error,
+      effectiveBranches,
+      isBranchIndexed,
+    ],
+  );
 
   useEffect(() => {
     if (preferredMode !== "search-index") {
@@ -320,9 +263,7 @@ export function useRepoSearch({
       return;
     }
 
-    const candidateBranches = computeEffectiveBranches();
-
-    const branchesToPrefetch = candidateBranches.filter((branch) => {
+    const branchesToPrefetch = effectiveBranches.filter((branch) => {
       if (!isBranchIndexed(branch)) {
         return false;
       }
@@ -365,7 +306,7 @@ export function useRepoSearch({
     indexFeatureEnabled,
     indexStatus.ready,
     indexInitialized,
-    computeEffectiveBranches,
+    effectiveBranches,
     isBranchIndexed,
   ]);
 
@@ -388,7 +329,7 @@ export function useRepoSearch({
   }, [indexFeatureEnabled]);
 
   const setKeyword = useCallback((value: string) => {
-    setFilters((prev) => ({
+    setInputFilters((prev) => ({
       ...prev,
       keyword: value,
     }));
@@ -401,40 +342,40 @@ export function useRepoSearch({
         availableBranchSet,
         branchOrder,
       );
-      setFilters((prev) => ({
+
+      setInputFilters((prev) => ({
         ...prev,
-        branches: normalized,
+        manualBranches: normalized,
       }));
+      setBranchSelectionMode(normalized.length > 0 ? "manual" : "auto");
     },
     [availableBranchSet, branchOrder],
   );
 
   const setExtensionFilter = useCallback((extensions: string[] | string) => {
     const normalized = sanitizeExtensions(extensions);
-    setFilters((prev) => ({
+    setInputFilters((prev) => ({
       ...prev,
       extensions: normalized,
     }));
   }, []);
 
   const setPathPrefix = useCallback((prefix: string) => {
-    setFilters((prev) => ({
+    setInputFilters((prev) => ({
       ...prev,
       pathPrefix: prefix.trim(),
     }));
   }, []);
 
   const resetFilters = useCallback(() => {
-    setFilters({
+    setInputFilters({
       keyword: "",
-      branches:
-        currentBranch !== ""
-          ? sanitizeBranchList([currentBranch], availableBranchSet, branchOrder)
-          : [],
+      manualBranches: [],
       pathPrefix: "",
       extensions: [],
     });
-  }, [currentBranch, availableBranchSet, branchOrder]);
+    setBranchSelectionMode("auto");
+  }, []);
 
   const clearResults = useCallback(() => {
     setSearchResult(null);
@@ -446,46 +387,45 @@ export function useRepoSearch({
       const searchId = activeSearchIdRef.current + 1;
       activeSearchIdRef.current = searchId;
 
-      const mergedFilters: RepoSearchFilters = {
-        keyword: options?.keyword ?? filters.keyword,
-        branches: options?.branches ?? filters.branches,
-        pathPrefix: options?.pathPrefix ?? filters.pathPrefix,
-        extensions: options?.extensions ?? filters.extensions,
-      };
-
+      const keyword = (options?.keyword ?? inputFilters.keyword).trim();
+      const pathPrefixRaw = (options?.pathPrefix ?? inputFilters.pathPrefix).trim();
+      const sanitizedExtensions = sanitizeExtensions(
+        options?.extensions ?? inputFilters.extensions,
+      );
       const sanitizedBranches = sanitizeBranchList(
-        mergedFilters.branches,
+        options?.branches ?? branchFilter,
         availableBranchSet,
         branchOrder,
       );
-      const sanitizedExtensions = sanitizeExtensions(mergedFilters.extensions);
-      const keyword = mergedFilters.keyword.trim();
+      const resolvedBranches = sanitizedBranches.length > 0 ? sanitizedBranches : effectiveBranches;
+
+      const modeToUse = options?.mode ?? effectiveMode;
+      const resolvedMode: RepoSearchMode =
+        modeToUse === "search-index" && fallbackReason !== null ? "github-api" : modeToUse;
 
       if (keyword.length === 0) {
         requestManager.cancel(SEARCH_REQUEST_KEY);
         if (searchId === activeSearchIdRef.current) {
           setSearchLoading(false);
         }
+
         const emptyResult: RepoSearchExecutionResult = {
-          mode: effectiveMode,
+          mode: resolvedMode,
           items: [],
           took: 0,
           filters: {
             keyword,
-            branches: sanitizedBranches,
-            pathPrefix: mergedFilters.pathPrefix.trim(),
+            branches: resolvedBranches,
+            pathPrefix: pathPrefixRaw,
             extensions: sanitizedExtensions,
           },
           completedAt: Date.now(),
         };
+
         setSearchResult(emptyResult);
         setSearchError(null);
         return emptyResult;
       }
-
-      const modeToUse = options?.mode ?? effectiveMode;
-      const resolvedMode: RepoSearchMode =
-        modeToUse === "search-index" && fallbackReason !== null ? "github-api" : modeToUse;
 
       setSearchLoading(true);
       setSearchError(null);
@@ -493,19 +433,15 @@ export function useRepoSearch({
       const startedAt = performance.now();
 
       try {
-        const pathPrefixRaw = mergedFilters.pathPrefix.trim();
         const execution = await requestManager.request(SEARCH_REQUEST_KEY, async (signal) => {
           if (resolvedMode === "search-index") {
-            const candidateBranches =
-              sanitizedBranches.length > 0 ? sanitizedBranches : computeEffectiveBranches();
-
-            const indexedBranches = candidateBranches.filter((branch) => isBranchIndexed(branch));
+            const indexedBranches = resolvedBranches.filter((branch) => isBranchIndexed(branch));
 
             if (indexedBranches.length === 0) {
               throw new SearchIndexError(
                 SearchIndexErrorCode.INDEX_BRANCH_NOT_INDEXED,
                 "None of the selected branches have available search indexes",
-                { branch: candidateBranches.join(", ") },
+                { branch: resolvedBranches.join(", ") },
               );
             }
 
@@ -546,15 +482,16 @@ export function useRepoSearch({
             } satisfies RepoSearchExecutionResult;
           }
 
-          let targetBranches = sanitizedBranches;
+          let targetBranches = resolvedBranches;
           if (targetBranches.length === 0) {
-            if (currentBranch !== "") {
-              targetBranches = [currentBranch];
-            } else if (defaultBranch !== "") {
-              targetBranches = [defaultBranch];
-            } else {
-              targetBranches = [defaultBranch];
-            }
+            targetBranches = resolveBranchSelection({
+              selectionMode: "auto",
+              manualBranches: [],
+              currentBranch,
+              defaultBranch,
+              availableBranches: availableBranchSet,
+              branchOrder,
+            }).effectiveBranches;
           }
 
           const branchResults = await GitHub.Search.searchMultipleBranchesWithTreesApi(
@@ -621,12 +558,13 @@ export function useRepoSearch({
       }
     },
     [
-      filters,
+      inputFilters,
+      branchFilter,
       availableBranchSet,
       branchOrder,
+      effectiveBranches,
       effectiveMode,
       fallbackReason,
-      computeEffectiveBranches,
       currentBranch,
       defaultBranch,
       isBranchIndexed,
@@ -634,13 +572,13 @@ export function useRepoSearch({
   );
 
   return {
-    keyword: filters.keyword,
+    keyword: inputFilters.keyword,
     setKeyword,
-    branchFilter: filters.branches,
+    branchFilter,
     setBranchFilter,
-    extensionFilter: filters.extensions,
+    extensionFilter: inputFilters.extensions,
     setExtensionFilter,
-    pathPrefix: filters.pathPrefix,
+    pathPrefix: inputFilters.pathPrefix,
     setPathPrefix,
     availableBranches,
     availableModes,

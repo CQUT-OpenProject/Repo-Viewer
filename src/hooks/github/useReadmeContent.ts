@@ -36,16 +36,17 @@ export function useReadmeContent(
   const readmeRequestControllerRef = useRef<AbortController | null>(null);
   const readmeRequestIdRef = useRef<number>(0);
 
+  currentPathRef.current = currentPath;
+  loadingReadmeRef.current = loadingReadme;
+  readmeLoadedRef.current = readmeLoaded;
+  readmeContentRef.current = readmeContent;
+
   const cancelActiveReadmeRequest = useCallback(() => {
     if (readmeRequestControllerRef.current !== null) {
       readmeRequestControllerRef.current.abort();
       readmeRequestControllerRef.current = null;
     }
   }, []);
-
-  useEffect(() => {
-    currentPathRef.current = currentPath;
-  }, [currentPath]);
 
   useEffect(() => {
     if (currentBranchRef.current !== currentBranch) {
@@ -182,19 +183,6 @@ export function useReadmeContent(
       setReadmeLoaded(true);
     }
   }, [cancelActiveReadmeRequest, contents, currentBranch, loadReadmeContent]);
-
-  // 同步加载状态到 ref，避免将其加入主 effect 依赖
-  useEffect(() => {
-    loadingReadmeRef.current = loadingReadme;
-  }, [loadingReadme]);
-
-  useEffect(() => {
-    readmeLoadedRef.current = readmeLoaded;
-  }, [readmeLoaded]);
-
-  useEffect(() => {
-    readmeContentRef.current = readmeContent;
-  }, [readmeContent]);
 
   return {
     readmeContent,

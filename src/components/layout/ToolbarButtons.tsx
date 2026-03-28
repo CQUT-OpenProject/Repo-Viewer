@@ -92,14 +92,8 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
   const storedRefreshStateRef = useRef<RefreshSessionState | null>(null);
   const branchValueRef = useRef(currentBranch);
   const pathValueRef = useRef(currentPath);
-
-  useEffect(() => {
-    branchValueRef.current = currentBranch;
-  }, [currentBranch]);
-
-  useEffect(() => {
-    pathValueRef.current = currentPath;
-  }, [currentPath]);
+  branchValueRef.current = currentBranch;
+  pathValueRef.current = currentPath;
 
   const buildRefreshSessionState = useCallback(
     (): RefreshSessionState => ({
