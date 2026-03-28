@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { AppBar, Toolbar, Typography, Box, useTheme, useMediaQuery, Collapse } from "@mui/material";
 import { AppContextProvider } from "@/contexts/unified";
 import MainContent from "@/components/layout/MainContent";
@@ -18,7 +18,7 @@ import { PageErrorBoundary, FeatureErrorBoundary } from "@/components/ui/ErrorBo
  * 应用的根组件，包含顶部导航栏、主内容区和页脚。
  * 处理标题点击、滚动监听和token状态检查。
  */
-const App = React.memo(() => {
+const App = () => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const titleRef = useRef<HTMLDivElement | null>(null);
@@ -34,7 +34,7 @@ const App = React.memo(() => {
    *
    * @returns Promise<boolean> - 清除缓存是否成功
    */
-  const resetApplicationState = useCallback(async (): Promise<boolean> => {
+  const resetApplicationState = async (): Promise<boolean> => {
     try {
       await GitHub.Cache.clearCache();
       logger.debug("已清除所有缓存");
@@ -43,7 +43,7 @@ const App = React.memo(() => {
       logger.error("清除缓存失败:", e);
       return false;
     }
-  }, []);
+  };
 
   /**
    * 处理应用标题的点击事件
@@ -58,22 +58,19 @@ const App = React.memo(() => {
    *
    * @param event - React鼠标点击事件对象
    */
-  const handleTitleClick = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>): void => {
-      if (isSmallScreen) {
-        return;
-      }
+  const handleTitleClick = (event: React.MouseEvent<HTMLDivElement>): void => {
+    if (isSmallScreen) {
+      return;
+    }
 
-      if (
-        titleRef.current !== null &&
-        (event.target === titleRef.current || titleRef.current.contains(event.target as Node))
-      ) {
-        void resetApplicationState();
-        window.dispatchEvent(new Event("navigate-to-home"));
-      }
-    },
-    [isSmallScreen, resetApplicationState],
-  );
+    if (
+      titleRef.current !== null &&
+      (event.target === titleRef.current || titleRef.current.contains(event.target as Node))
+    ) {
+      void resetApplicationState();
+      window.dispatchEvent(new Event("navigate-to-home"));
+    }
+  };
 
   // 启动时检查token状态
   useEffect(() => {
@@ -221,9 +218,6 @@ const App = React.memo(() => {
       </PageErrorBoundary>
     </>
   );
-});
-
-// DevTools 显示名称
-App.displayName = "App";
+};
 
 export default App;

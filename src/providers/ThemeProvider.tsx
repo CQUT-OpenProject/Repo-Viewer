@@ -19,7 +19,7 @@ interface ThemeProviderProps {
  *
  * 为应用提供Material-UI主题和颜色模式管理功能。
  */
-const ThemeProvider: React.FC<ThemeProviderProps> = React.memo(({ children }) => {
+const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   // 使用自定义hook获取主题模式
   const colorMode = useThemeMode();
 
@@ -36,7 +36,7 @@ const ThemeProvider: React.FC<ThemeProviderProps> = React.memo(({ children }) =>
       </ColorModeContext.Provider>
     </I18nProvider>
   );
-});
+};
 
 // 添加显示名称以便调试
 ThemeProvider.displayName = "ThemeProvider";

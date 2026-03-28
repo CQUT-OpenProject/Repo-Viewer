@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   Box,
   Typography,
@@ -37,134 +37,112 @@ const BranchSwitcher: React.FC<BranchSwitcherProps> = ({ showLabel = true }) => 
 
   const CHARS_PER_LINE = 12;
   const MAX_VISIBLE_LINES = 2;
-  const getDisplayBranchName = useCallback(
-    (branchName: string): string => (branchName !== "" ? branchName : "main"),
-    [],
-  );
+  const getDisplayBranchName = (branchName: string): string =>
+    branchName !== "" ? branchName : "main";
 
   // 处理分支名显示为最多两行，并对过长文本进行省略
-  const formatBranchName = useCallback(
-    (branchName: string): string[] => {
-      const normalized = branchName.trim();
+  const formatBranchName = (branchName: string): string[] => {
+    const normalized = branchName.trim();
 
-      if (normalized.length <= CHARS_PER_LINE) {
-        return [normalized];
+    if (normalized.length <= CHARS_PER_LINE) {
+      return [normalized];
+    }
+
+    const separators = ["/", "-", "_"];
+    const lines: string[] = [];
+    let remaining = normalized;
+
+    while (remaining.length > 0 && lines.length < MAX_VISIBLE_LINES) {
+      if (lines.length === MAX_VISIBLE_LINES - 1) {
+        if (remaining.length > CHARS_PER_LINE) {
+          const truncated = remaining.substring(0, Math.max(CHARS_PER_LINE - 3, 0));
+          lines.push(`${truncated}...`);
+        } else {
+          lines.push(remaining);
+        }
+        break;
       }
 
-      const separators = ["/", "-", "_"];
-      const lines: string[] = [];
-      let remaining = normalized;
+      const searchLimit = Math.min(remaining.length, CHARS_PER_LINE);
+      let splitIndex = -1;
 
-      while (remaining.length > 0 && lines.length < MAX_VISIBLE_LINES) {
-        if (lines.length === MAX_VISIBLE_LINES - 1) {
-          if (remaining.length > CHARS_PER_LINE) {
-            const truncated = remaining.substring(0, Math.max(CHARS_PER_LINE - 3, 0));
-            lines.push(`${truncated}...`);
-          } else {
-            lines.push(remaining);
-          }
+      for (let i = searchLimit; i > 0; i--) {
+        const char = remaining[i - 1];
+        if (char !== undefined && separators.includes(char)) {
+          splitIndex = i;
           break;
         }
-
-        const searchLimit = Math.min(remaining.length, CHARS_PER_LINE);
-        let splitIndex = -1;
-
-        for (let i = searchLimit; i > 0; i--) {
-          const char = remaining[i - 1];
-          if (char !== undefined && separators.includes(char)) {
-            splitIndex = i;
-            break;
-          }
-        }
-
-        if (splitIndex === -1) {
-          splitIndex = searchLimit;
-        }
-
-        lines.push(remaining.substring(0, splitIndex));
-        remaining = remaining.substring(splitIndex);
       }
 
-      return lines;
-    },
-    [CHARS_PER_LINE, MAX_VISIBLE_LINES],
-  );
+      if (splitIndex === -1) {
+        splitIndex = searchLimit;
+      }
+
+      lines.push(remaining.substring(0, splitIndex));
+      remaining = remaining.substring(splitIndex);
+    }
+
+    return lines;
+  };
 
   const containerWidth = CHARS_PER_LINE * 8 + 16;
-  const getBranchHeight = useCallback(
-    (branchName: string): number => {
-      const branchLines = formatBranchName(getDisplayBranchName(branchName));
-      return branchLines.length * 14 + 14;
-    },
-    [formatBranchName, getDisplayBranchName],
-  );
-  const getCurrentBranchHeight = useCallback(
-    (): number =>
-      getBranchHeight(isAnimating && animatingBranch !== "" ? animatingBranch : currentBranch),
-    [animatingBranch, currentBranch, getBranchHeight, isAnimating],
-  );
-  const getCollapsedBranchLines = useCallback(
-    (): string[] =>
-      formatBranchName(
-        getDisplayBranchName(
-          isAnimating && animatingBranch !== "" ? animatingBranch : currentBranch,
-        ),
-      ),
-    [animatingBranch, currentBranch, formatBranchName, getDisplayBranchName, isAnimating],
-  );
+  const getBranchHeight = (branchName: string): number => {
+    const branchLines = formatBranchName(getDisplayBranchName(branchName));
+    return branchLines.length * 14 + 14;
+  };
+  const getCurrentBranchHeight = (): number =>
+    getBranchHeight(isAnimating && animatingBranch !== "" ? animatingBranch : currentBranch);
+  const getCollapsedBranchLines = (): string[] =>
+    formatBranchName(
+      getDisplayBranchName(isAnimating && animatingBranch !== "" ? animatingBranch : currentBranch),
+    );
 
-  const handleClick = useCallback(
-    (event: React.MouseEvent<HTMLElement>) => {
-      setAnchorEl(anchorEl !== null ? null : event.currentTarget);
-    },
-    [anchorEl],
-  );
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(anchorEl !== null ? null : event.currentTarget);
+  };
 
-  const handleClose = useCallback(() => {
+  const handleClose = () => {
     if (!isAnimating) {
       setAnchorEl(null);
     }
-  }, [isAnimating]);
+  };
 
-  const handleBranchSelect = useCallback(
-    (branch: string) => {
-      if (branch === currentBranch || isAnimating) {
-        return;
+  const handleBranchSelect = (branch: string) => {
+    if (branch === currentBranch || isAnimating) {
+      return;
+    }
+
+    // 计算被选中分支的起始Y位置（相对于容器顶部）
+    const otherBranches = branches.filter((b) => b !== currentBranch);
+    const selectedIndex = otherBranches.findIndex((b) => b === branch);
+
+    let startY = 0;
+    for (let i = 0; i < selectedIndex; i++) {
+      const branchAtIndex = otherBranches[i];
+      if (branchAtIndex !== undefined) {
+        const branchLines = formatBranchName(branchAtIndex);
+        startY += branchLines.length * 14 + 14;
       }
+    }
 
-      // 计算被选中分支的起始Y位置（相对于容器顶部）
-      const otherBranches = branches.filter((b) => b !== currentBranch);
-      const selectedIndex = otherBranches.findIndex((b) => b === branch);
+    setAnimatingBranch(branch);
+    setAnimatingBranchStartY(startY);
+    setIsAnimating(true);
 
-      let startY = 0;
-      for (let i = 0; i < selectedIndex; i++) {
-        const branchAtIndex = otherBranches[i];
-        if (branchAtIndex !== undefined) {
-          const branchLines = formatBranchName(branchAtIndex);
-          startY += branchLines.length * 14 + 14;
-        }
-      }
+    // 等待动画完成后再切换分支
+    setTimeout(() => {
+      setCurrentBranch(branch);
+      setIsAnimating(false);
+      setAnchorEl(null);
+      setAnimatingBranch("");
+      setAnimatingBranchStartY(0);
 
-      setAnimatingBranch(branch);
-      setAnimatingBranchStartY(startY);
-      setIsAnimating(true);
-
-      // 等待动画完成后再切换分支
+      // 切换分支后触发刷新
       setTimeout(() => {
-        setCurrentBranch(branch);
-        setIsAnimating(false);
-        setAnchorEl(null);
-        setAnimatingBranch("");
-        setAnimatingBranchStartY(0);
-
-        // 切换分支后触发刷新
-        setTimeout(() => {
-          refresh();
-        }, 100);
-      }, 300);
-    },
-    [currentBranch, isAnimating, setCurrentBranch, branches, formatBranchName, refresh],
-  );
+        refresh();
+      }, 100);
+    }, 300);
+  };
 
   if (branchLoading) {
     return (

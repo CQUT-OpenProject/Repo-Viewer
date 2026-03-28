@@ -7,7 +7,7 @@
  * @module hooks/useDownload
  */
 
-import { useReducer, useCallback, useRef } from "react";
+import { useReducer, useRef } from "react";
 import { saveAs } from "file-saver";
 import type { DownloadState, DownloadAction, GitHubContent } from "@/types";
 import { GitHub } from "@/services/github";
@@ -110,10 +110,10 @@ export const useDownload = (
   const isDownloading =
     downloadState.downloadingPath !== null || downloadState.downloadingFolderPath !== null;
 
-  const hasBeenCancelled = useCallback(() => isCancelledRef.current, []);
+  const hasBeenCancelled = () => isCancelledRef.current;
 
   // 取消下载
-  const cancelDownload = useCallback(() => {
+  const cancelDownload = () => {
     if (!isDownloading) {
       return;
     }
@@ -135,251 +135,229 @@ export const useDownload = (
       isCancelledRef.current = false;
       dispatch({ type: "RESET_DOWNLOAD_STATE" });
     }, 500); // 短暂延迟以便UI可以响应
-  }, [isDownloading]);
+  };
 
   // 下载文件
-  const downloadFile = useCallback(
-    async (item: GitHubContent) => {
-      // 防止同时触发多个下载
-      if (downloadState.downloadingPath !== null || downloadState.downloadingFolderPath !== null) {
-        onError(t("error.file.downloadInProgress"));
+  const downloadFile = async (item: GitHubContent) => {
+    // 防止同时触发多个下载
+    if (downloadState.downloadingPath !== null || downloadState.downloadingFolderPath !== null) {
+      onError(t("error.file.downloadInProgress"));
+      return;
+    }
+
+    if (item.download_url === null) {
+      onError(t("error.file.downloadLinkUnavailable"));
+      return;
+    }
+
+    isCancelledRef.current = false;
+    dispatch({ type: "SET_DOWNLOADING_FILE", path: item.path });
+
+    // 创建新的AbortController
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
+    try {
+      // 使用代理URL获取文件
+      let downloadUrl = item.download_url;
+
+      // 如果是非开发环境或启用了令牌模式，使用服务端API代理
+      if (getForceServerProxy()) {
+        downloadUrl = GitHub.Content.getServerRepoFileProxyUrl(
+          item.path,
+          GitHub.Branch.getCurrentBranch(),
+        );
+      }
+
+      const response = await fetch(downloadUrl, { signal });
+
+      // 检查是否已取消 (ref可在异步期间被cancelDownload修改)
+      if (hasBeenCancelled()) {
+        logger.info("文件下载已取消");
         return;
       }
 
-      if (item.download_url === null) {
-        onError(t("error.file.downloadLinkUnavailable"));
+      if (!response.ok) {
+        const error = new Error(`下载失败: ${String(response.status)} ${response.statusText}`);
+        logger.error("下载文件失败:", error);
+        onError(t("error.file.downloadFailed", { message: error.message }));
         return;
       }
 
-      isCancelledRef.current = false;
-      dispatch({ type: "SET_DOWNLOADING_FILE", path: item.path });
+      const blob = await response.blob();
 
-      // 创建新的AbortController
-      abortControllerRef.current = new AbortController();
-      const signal = abortControllerRef.current.signal;
-
-      try {
-        // 使用代理URL获取文件
-        let downloadUrl = item.download_url;
-
-        // 如果是非开发环境或启用了令牌模式，使用服务端API代理
-        if (getForceServerProxy()) {
-          downloadUrl = GitHub.Content.getServerRepoFileProxyUrl(
-            item.path,
-            GitHub.Branch.getCurrentBranch(),
-          );
-        }
-
-        const response = await fetch(downloadUrl, { signal });
-
-        // 检查是否已取消 (ref可在异步期间被cancelDownload修改)
-        if (hasBeenCancelled()) {
-          logger.info("文件下载已取消");
-          return;
-        }
-
-        if (!response.ok) {
-          const error = new Error(`下载失败: ${String(response.status)} ${response.statusText}`);
-          logger.error("下载文件失败:", error);
-          onError(t("error.file.downloadFailed", { message: error.message }));
-          return;
-        }
-
-        const blob = await response.blob();
-
-        // 再次检查是否已取消 (ref可在异步期间被cancelDownload修改)
-        if (hasBeenCancelled()) {
-          logger.info("文件下载已取消");
-          return;
-        }
-
-        saveAs(blob, item.name);
-
-        logger.info(`文件下载成功: ${item.path}`);
-      } catch (e: unknown) {
-        const error = e as Error;
-        if (error.name === "AbortError" || hasBeenCancelled()) {
-          logger.info("文件下载已取消");
-        } else {
-          logger.error("下载文件失败:", error);
-          onError(t("error.file.downloadFailed", { message: error.message }));
-        }
-      } finally {
-        abortControllerRef.current = null;
-        dispatch({ type: "SET_DOWNLOADING_FILE", path: null });
+      // 再次检查是否已取消 (ref可在异步期间被cancelDownload修改)
+      if (hasBeenCancelled()) {
+        logger.info("文件下载已取消");
+        return;
       }
-    },
-    [
-      downloadState.downloadingPath,
-      downloadState.downloadingFolderPath,
-      onError,
-      hasBeenCancelled,
-      t,
-    ],
-  );
+
+      saveAs(blob, item.name);
+
+      logger.info(`文件下载成功: ${item.path}`);
+    } catch (e: unknown) {
+      const error = e as Error;
+      if (error.name === "AbortError" || hasBeenCancelled()) {
+        logger.info("文件下载已取消");
+      } else {
+        logger.error("下载文件失败:", error);
+        onError(t("error.file.downloadFailed", { message: error.message }));
+      }
+    } finally {
+      abortControllerRef.current = null;
+      dispatch({ type: "SET_DOWNLOADING_FILE", path: null });
+    }
+  };
 
   // 递归收集文件
-  const collectFiles = useCallback(
-    async function collectFilesInner(
-      folderPath: string,
-      fileList: FolderDownloadEntry[],
-      basePath: string,
-      signal: AbortSignal,
-    ): Promise<void> {
-      try {
-        // 获取文件夹内容
-        // 使用 requestManager 避免重复请求
-        const contents = await requestManager.request(
-          `download-folder-${folderPath}`,
-          (requestSignal) => GitHub.Content.getContents(folderPath, requestSignal),
-          { signal },
-        );
+  const collectFiles = async function collectFilesInner(
+    folderPath: string,
+    fileList: FolderDownloadEntry[],
+    basePath: string,
+    signal: AbortSignal,
+  ): Promise<void> {
+    try {
+      // 获取文件夹内容
+      // 使用 requestManager 避免重复请求
+      const contents = await requestManager.request(
+        `download-folder-${folderPath}`,
+        (requestSignal) => GitHub.Content.getContents(folderPath, requestSignal),
+        { signal },
+      );
 
-        // 检查是否已取消 (ref可在异步期间被cancelDownload修改)
-        if (hasBeenCancelled()) {
-          return;
-        }
-
-        // 处理每个文件/文件夹
-        for (const item of contents) {
-          // 更新相对路径，去除基本路径前缀
-          const relativePath = item.path.startsWith(basePath)
-            ? item.path.substring(basePath.length > 0 ? basePath.length + 1 : 0)
-            : item.path;
-
-          if (item.type === "file") {
-            // 确保我们有下载链接
-            if (item.download_url === null) {
-              continue;
-            }
-
-            // 如果是非开发环境或启用了令牌模式，使用服务端API代理
-            let downloadUrl = item.download_url;
-            if (getForceServerProxy()) {
-              downloadUrl = GitHub.Content.getServerRepoFileProxyUrl(
-                item.path,
-                GitHub.Branch.getCurrentBranch(),
-              );
-            }
-
-            fileList.push({
-              path: relativePath,
-              url: downloadUrl,
-              size: item.size,
-            });
-          } else {
-            // 递归处理子文件夹 (type === 'dir')
-            await collectFilesInner(item.path, fileList, basePath, signal);
-            if (hasBeenCancelled()) {
-              return;
-            }
-          }
-        }
-      } catch (e) {
-        // 如果是取消导致的错误，抛出
-        if (e instanceof Error && (e.name === "AbortError" || hasBeenCancelled())) {
-          return;
-        }
-        // 其他错误记录但继续处理
-        logger.error(`获取文件夹内容失败: ${folderPath}`, e);
-      }
-    },
-    [hasBeenCancelled],
-  );
-
-  // 下载文件夹
-  const downloadFolder = useCallback(
-    async (path: string, folderName: string) => {
-      // 防止同时触发多个下载
-      if (downloadState.downloadingPath !== null || downloadState.downloadingFolderPath !== null) {
-        onError(t("error.file.downloadInProgress"));
+      // 检查是否已取消 (ref可在异步期间被cancelDownload修改)
+      if (hasBeenCancelled()) {
         return;
       }
 
-      isCancelledRef.current = false;
-      dispatch({ type: "SET_DOWNLOADING_FOLDER", path });
-      dispatch({ type: "SET_FOLDER_PROGRESS", progress: 0 });
-      dispatch({ type: "SET_PROCESSING_FILES", count: 0 });
-      dispatch({ type: "SET_TOTAL_FILES", count: 0 });
+      // 处理每个文件/文件夹
+      for (const item of contents) {
+        // 更新相对路径，去除基本路径前缀
+        const relativePath = item.path.startsWith(basePath)
+          ? item.path.substring(basePath.length > 0 ? basePath.length + 1 : 0)
+          : item.path;
 
-      // 创建新的AbortController
-      abortControllerRef.current = new AbortController();
-      const signal = abortControllerRef.current.signal;
-      let outputSink: ZipOutputSink | null = null;
-      let zipPipelineStarted = false;
+        if (item.type === "file") {
+          // 确保我们有下载链接
+          if (item.download_url === null) {
+            continue;
+          }
 
-      try {
-        outputSink = await prepareZipOutputSink({
-          archiveName: `${folderName}.zip`,
-          saveAsImpl: saveAs,
-        });
+          // 如果是非开发环境或启用了令牌模式，使用服务端API代理
+          let downloadUrl = item.download_url;
+          if (getForceServerProxy()) {
+            downloadUrl = GitHub.Content.getServerRepoFileProxyUrl(
+              item.path,
+              GitHub.Branch.getCurrentBranch(),
+            );
+          }
 
-        // 递归获取文件夹内容
-        const allFiles: FolderDownloadEntry[] = [];
-        await collectFiles(path, allFiles, path, signal);
-
-        // 检查是否已取消 (ref可在异步期间被cancelDownload修改)
-        if (hasBeenCancelled()) {
-          await outputSink.abort();
-          logger.info("文件夹下载已取消");
-          return;
-        }
-
-        dispatch({ type: "SET_TOTAL_FILES", count: allFiles.length });
-        logger.info(`需要下载的文件总数: ${String(allFiles.length)}`);
-
-        let processedCount = 0;
-        zipPipelineStarted = true;
-        await downloadFolderAsZip({
-          files: allFiles,
-          signal,
-          archiveName: `${folderName}.zip`,
-          outputSink,
-          onFileComplete: (count, total) => {
-            processedCount = count;
-            dispatch({ type: "SET_PROCESSING_FILES", count });
-            dispatch({
-              type: "SET_FOLDER_PROGRESS",
-              progress: total > 0 ? Math.round((count / total) * 100) : 100,
-            });
-          },
-          onFileError: (file, error) => {
-            logger.error(`文件 ${file.path} 下载失败:`, error);
-          },
-        });
-
-        if (!hasBeenCancelled()) {
-          dispatch({ type: "SET_PROCESSING_FILES", count: processedCount });
-          dispatch({ type: "SET_FOLDER_PROGRESS", progress: 100 });
-        }
-
-        logger.info(`文件夹下载完成: ${path}`);
-      } catch (e: unknown) {
-        const error = e as Error;
-        if (outputSink !== null && !zipPipelineStarted) {
-          await outputSink.abort(error);
-        }
-
-        if (isAbortError(error) || hasBeenCancelled()) {
-          logger.info("文件夹下载已取消");
+          fileList.push({
+            path: relativePath,
+            url: downloadUrl,
+            size: item.size,
+          });
         } else {
-          logger.error("下载文件夹失败:", error);
-          onError(t("error.file.folderDownloadFailed", { message: error.message }));
+          // 递归处理子文件夹 (type === 'dir')
+          await collectFilesInner(item.path, fileList, basePath, signal);
+          if (hasBeenCancelled()) {
+            return;
+          }
         }
-      } finally {
-        abortControllerRef.current = null;
-        dispatch({ type: "RESET_DOWNLOAD_STATE" });
       }
-    },
-    [
-      downloadState.downloadingPath,
-      downloadState.downloadingFolderPath,
-      onError,
-      collectFiles,
-      hasBeenCancelled,
-      t,
-    ],
-  );
+    } catch (e) {
+      // 如果是取消导致的错误，抛出
+      if (e instanceof Error && (e.name === "AbortError" || hasBeenCancelled())) {
+        return;
+      }
+      // 其他错误记录但继续处理
+      logger.error(`获取文件夹内容失败: ${folderPath}`, e);
+    }
+  };
+
+  // 下载文件夹
+  const downloadFolder = async (path: string, folderName: string) => {
+    // 防止同时触发多个下载
+    if (downloadState.downloadingPath !== null || downloadState.downloadingFolderPath !== null) {
+      onError(t("error.file.downloadInProgress"));
+      return;
+    }
+
+    isCancelledRef.current = false;
+    dispatch({ type: "SET_DOWNLOADING_FOLDER", path });
+    dispatch({ type: "SET_FOLDER_PROGRESS", progress: 0 });
+    dispatch({ type: "SET_PROCESSING_FILES", count: 0 });
+    dispatch({ type: "SET_TOTAL_FILES", count: 0 });
+
+    // 创建新的AbortController
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+    let outputSink: ZipOutputSink | null = null;
+    let zipPipelineStarted = false;
+
+    try {
+      outputSink = await prepareZipOutputSink({
+        archiveName: `${folderName}.zip`,
+        saveAsImpl: saveAs,
+      });
+
+      // 递归获取文件夹内容
+      const allFiles: FolderDownloadEntry[] = [];
+      await collectFiles(path, allFiles, path, signal);
+
+      // 检查是否已取消 (ref可在异步期间被cancelDownload修改)
+      if (hasBeenCancelled()) {
+        await outputSink.abort();
+        logger.info("文件夹下载已取消");
+        return;
+      }
+
+      dispatch({ type: "SET_TOTAL_FILES", count: allFiles.length });
+      logger.info(`需要下载的文件总数: ${String(allFiles.length)}`);
+
+      let processedCount = 0;
+      zipPipelineStarted = true;
+      await downloadFolderAsZip({
+        files: allFiles,
+        signal,
+        archiveName: `${folderName}.zip`,
+        outputSink,
+        onFileComplete: (count, total) => {
+          processedCount = count;
+          dispatch({ type: "SET_PROCESSING_FILES", count });
+          dispatch({
+            type: "SET_FOLDER_PROGRESS",
+            progress: total > 0 ? Math.round((count / total) * 100) : 100,
+          });
+        },
+        onFileError: (file, error) => {
+          logger.error(`文件 ${file.path} 下载失败:`, error);
+        },
+      });
+
+      if (!hasBeenCancelled()) {
+        dispatch({ type: "SET_PROCESSING_FILES", count: processedCount });
+        dispatch({ type: "SET_FOLDER_PROGRESS", progress: 100 });
+      }
+
+      logger.info(`文件夹下载完成: ${path}`);
+    } catch (e: unknown) {
+      const error = e as Error;
+      if (outputSink !== null && !zipPipelineStarted) {
+        await outputSink.abort(error);
+      }
+
+      if (isAbortError(error) || hasBeenCancelled()) {
+        logger.info("文件夹下载已取消");
+      } else {
+        logger.error("下载文件夹失败:", error);
+        onError(t("error.file.folderDownloadFailed", { message: error.message }));
+      }
+    } finally {
+      abortControllerRef.current = null;
+      dispatch({ type: "RESET_DOWNLOAD_STATE" });
+    }
+  };
 
   return {
     downloadState,

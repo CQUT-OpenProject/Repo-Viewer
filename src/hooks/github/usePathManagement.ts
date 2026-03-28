@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { NavigationDirection } from "@/contexts/unified";
 import {
   getPathFromUrl,
@@ -64,22 +64,25 @@ export function usePathManagement(branch: string): PathManagementState {
   currentPathRef.current = currentPath;
   currentBranchRef.current = branch;
 
-  const setCurrentPath = useCallback((path: string, direction: NavigationDirection = "none") => {
-    if (isRefreshInProgressRef.current && refreshTargetPathRef.current !== null) {
-      if (path !== refreshTargetPathRef.current) {
-        if (direction === "none") {
-          logger.debug(`刷新期间忽略路径更新: ${path}`);
-          return;
+  const setCurrentPath = React.useCallback(
+    (path: string, direction: NavigationDirection = "none") => {
+      if (isRefreshInProgressRef.current && refreshTargetPathRef.current !== null) {
+        if (path !== refreshTargetPathRef.current) {
+          if (direction === "none") {
+            logger.debug(`刷新期间忽略路径更新: ${path}`);
+            return;
+          }
+          logger.debug(`刷新期间检测到用户导航，取消路径锁定: ${path}`);
+          isRefreshInProgressRef.current = false;
+          refreshTargetPathRef.current = null;
         }
-        logger.debug(`刷新期间检测到用户导航，取消路径锁定: ${path}`);
-        isRefreshInProgressRef.current = false;
-        refreshTargetPathRef.current = null;
       }
-    }
 
-    setNavigationDirection(direction);
-    setCurrentPathState(path);
-  }, []);
+      setNavigationDirection(direction);
+      setCurrentPathState(path);
+    },
+    [],
+  );
 
   // 处理路径变化时的 URL 更新
   useEffect(() => {
@@ -159,10 +162,10 @@ export function usePathManagement(branch: string): PathManagementState {
   }, [setCurrentPath]);
 
   // 设置刷新状态（供其他 Hook 使用）
-  const setRefreshState = useCallback((isRefreshing: boolean, targetPath?: string) => {
+  const setRefreshState = (isRefreshing: boolean, targetPath?: string) => {
     isRefreshInProgressRef.current = isRefreshing;
     refreshTargetPathRef.current = targetPath ?? null;
-  }, []);
+  };
 
   return {
     currentPath,

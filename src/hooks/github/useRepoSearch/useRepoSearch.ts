@@ -11,7 +11,7 @@
  * @module hooks/github/useRepoSearch/useRepoSearch
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { GitHub } from "@/services/github";
 import { SearchIndexError, SearchIndexErrorCode } from "@/services/github/core/searchIndex";
@@ -122,15 +122,15 @@ export function useRepoSearch({
   const [indexRefreshToken, setIndexRefreshToken] = useState<number>(0);
   const [indexInitialized, setIndexInitialized] = useState<boolean>(false);
 
-  const initializeIndex = useCallback(() => {
+  const initializeIndex = () => {
     setIndexInitialized(true);
-  }, []);
+  };
 
-  const refreshIndexStatus = useCallback(() => {
+  const refreshIndexStatus = () => {
     GitHub.SearchIndex.invalidateCache();
     prefetchedBranchesRef.current.clear();
     setIndexRefreshToken((token) => token + 1);
-  }, []);
+  };
 
   useEffect(() => {
     if (!indexFeatureEnabled) {
@@ -202,11 +202,6 @@ export function useRepoSearch({
     };
   }, [indexFeatureEnabled, indexRefreshToken, indexInitialized]);
 
-  const isBranchIndexed = useCallback(
-    (branch: string) => indexStatus.indexedBranches.includes(branch),
-    [indexStatus.indexedBranches],
-  );
-
   const branchSelection = useMemo(
     () =>
       resolveBranchSelection({
@@ -242,7 +237,7 @@ export function useRepoSearch({
         indexReady: indexStatus.ready,
         hasIndexError: indexStatus.error !== null,
         effectiveBranches,
-        isBranchIndexed,
+        isBranchIndexed: (branch) => indexStatus.indexedBranches.includes(branch),
       }),
     [
       preferredMode,
@@ -250,7 +245,7 @@ export function useRepoSearch({
       indexStatus.ready,
       indexStatus.error,
       effectiveBranches,
-      isBranchIndexed,
+      indexStatus.indexedBranches,
     ],
   );
 
@@ -264,7 +259,7 @@ export function useRepoSearch({
     }
 
     const branchesToPrefetch = effectiveBranches.filter((branch) => {
-      if (!isBranchIndexed(branch)) {
+      if (!indexStatus.indexedBranches.includes(branch)) {
         return false;
       }
       return !prefetchedBranchesRef.current.has(branch);
@@ -307,7 +302,7 @@ export function useRepoSearch({
     indexStatus.ready,
     indexInitialized,
     effectiveBranches,
-    isBranchIndexed,
+    indexStatus.indexedBranches,
   ]);
 
   const [searchResult, setSearchResult] = useState<RepoSearchExecutionResult | null>(null);
@@ -328,46 +323,45 @@ export function useRepoSearch({
     return ["github-api"];
   }, [indexFeatureEnabled]);
 
-  const setKeyword = useCallback((value: string) => {
+  const isBranchIndexed = (branch: string): boolean => indexStatus.indexedBranches.includes(branch);
+
+  const setKeyword = (value: string) => {
     setInputFilters((prev) => ({
       ...prev,
       keyword: value,
     }));
-  }, []);
+  };
 
-  const setBranchFilter = useCallback(
-    (branchesOrBranch: string[] | string) => {
-      const normalized = sanitizeBranchList(
-        Array.isArray(branchesOrBranch) ? branchesOrBranch : [branchesOrBranch],
-        availableBranchSet,
-        branchOrder,
-      );
+  const setBranchFilter = (branchesOrBranch: string[] | string) => {
+    const normalized = sanitizeBranchList(
+      Array.isArray(branchesOrBranch) ? branchesOrBranch : [branchesOrBranch],
+      availableBranchSet,
+      branchOrder,
+    );
 
-      setInputFilters((prev) => ({
-        ...prev,
-        manualBranches: normalized,
-      }));
-      setBranchSelectionMode(normalized.length > 0 ? "manual" : "auto");
-    },
-    [availableBranchSet, branchOrder],
-  );
+    setInputFilters((prev) => ({
+      ...prev,
+      manualBranches: normalized,
+    }));
+    setBranchSelectionMode(normalized.length > 0 ? "manual" : "auto");
+  };
 
-  const setExtensionFilter = useCallback((extensions: string[] | string) => {
+  const setExtensionFilter = (extensions: string[] | string) => {
     const normalized = sanitizeExtensions(extensions);
     setInputFilters((prev) => ({
       ...prev,
       extensions: normalized,
     }));
-  }, []);
+  };
 
-  const setPathPrefix = useCallback((prefix: string) => {
+  const setPathPrefix = (prefix: string) => {
     setInputFilters((prev) => ({
       ...prev,
       pathPrefix: prefix.trim(),
     }));
-  }, []);
+  };
 
-  const resetFilters = useCallback(() => {
+  const resetFilters = () => {
     setInputFilters({
       keyword: "",
       manualBranches: [],
@@ -375,201 +369,185 @@ export function useRepoSearch({
       extensions: [],
     });
     setBranchSelectionMode("auto");
-  }, []);
+  };
 
-  const clearResults = useCallback(() => {
+  const clearResults = () => {
     setSearchResult(null);
     setSearchError(null);
-  }, []);
+  };
 
-  const search = useCallback<RepoSearchState["search"]>(
-    async (options) => {
-      const searchId = activeSearchIdRef.current + 1;
-      activeSearchIdRef.current = searchId;
+  const search = async (options) => {
+    const searchId = activeSearchIdRef.current + 1;
+    activeSearchIdRef.current = searchId;
 
-      const keyword = (options?.keyword ?? inputFilters.keyword).trim();
-      const pathPrefixRaw = (options?.pathPrefix ?? inputFilters.pathPrefix).trim();
-      const sanitizedExtensions = sanitizeExtensions(
-        options?.extensions ?? inputFilters.extensions,
-      );
-      const sanitizedBranches = sanitizeBranchList(
-        options?.branches ?? branchFilter,
-        availableBranchSet,
-        branchOrder,
-      );
-      const resolvedBranches = sanitizedBranches.length > 0 ? sanitizedBranches : effectiveBranches;
+    const keyword = (options?.keyword ?? inputFilters.keyword).trim();
+    const pathPrefixRaw = (options?.pathPrefix ?? inputFilters.pathPrefix).trim();
+    const sanitizedExtensions = sanitizeExtensions(options?.extensions ?? inputFilters.extensions);
+    const sanitizedBranches = sanitizeBranchList(
+      options?.branches ?? branchFilter,
+      availableBranchSet,
+      branchOrder,
+    );
+    const resolvedBranches = sanitizedBranches.length > 0 ? sanitizedBranches : effectiveBranches;
 
-      const modeToUse = options?.mode ?? effectiveMode;
-      const resolvedMode: RepoSearchMode =
-        modeToUse === "search-index" && fallbackReason !== null ? "github-api" : modeToUse;
+    const modeToUse = options?.mode ?? effectiveMode;
+    const resolvedMode: RepoSearchMode =
+      modeToUse === "search-index" && fallbackReason !== null ? "github-api" : modeToUse;
 
-      if (keyword.length === 0) {
-        requestManager.cancel(SEARCH_REQUEST_KEY);
-        if (searchId === activeSearchIdRef.current) {
-          setSearchLoading(false);
-        }
-
-        const emptyResult: RepoSearchExecutionResult = {
-          mode: resolvedMode,
-          items: [],
-          took: 0,
-          filters: {
-            keyword,
-            branches: resolvedBranches,
-            pathPrefix: pathPrefixRaw,
-            extensions: sanitizedExtensions,
-          },
-          completedAt: Date.now(),
-        };
-
-        setSearchResult(emptyResult);
-        setSearchError(null);
-        return emptyResult;
+    if (keyword.length === 0) {
+      requestManager.cancel(SEARCH_REQUEST_KEY);
+      if (searchId === activeSearchIdRef.current) {
+        setSearchLoading(false);
       }
 
-      setSearchLoading(true);
+      const emptyResult: RepoSearchExecutionResult = {
+        mode: resolvedMode,
+        items: [],
+        took: 0,
+        filters: {
+          keyword,
+          branches: resolvedBranches,
+          pathPrefix: pathPrefixRaw,
+          extensions: sanitizedExtensions,
+        },
+        completedAt: Date.now(),
+      };
+
+      setSearchResult(emptyResult);
       setSearchError(null);
+      return emptyResult;
+    }
 
-      const startedAt = performance.now();
+    setSearchLoading(true);
+    setSearchError(null);
 
-      try {
-        const execution = await requestManager.request(SEARCH_REQUEST_KEY, async (signal) => {
-          if (resolvedMode === "search-index") {
-            const indexedBranches = resolvedBranches.filter((branch) => isBranchIndexed(branch));
+    const startedAt = performance.now();
 
-            if (indexedBranches.length === 0) {
-              throw new SearchIndexError(
-                SearchIndexErrorCode.INDEX_BRANCH_NOT_INDEXED,
-                "None of the selected branches have available search indexes",
-                { branch: resolvedBranches.join(", ") },
-              );
-            }
+    try {
+      const execution = await requestManager.request(SEARCH_REQUEST_KEY, async (signal) => {
+        if (resolvedMode === "search-index") {
+          const indexedBranches = resolvedBranches.filter((branch) => isBranchIndexed(branch));
 
-            const pathPrefix = pathPrefixRaw === "" ? undefined : pathPrefixRaw;
-
-            const searchIndexOptions: Parameters<typeof GitHub.SearchIndex.search>[0] = {
-              keyword,
-              branches: indexedBranches,
-              limit: SEARCH_INDEX_DEFAULT_LIMIT,
-              signal,
-            };
-
-            if (pathPrefix !== undefined) {
-              searchIndexOptions.pathPrefix = pathPrefix;
-            }
-
-            if (sanitizedExtensions.length > 0) {
-              searchIndexOptions.extensions = sanitizedExtensions;
-            }
-
-            const results = await GitHub.SearchIndex.search(searchIndexOptions);
-            const items: RepoSearchItem[] = results.map((item) => ({
-              ...item,
-              source: "search-index" as const,
-            }));
-
-            return {
-              mode: "search-index",
-              items,
-              took: performance.now() - startedAt,
-              filters: {
-                keyword,
-                branches: indexedBranches,
-                pathPrefix: pathPrefixRaw,
-                extensions: sanitizedExtensions,
-              },
-              completedAt: Date.now(),
-            } satisfies RepoSearchExecutionResult;
+          if (indexedBranches.length === 0) {
+            throw new SearchIndexError(
+              SearchIndexErrorCode.INDEX_BRANCH_NOT_INDEXED,
+              "None of the selected branches have available search indexes",
+              { branch: resolvedBranches.join(", ") },
+            );
           }
 
-          let targetBranches = resolvedBranches;
-          if (targetBranches.length === 0) {
-            targetBranches = resolveBranchSelection({
-              selectionMode: "auto",
-              manualBranches: [],
-              currentBranch,
-              defaultBranch,
-              availableBranches: availableBranchSet,
-              branchOrder,
-            }).effectiveBranches;
-          }
+          const pathPrefix = pathPrefixRaw === "" ? undefined : pathPrefixRaw;
 
-          const branchResults = await GitHub.Search.searchMultipleBranchesWithTreesApi(
+          const searchIndexOptions: Parameters<typeof GitHub.SearchIndex.search>[0] = {
             keyword,
-            targetBranches,
-            pathPrefixRaw,
-            sanitizedExtensions,
+            branches: indexedBranches,
+            limit: SEARCH_INDEX_DEFAULT_LIMIT,
             signal,
-          );
+          };
 
-          const items: RepoSearchItem[] = branchResults.flatMap(
-            ({ branch, results }: { branch: string; results: GitHubContent[] }) =>
-              results.map((item: GitHubContent) => ({
-                ...item,
-                source: "github-api" as const,
-                branch,
-              })),
-          );
+          if (pathPrefix !== undefined) {
+            searchIndexOptions.pathPrefix = pathPrefix;
+          }
+
+          if (sanitizedExtensions.length > 0) {
+            searchIndexOptions.extensions = sanitizedExtensions;
+          }
+
+          const results = await GitHub.SearchIndex.search(searchIndexOptions);
+          const items: RepoSearchItem[] = results.map((item) => ({
+            ...item,
+            source: "search-index" as const,
+          }));
 
           return {
-            mode: "github-api",
+            mode: "search-index",
             items,
             took: performance.now() - startedAt,
             filters: {
               keyword,
-              branches: targetBranches,
+              branches: indexedBranches,
               pathPrefix: pathPrefixRaw,
               extensions: sanitizedExtensions,
             },
             completedAt: Date.now(),
           } satisfies RepoSearchExecutionResult;
-        });
-
-        if (searchId !== activeSearchIdRef.current) {
-          return null;
         }
 
-        setSearchResult(execution);
-        return execution;
-      } catch (error: unknown) {
-        if (isAbortError(error)) {
-          return null;
+        let targetBranches = resolvedBranches;
+        if (targetBranches.length === 0) {
+          targetBranches = resolveBranchSelection({
+            selectionMode: "auto",
+            manualBranches: [],
+            currentBranch,
+            defaultBranch,
+            availableBranches: availableBranchSet,
+            branchOrder,
+          }).effectiveBranches;
         }
 
-        const normalized = normalizeSearchError(error, resolvedMode);
-        if (searchId === activeSearchIdRef.current) {
-          setSearchError(normalized);
-        }
+        const branchResults = await GitHub.Search.searchMultipleBranchesWithTreesApi(
+          keyword,
+          targetBranches,
+          pathPrefixRaw,
+          sanitizedExtensions,
+          signal,
+        );
 
-        const enrichedError = new Error(normalized.message);
-        enrichedError.name = "RepoSearchError";
-        Object.assign(enrichedError, {
-          code: normalized.code,
-          details: normalized.details,
-          source: normalized.source,
-          cause: normalized.raw,
-        });
+        const items: RepoSearchItem[] = branchResults.flatMap(
+          ({ branch, results }: { branch: string; results: GitHubContent[] }) =>
+            results.map((item: GitHubContent) => ({
+              ...item,
+              source: "github-api" as const,
+              branch,
+            })),
+        );
 
-        throw enrichedError;
-      } finally {
-        if (searchId === activeSearchIdRef.current) {
-          setSearchLoading(false);
-        }
+        return {
+          mode: "github-api",
+          items,
+          took: performance.now() - startedAt,
+          filters: {
+            keyword,
+            branches: targetBranches,
+            pathPrefix: pathPrefixRaw,
+            extensions: sanitizedExtensions,
+          },
+          completedAt: Date.now(),
+        } satisfies RepoSearchExecutionResult;
+      });
+
+      if (searchId !== activeSearchIdRef.current) {
+        return null;
       }
-    },
-    [
-      inputFilters,
-      branchFilter,
-      availableBranchSet,
-      branchOrder,
-      effectiveBranches,
-      effectiveMode,
-      fallbackReason,
-      currentBranch,
-      defaultBranch,
-      isBranchIndexed,
-    ],
-  );
+
+      setSearchResult(execution);
+      return execution;
+    } catch (error: unknown) {
+      if (isAbortError(error)) {
+        return null;
+      }
+
+      const normalized = normalizeSearchError(error, resolvedMode);
+      if (searchId === activeSearchIdRef.current) {
+        setSearchError(normalized);
+      }
+
+      const enrichedError = new Error(normalized.message);
+      enrichedError.name = "RepoSearchError";
+      Object.assign(enrichedError, {
+        code: normalized.code,
+        details: normalized.details,
+        source: normalized.source,
+        cause: normalized.raw,
+      });
+
+      throw enrichedError;
+    } finally {
+      if (searchId === activeSearchIdRef.current) {
+        setSearchLoading(false);
+      }
+    }
+  };
 
   return {
     keyword: inputFilters.keyword,

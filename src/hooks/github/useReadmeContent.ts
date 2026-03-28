@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { GitHubContent } from "@/types";
 import { GitHub } from "@/services/github";
 import { GITHUB_REPO_OWNER, GITHUB_REPO_NAME } from "@/services/github/core/Config";
@@ -41,7 +41,7 @@ export function useReadmeContent(
   readmeLoadedRef.current = readmeLoaded;
   readmeContentRef.current = readmeContent;
 
-  const cancelActiveReadmeRequest = useCallback(() => {
+  const cancelActiveReadmeRequest = React.useCallback(() => {
     if (readmeRequestControllerRef.current !== null) {
       readmeRequestControllerRef.current.abort();
       readmeRequestControllerRef.current = null;
@@ -66,7 +66,7 @@ export function useReadmeContent(
     };
   }, [cancelActiveReadmeRequest]);
 
-  const appendCacheBuster = useCallback((url: string, value: string): string => {
+  const appendCacheBuster = React.useCallback((url: string, value: string): string => {
     if (value.trim().length === 0) {
       return url;
     }
@@ -75,7 +75,7 @@ export function useReadmeContent(
     return `${url}${separator}v=${encodeURIComponent(value)}`;
   }, []);
 
-  const loadReadmeContent = useCallback(
+  const loadReadmeContent = React.useCallback(
     async (readmeItem: GitHubContent, requestKey: string, preserveContent: boolean) => {
       if (readmeItem.path.trim() === "") {
         return;

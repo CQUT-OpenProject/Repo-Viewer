@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useMemo } from "react";
 import {
   Alert,
   Button,
@@ -104,26 +104,23 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
   });
 
   // 处理搜索输入变化
-  const handleSearchInputChange = useCallback(
-    (value: string) => {
-      search.setKeyword(value);
-    },
-    [search],
-  );
+  const handleSearchInputChange = (value: string) => {
+    search.setKeyword(value);
+  };
 
   // Fallback 对话框确认
-  const handleFallbackDialogConfirm = useCallback(() => {
+  const handleFallbackDialogConfirm = () => {
     handleFallbackDialogClose();
     handleApiSearch();
-  }, [handleApiSearch, handleFallbackDialogClose]);
+  };
 
   // 打开 GitHub
-  const handleOpenGithub = useCallback((item: { htmlUrl?: string; html_url?: string }) => {
+  const handleOpenGithub = (item: { htmlUrl?: string; html_url?: string }) => {
     const candidateUrl = resolveItemHtmlUrl(item);
     if (typeof candidateUrl === "string" && candidateUrl.length > 0) {
       window.open(candidateUrl, "_blank", "noopener,noreferrer");
     }
-  }, []);
+  };
 
   const searchSummaries = useMemo(() => {
     if (search.searchResult === null) {

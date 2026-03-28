@@ -1,4 +1,3 @@
-import { memo } from "react";
 import {
   Box,
   Breadcrumbs,
@@ -410,7 +409,7 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
   );
 };
 
-const BreadcrumbNavigation = memo(BreadcrumbNavigationComponent);
+const BreadcrumbNavigation = BreadcrumbNavigationComponent;
 
 BreadcrumbNavigation.displayName = "BreadcrumbNavigation";
 

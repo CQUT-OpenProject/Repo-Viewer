@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from "vite-plus";
 import autoprefixer from "autoprefixer";
 import tailwindcss from "@tailwindcss/postcss";
+import react from "@vitejs/plugin-react";
 import * as path from "path";
 import * as http from "http";
 import { fileURLToPath } from "url";
@@ -487,6 +488,7 @@ const DEVELOPER_MODE = (env.VITE_DEVELOPER_MODE || env.DEVELOPER_MODE) === "true
 const APP_BASE_URL = normalizeBaseUrl(env.VITE_BASE_PATH ?? process.env.VITE_BASE_PATH);
 const logger = createLogger(DEVELOPER_MODE);
 const requestLogger = createRequestLoggerMiddleware(logger);
+const reactCompilerBabelPlugin = ["babel-plugin-react-compiler"] as const;
 
 export default defineConfig({
   base: APP_BASE_URL,
@@ -511,6 +513,27 @@ export default defineConfig({
       "@typescript-eslint/prefer-optional-chain": "warn",
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "error",
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "react",
+              importNames: ["memo", "useCallback"],
+              message:
+                "React Compiler is enabled for this project. Prefer plain functions and component declarations; use React.useCallback only for documented semantic identity requirements.",
+            },
+          ],
+        },
+      ],
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "CallExpression[callee.object.name='React'][callee.property.name='memo']",
+          message:
+            "React Compiler replaces React.memo in this project. Remove the wrapper unless the code documents a semantic requirement.",
+        },
+      ],
       eqeqeq: ["error", "always"],
       curly: ["error", "all"],
       "no-console": ["warn", { allow: ["warn", "error"] }],
@@ -564,6 +587,11 @@ export default defineConfig({
     "*": "vp check --fix",
   },
   plugins: [
+    react({
+      babel: {
+        plugins: [reactCompilerBabelPlugin],
+      },
+    }),
     createBuildArtifactsPlugin(logger),
     createRuntimeConfigPlugin(requestLogger),
     createVercelApiHandlerPlugin(logger),

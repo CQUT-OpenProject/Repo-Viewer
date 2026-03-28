@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { UseImagePreviewReturn, ImagePreviewProps } from "../types";
 
 /**
@@ -78,31 +78,31 @@ export const useImagePreview = ({
     };
   }, [lazyLoad]);
 
-  const handleReset = useCallback((resetFunc: () => void) => {
+  const handleReset = (resetFunc: () => void) => {
     resetFunc();
     setRotation(0);
     setError(false);
     setLoading(true);
     setScale(1);
-  }, []);
+  };
 
-  const handleRotateLeft = useCallback(() => {
+  const handleRotateLeft = () => {
     setRotation((prev) => prev - 90);
-  }, []);
+  };
 
-  const handleRotateRight = useCallback(() => {
+  const handleRotateRight = () => {
     setRotation((prev) => prev + 90);
-  }, []);
+  };
 
-  const toggleFullScreen = useCallback(() => {
+  const toggleFullScreen = () => {
     setFullScreenMode((prev) => !prev);
-  }, []);
+  };
 
-  const handleOpenPreview = useCallback(() => {
+  const handleOpenPreview = () => {
     setShowPreview(true);
-  }, []);
+  };
 
-  const handleClosePreview = useCallback(() => {
+  const handleClosePreview = () => {
     if (thumbnailMode) {
       setShowPreview(false);
     }
@@ -114,37 +114,37 @@ export const useImagePreview = ({
     if (typeof onClose === "function") {
       onClose();
     }
-  }, [thumbnailMode, fullScreenMode, onClose]);
+  };
 
-  const handleImageLoad = useCallback(() => {
+  const handleImageLoad = () => {
     setLoading(false);
-  }, []);
+  };
 
-  const handleImageError = useCallback(() => {
+  const handleImageError = () => {
     setLoading(false);
     setError(true);
-  }, []);
+  };
 
-  const handleTransformed = useCallback((newScale: number) => {
+  const handleTransformed = (newScale: number) => {
     setScale(newScale);
-  }, []);
+  };
 
   // 重置加载状态（用于图片切换）
-  const resetLoadingState = useCallback(() => {
+  const resetLoadingState = () => {
     // 总是先设置为加载中，具体的缓存检测由调用方处理
     setLoading(true);
     setError(false);
     setRotation(0);
     setScale(1);
-  }, []);
+  };
 
   // 重置状态但不触发加载（用于缓存图片）
-  const resetStateForCachedImage = useCallback(() => {
+  const resetStateForCachedImage = () => {
     setLoading(false);
     setError(false);
     setRotation(0);
     setScale(1);
-  }, []);
+  };
 
   return {
     loading,

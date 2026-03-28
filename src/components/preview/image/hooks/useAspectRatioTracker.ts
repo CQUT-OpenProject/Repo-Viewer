@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import type { RefObject } from "react";
 
 const DEFAULT_ASPECT_RATIO = 16 / 9;
@@ -56,7 +56,7 @@ export function useAspectRatioTracker({
     resolvedInitialAspectRatio,
   );
 
-  const addAspectRatioSample = useCallback((ratio: number): void => {
+  const addAspectRatioSample = React.useCallback((ratio: number): void => {
     if (!Number.isFinite(ratio) || ratio <= 0) {
       return;
     }
@@ -114,7 +114,7 @@ export function useAspectRatioTracker({
     }
   }, []);
 
-  const processAspectRatioFromImage = useCallback(
+  const processAspectRatioFromImage = React.useCallback(
     (img: HTMLImageElement | null): void => {
       if (img === null) {
         return;
@@ -141,8 +141,8 @@ export function useAspectRatioTracker({
     [addAspectRatioSample],
   );
 
-  // 图片引用回调，用于检测缓存
-  const handleImageRef = useCallback(
+  // 保持 ref 回调身份稳定，避免 React 在切换图片时额外触发 ref 清理/重绑。
+  const handleImageRef = React.useCallback(
     (img: HTMLImageElement | null): void => {
       if (imgRef !== null && imgRef !== undefined) {
         imgRef.current = img;

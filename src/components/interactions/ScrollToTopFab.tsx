@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Fab, useTheme, useMediaQuery, Zoom, alpha, Tooltip } from "@mui/material";
 import { KeyboardArrowUp as ArrowUpIcon } from "@mui/icons-material";
 import { useI18n } from "@/contexts/I18nContext";
@@ -48,27 +48,8 @@ const ScrollToTopFab: FC<ScrollToTopFabProps> = ({
   const [isVisible, setIsVisible] = useState(getInitialVisibility);
   const [isScrolling, setIsScrolling] = useState(false);
 
-  // 检查滚动位置和内容
-  const checkScrollPosition = useCallback((): void => {
-    if (typeof document === "undefined" || typeof window === "undefined") {
-      return;
-    }
-
-    const scrollTop = scroll.getScrollTop();
-    const hasContent = showOnlyWithContent ? document.body.scrollHeight > window.innerHeight : true;
-    const shouldBeVisible = scrollTop > threshold && hasContent;
-
-    // 可见性改变时更新状态，避免复杂重渲染
-    setIsVisible((prev) => {
-      if (prev === shouldBeVisible) {
-        return prev;
-      }
-      return shouldBeVisible;
-    });
-  }, [threshold, showOnlyWithContent]);
-
   // 平滑滚动到顶部
-  const handleScrollToTop = useCallback((): void => {
+  const handleScrollToTop = (): void => {
     if (isScrolling) {
       return;
     }
@@ -77,7 +58,7 @@ const ScrollToTopFab: FC<ScrollToTopFabProps> = ({
     void scroll.scrollToTop({ duration: scrollDuration }).finally(() => {
       setIsScrolling(false);
     });
-  }, [scrollDuration, isScrolling]);
+  };
 
   // 监听滚动事件
   useEffect(() => {
@@ -86,6 +67,25 @@ const ScrollToTopFab: FC<ScrollToTopFabProps> = ({
     }
 
     let rafId: number | null = null;
+
+    const checkScrollPosition = (): void => {
+      if (typeof document === "undefined") {
+        return;
+      }
+
+      const scrollTop = scroll.getScrollTop();
+      const hasContent = showOnlyWithContent
+        ? document.body.scrollHeight > window.innerHeight
+        : true;
+      const shouldBeVisible = scrollTop > threshold && hasContent;
+
+      setIsVisible((prev) => {
+        if (prev === shouldBeVisible) {
+          return prev;
+        }
+        return shouldBeVisible;
+      });
+    };
 
     const handleScroll = (): void => {
       // 使用 requestAnimationFrame 节流
@@ -107,7 +107,7 @@ const ScrollToTopFab: FC<ScrollToTopFabProps> = ({
         cancelAnimationFrame(rafId);
       }
     };
-  }, [checkScrollPosition]);
+  }, [showOnlyWithContent, threshold]);
 
   const fabStyles = {
     position: "fixed" as const,

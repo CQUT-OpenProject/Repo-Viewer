@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { GitHub } from "@/services/github";
 import { logger } from "@/utils";
 import { getBranchFromUrl } from "@/utils/routing/urlManager";
@@ -34,7 +34,7 @@ export function useBranchManagement(): BranchManagementState {
   const currentBranchRef = useRef<string>(currentBranch);
   currentBranchRef.current = currentBranch;
 
-  const mergeBranchList = useCallback((branchesToMerge: string[]) => {
+  const mergeBranchList = React.useCallback((branchesToMerge: string[]) => {
     setBranches((prev) => {
       const branchSet = new Set(prev);
       branchesToMerge.forEach((name) => {
@@ -63,7 +63,7 @@ export function useBranchManagement(): BranchManagementState {
     });
   }, []);
 
-  const loadBranches = useCallback(async () => {
+  const loadBranches = React.useCallback(async () => {
     setBranchLoading(true);
     setBranchError(null);
     try {
@@ -83,7 +83,7 @@ export function useBranchManagement(): BranchManagementState {
     void loadBranches();
   }, [loadBranches]);
 
-  const applyBranchState = useCallback(
+  const applyBranchState = React.useCallback(
     (branchName: string): string => {
       const trimmed = branchName.trim();
       const target = trimmed.length > 0 ? trimmed : DEFAULT_BRANCH;
@@ -103,7 +103,7 @@ export function useBranchManagement(): BranchManagementState {
     [mergeBranchList],
   );
 
-  const setCurrentBranch = useCallback(
+  const setCurrentBranch = React.useCallback(
     (branchName: string): void => {
       const trimmed = branchName.trim();
       const targetBranch = trimmed.length > 0 ? trimmed : DEFAULT_BRANCH;

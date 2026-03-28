@@ -1,5 +1,3 @@
-import { useCallback } from "react";
-
 interface UseSearchDrawerInitProps {
   currentPath: string;
   search: {
@@ -20,14 +18,15 @@ const SEARCH_INPUT_ID = "repo-search-keyword";
  * 搜索抽屉初始化 Hook
  * 返回打开完成后的初始化处理函数
  */
-export const useSearchDrawerInit = ({
-  currentPath,
-  search,
-  setPathPrefix,
-  setExtensionInput,
-  setFiltersExpanded,
-}: UseSearchDrawerInitProps): (() => void) =>
-  useCallback(() => {
+export const useSearchDrawerInit =
+  ({
+    currentPath,
+    search,
+    setPathPrefix,
+    setExtensionInput,
+    setFiltersExpanded,
+  }: UseSearchDrawerInitProps): (() => void) =>
+  () => {
     // 初始化搜索索引（懒加载）
     search.initializeIndex();
 
@@ -48,4 +47,4 @@ export const useSearchDrawerInit = ({
       const input = document.getElementById(SEARCH_INPUT_ID) as HTMLInputElement | null;
       input?.focus();
     }, 100);
-  }, [currentPath, search, setExtensionInput, setFiltersExpanded, setPathPrefix]);
+  };

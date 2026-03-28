@@ -7,7 +7,7 @@
  * @module hooks/useFilePreview
  */
 
-import { useReducer, useCallback, useRef, useState, useEffect } from "react";
+import React, { useReducer, useRef, useState, useEffect } from "react";
 import type { RefObject } from "react";
 import { useTheme } from "@mui/material";
 import type { PreviewState, PreviewAction, GitHubContent } from "@/types";
@@ -136,7 +136,7 @@ export const useFilePreview = (
   const previewRequestControllerRef = useRef<AbortController | null>(null);
   const previewRequestIdRef = useRef<number>(0);
 
-  const cancelActivePreviewRequest = useCallback(() => {
+  const cancelActivePreviewRequest = React.useCallback(() => {
     if (previewRequestControllerRef.current !== null) {
       previewRequestControllerRef.current.abort();
       previewRequestControllerRef.current = null;
@@ -175,7 +175,7 @@ export const useFilePreview = (
     };
   }, [cancelActivePreviewRequest]);
 
-  const selectFile = useCallback(
+  const selectFile = React.useCallback(
     async (item: GitHubContent) => {
       if (item.download_url === null || item.download_url === "") {
         onError(t("error.preview.downloadLinkUnavailable"));
@@ -345,11 +345,11 @@ export const useFilePreview = (
         }
       }
     },
-    [cancelActivePreviewRequest, onError, useTokenMode, muiTheme, t],
+    [cancelActivePreviewRequest, muiTheme, onError, t, useTokenMode],
   );
 
   // 关闭预览
-  const closePreview = useCallback(() => {
+  const closePreview = () => {
     logger.debug("关闭预览组件");
     cancelActivePreviewRequest();
     loadingPreviewPathRef.current = null;
@@ -375,22 +375,19 @@ export const useFilePreview = (
     // 重置预览状态
     dispatch({ type: "RESET_PREVIEW" });
     hasActivePreviewRef.current = false;
-  }, [cancelActivePreviewRequest]);
+  };
 
   // 图像全屏切换
-  const toggleImageFullscreen = useCallback(() => {
+  const toggleImageFullscreen = () => {
     dispatch({ type: "SET_IMAGE_FULLSCREEN", fullscreen: !previewState.isImageFullscreen });
-  }, [previewState.isImageFullscreen]);
+  };
 
   // 图像错误处理
-  const handleImageError = useCallback(
-    (error: string) => {
-      dispatch({ type: "SET_IMAGE_ERROR", error });
-      dispatch({ type: "SET_IMAGE_LOADING", loading: false });
-      onError(t("error.preview.imageError", { message: error }));
-    },
-    [onError, t],
-  );
+  const handleImageError = (error: string) => {
+    dispatch({ type: "SET_IMAGE_ERROR", error });
+    dispatch({ type: "SET_IMAGE_LOADING", loading: false });
+    onError(t("error.preview.imageError", { message: error }));
+  };
 
   // 监听浏览器历史导航事件，处理预览的后退操作
   useEffect(() => {

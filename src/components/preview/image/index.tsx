@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useRef, useState, useCallback } from "react";
+import React, { useMemo, useEffect, useRef, useState } from "react";
 import { useTheme, useMediaQuery } from "@mui/material";
 import FullScreenPreview from "@/components/file/FullScreenPreview";
 import ImageThumbnail from "./ImageThumbnail";
@@ -113,11 +113,11 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
     closeButtonBorderRadius,
   };
 
-  const handleAspectRatioChange = useCallback((ratio: number) => {
+  const handleAspectRatioChange = (ratio: number) => {
     if (Number.isFinite(ratio) && ratio > 0) {
       setLastKnownAspectRatio(ratio);
     }
-  }, []);
+  };
 
   // 预览内容组件的Props
   const previewContentProps = {

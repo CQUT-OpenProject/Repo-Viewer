@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import type { GitHubContent } from "@/types";
 
 interface UseImageNavigationOptions {
@@ -40,24 +40,24 @@ export function useImageNavigation({
   const hasNext = currentImageIndex >= 0 && currentImageIndex < imageFiles.length - 1;
 
   // 处理切换到上一张图片
-  const handlePreviousImage = useCallback(() => {
+  const handlePreviousImage = () => {
     if (currentImageIndex > 0) {
       const previousImage = imageFiles[currentImageIndex - 1];
       if (previousImage !== undefined) {
         void onSelectFile(previousImage);
       }
     }
-  }, [currentImageIndex, imageFiles, onSelectFile]);
+  };
 
   // 处理切换到下一张图片
-  const handleNextImage = useCallback(() => {
+  const handleNextImage = () => {
     if (currentImageIndex >= 0 && currentImageIndex < imageFiles.length - 1) {
       const nextImage = imageFiles[currentImageIndex + 1];
       if (nextImage !== undefined) {
         void onSelectFile(nextImage);
       }
     }
-  }, [currentImageIndex, imageFiles, onSelectFile]);
+  };
 
   return {
     currentImageIndex,

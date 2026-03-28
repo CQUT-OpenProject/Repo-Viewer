@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { formatExtensionInput, parseExtensionInput } from "../utils";
 
 interface UseSearchFiltersProps {
@@ -29,42 +29,39 @@ export const useSearchFilters = ({
   );
   const [filtersExpanded, setFiltersExpanded] = useState(false);
 
-  const applyExtensionFilter = useCallback(() => {
+  const applyExtensionFilter = () => {
     const parsed = parseExtensionInput(extensionInput);
     search.setExtensionFilter(parsed);
-  }, [extensionInput, search]);
+  };
 
-  const handleBranchToggle = useCallback(
-    (branch: string): void => {
-      const normalized = branch.trim();
-      if (normalized.length === 0) {
-        return;
-      }
+  const handleBranchToggle = (branch: string): void => {
+    const normalized = branch.trim();
+    if (normalized.length === 0) {
+      return;
+    }
 
-      if (search.branchFilter.includes(normalized)) {
-        search.setBranchFilter(search.branchFilter.filter((item) => item !== normalized));
-      } else {
-        search.setBranchFilter([...search.branchFilter, normalized]);
-      }
-    },
-    [search],
-  );
+    if (search.branchFilter.includes(normalized)) {
+      search.setBranchFilter(search.branchFilter.filter((item) => item !== normalized));
+    } else {
+      search.setBranchFilter([...search.branchFilter, normalized]);
+    }
+  };
 
-  const clearBranchFilter = useCallback((): void => {
+  const clearBranchFilter = (): void => {
     search.setBranchFilter([]);
-  }, [search]);
+  };
 
-  const toggleFilters = useCallback(() => {
+  const toggleFilters = () => {
     setFiltersExpanded((prev) => !prev);
-  }, []);
+  };
 
-  const handleResetFilters = useCallback(() => {
+  const handleResetFilters = () => {
     search.resetFilters();
     setFiltersExpanded(false);
     search.setBranchFilter([]);
     search.setExtensionFilter([]);
     setExtensionInput("");
-  }, [search]);
+  };
 
   return {
     extensionInput,

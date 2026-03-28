@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { GitHubContent } from "@/types";
 import { GitHub } from "@/services/github";
 import { logger } from "@/utils";
@@ -39,7 +39,7 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
   const forceRefreshRef = useRef<boolean>(false);
   const revalidateKeyRef = useRef<string | null>(null);
 
-  const buildContentsSignature = useCallback((data: GitHubContent[]): string => {
+  const buildContentsSignature = React.useCallback((data: GitHubContent[]): string => {
     if (data.length === 0) {
       return "";
     }
@@ -52,12 +52,12 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
   contentsRef.current = contents;
   lastSignatureRef.current = buildContentsSignature(contents);
 
-  const displayError = useCallback((message: string) => {
+  const displayError = React.useCallback((message: string) => {
     setError(message);
     logger.error(message);
   }, []);
 
-  const filterContents = useCallback(
+  const filterContents = React.useCallback(
     (data: GitHubContent[]): GitHubContent[] => {
       const featuresConfig = getFeaturesConfig();
       const isHomepage = path === "";
@@ -71,7 +71,7 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
     [path],
   );
 
-  const loadContents = useCallback(
+  const loadContents = React.useCallback(
     async (options?: LoadContentsOptions) => {
       const hasExistingContent = contentsRef.current.length > 0;
       const silent = options?.silent === true;
@@ -150,7 +150,7 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
         }
       }
     },
-    [filterContents, displayError, buildContentsSignature],
+    [buildContentsSignature, displayError, filterContents],
   );
 
   // 监听路径、分支或刷新触发器的变化
@@ -167,11 +167,11 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
     void loadContents({ forceRefresh: shouldForceRefresh });
   }, [path, branch, refreshTrigger, loadContents, isThemeChangingRef]);
 
-  const refresh = useCallback(() => {
+  const refresh = () => {
     forceRefreshRef.current = true;
     setRefreshTrigger((prev) => prev + 1);
     logger.debug("触发内容刷新");
-  }, []);
+  };
 
   return {
     contents,

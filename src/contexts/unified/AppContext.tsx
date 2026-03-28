@@ -1,6 +1,7 @@
+import React from "react";
 import { useSnackbar } from "notistack";
 import type { ReactNode, ReactElement } from "react";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { useDownload } from "@/hooks/useDownload";
 import { useFilePreview } from "@/hooks/useFilePreview";
 import { useGitHubContent } from "@/hooks/useGitHubContent";
@@ -53,14 +54,14 @@ export function AppContextProvider({ children }: AppContextProviderProps): React
     search,
   } = content;
 
-  const handleError = useCallback(
+  const handleError = React.useCallback(
     (message: string) => {
       enqueueSnackbar(message, { variant: "error" });
     },
     [enqueueSnackbar],
   );
 
-  const findFileItemByPath = useCallback(
+  const findFileItemByPath = React.useCallback(
     (pathOrFileName: string) =>
       contents.find(
         (item) =>
@@ -74,14 +75,14 @@ export function AppContextProvider({ children }: AppContextProviderProps): React
   const preview = useFilePreview(handleError, findFileItemByPath);
   const download = useDownload(handleError);
 
-  const navigateTo = useCallback(
+  const navigateTo = React.useCallback(
     (path: string, direction: NavigationDirection = "forward"): void => {
       setCurrentPath(path, direction);
     },
     [setCurrentPath],
   );
 
-  const refresh = useCallback((): void => {
+  const refresh = React.useCallback((): void => {
     refreshContents();
   }, [refreshContents]);
 
