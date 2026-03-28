@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useMemo } from "react";
 import {
   Alert,
   Button,
@@ -52,14 +52,7 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
   const { selectFile } = usePreviewContext();
 
   // 解构搜索相关状态
-  const {
-    branchFilter,
-    availableBranches,
-    indexStatus,
-    pathPrefix,
-    refreshIndexStatus,
-    setPathPrefix,
-  } = search;
+  const { branchFilter, availableBranches, indexStatus, pathPrefix, refreshIndexStatus } = search;
   const { enabled, loading, error, ready, indexedBranches, lastUpdatedAt } = indexStatus;
 
   // 使用自定义 hooks
@@ -80,11 +73,10 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
   });
 
   // 初始化逻辑
-  useSearchDrawerInit({
-    open,
+  const handleDialogEntered = useSearchDrawerInit({
     currentPath,
     search,
-    setPathPrefix,
+    setPathPrefix: search.setPathPrefix,
     setExtensionInput,
     setFiltersExpanded,
   });
@@ -112,26 +104,23 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
   });
 
   // 处理搜索输入变化
-  const handleSearchInputChange = useCallback(
-    (value: string) => {
-      search.setKeyword(value);
-    },
-    [search],
-  );
+  const handleSearchInputChange = (value: string) => {
+    search.setKeyword(value);
+  };
 
   // Fallback 对话框确认
-  const handleFallbackDialogConfirm = useCallback(() => {
+  const handleFallbackDialogConfirm = () => {
     handleFallbackDialogClose();
     handleApiSearch();
-  }, [handleApiSearch, handleFallbackDialogClose]);
+  };
 
   // 打开 GitHub
-  const handleOpenGithub = useCallback((item: { htmlUrl?: string; html_url?: string }) => {
+  const handleOpenGithub = (item: { htmlUrl?: string; html_url?: string }) => {
     const candidateUrl = resolveItemHtmlUrl(item);
     if (typeof candidateUrl === "string" && candidateUrl.length > 0) {
       window.open(candidateUrl, "_blank", "noopener,noreferrer");
     }
-  }, []);
+  };
 
   const searchSummaries = useMemo(() => {
     if (search.searchResult === null) {
@@ -161,6 +150,11 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
                 ? g3BorderRadius({ radius: 20, smoothness: 0.8 })
                 : g3BorderRadius(G3_PRESETS.dialog),
               m: isSmallScreen ? 2 : 3,
+            },
+          },
+          transition: {
+            onEntered: () => {
+              handleDialogEntered();
             },
           },
         }}

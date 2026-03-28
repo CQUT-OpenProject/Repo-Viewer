@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 
 interface UseFallbackDialogProps {
   search: {
@@ -34,17 +34,17 @@ export const useFallbackDialog = ({
   const fallbackDialogOpen =
     shouldPrompt && currentResultId !== null && currentResultId !== dismissedResultId;
 
-  const openFallbackPrompt = useCallback(() => {
+  const openFallbackPrompt = () => {
     if (currentResultId !== null) {
       setDismissedResultId(null);
     }
-  }, [currentResultId]);
+  };
 
-  const handleFallbackDialogClose = useCallback(() => {
+  const handleFallbackDialogClose = () => {
     if (currentResultId !== null) {
       setDismissedResultId(currentResultId);
     }
-  }, [currentResultId]);
+  };
 
   return {
     fallbackDialogOpen,

@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Box, Typography, alpha, useTheme } from "@mui/material";
 import type { GitHubContent } from "@/types";
 import { getContentFirstLetter } from "@/utils/sorting/contentSorting";
@@ -63,21 +63,18 @@ const AlphabetIndex: React.FC<AlphabetIndexProps> = ({ contents, onScrollToIndex
   /**
    * 处理字母点击
    */
-  const handleLetterClick = useCallback(
-    (letter: string) => {
-      const index = letterIndexMap.get(letter);
-      if (index !== undefined) {
-        setActiveIndex(letter);
-        onScrollToIndex(index);
+  const handleLetterClick = (letter: string) => {
+    const index = letterIndexMap.get(letter);
+    if (index !== undefined) {
+      setActiveIndex(letter);
+      onScrollToIndex(index);
 
-        // 短暂高亮后恢复
-        setTimeout(() => {
-          setActiveIndex(null);
-        }, 500);
-      }
-    },
-    [letterIndexMap, onScrollToIndex],
-  );
+      // 短暂高亮后恢复
+      setTimeout(() => {
+        setActiveIndex(null);
+      }, 500);
+    }
+  };
 
   // 如果没有可用字母，不渲染
   if (availableLetters.length === 0) {

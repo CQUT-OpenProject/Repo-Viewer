@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { createAbortError } from "@/utils/network/abort";
 
 const { axiosGet } = vi.hoisted(() => ({
   axiosGet: vi.fn(),
@@ -104,5 +105,47 @@ describe("getBranchTree", () => {
     expect(
       axiosGet.mock.calls.filter(([url]) => String(url).includes("action=getTree")),
     ).toHaveLength(2);
+  });
+
+  it("passes abort signals to server tree requests", async () => {
+    const controller = new AbortController();
+    let resolveStarted: (() => void) | null = null;
+    const started = new Promise<void>((resolve) => {
+      resolveStarted = resolve;
+    });
+
+    axiosGet.mockImplementation((url: string, config?: { signal?: AbortSignal }) => {
+      if (url.includes("action=getGitRef")) {
+        return Promise.resolve({
+          data: {
+            object: {
+              sha: "commit-1",
+            },
+          },
+        });
+      }
+
+      if (url.includes("action=getTree")) {
+        resolveStarted?.();
+        return new Promise((_, reject) => {
+          config?.signal?.addEventListener(
+            "abort",
+            () => reject(createAbortError("Request aborted")),
+            { once: true },
+          );
+        });
+      }
+
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    const promise = getBranchTree("main", controller.signal);
+    await started;
+    controller.abort();
+
+    await expect(promise).rejects.toMatchObject({ name: "AbortError" });
+    expect(axiosGet).toHaveBeenCalledWith("/api/github?action=getTree&branch=main&recursive=1", {
+      signal: controller.signal,
+    });
   });
 });

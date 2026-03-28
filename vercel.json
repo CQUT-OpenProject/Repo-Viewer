@@ -10,6 +10,6 @@
     }
   ],
   "headers": [],
-  "buildCommand": "npx --yes -p vite-plus@0.1.11 vp build",
-  "installCommand": "npx --yes -p vite-plus@0.1.11 vp install"
+  "buildCommand": "npx --yes -p vite-plus vp build",
+  "installCommand": "npx --yes -p vite-plus vp install"
 }

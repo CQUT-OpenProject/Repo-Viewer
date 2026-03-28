@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 
 /**
  * 滚动数据点接口
@@ -76,19 +76,16 @@ export function useOptimizedScroll(options: ScrollSpeedOptions = {}): {
     speed: 0,
   });
 
-  const recordSample = useCallback(
-    (offset: number): void => {
-      const now = Date.now();
-      const data = scrollDataRef.current;
+  const recordSample = (offset: number): void => {
+    const now = Date.now();
+    const data = scrollDataRef.current;
 
-      data.positions.push({ offset, time: now });
+    data.positions.push({ offset, time: now });
 
-      if (data.positions.length > maxSamples) {
-        data.positions.shift();
-      }
-    },
-    [maxSamples],
-  );
+    if (data.positions.length > maxSamples) {
+      data.positions.shift();
+    }
+  };
 
   /**
    * 计算滚动速度
@@ -98,7 +95,7 @@ export function useOptimizedScroll(options: ScrollSpeedOptions = {}): {
    * @param offset - 当前滚动偏移量
    * @returns 标准化的滚动速度（像素/毫秒）
    */
-  const calculateSpeed = useCallback((): number => {
+  const calculateSpeed = (): number => {
     const data = scrollDataRef.current;
 
     // 需要至少2个样本才能计算速度
@@ -119,53 +116,50 @@ export function useOptimizedScroll(options: ScrollSpeedOptions = {}): {
 
     // 避免除以零
     return time > 0 ? distance / time : 0;
-  }, []);
+  };
 
   /**
    * 处理滚动事件
    *
    * @param scrollOffset - 滚动偏移量
    */
-  const handleScroll = useCallback(
-    (scrollOffset: number): void => {
-      const data = scrollDataRef.current;
-      recordSample(scrollOffset);
+  const handleScroll = (scrollOffset: number): void => {
+    const data = scrollDataRef.current;
+    recordSample(scrollOffset);
 
-      // 设置滚动状态
-      if (!data.isScrolling) {
-        data.isScrolling = true;
-        setIsScrolling(true);
+    // 设置滚动状态
+    if (!data.isScrolling) {
+      data.isScrolling = true;
+      setIsScrolling(true);
+    }
+
+    // rAF 合并状态更新，避免每次 scroll 事件触发 setState
+    data.rafId ??= requestAnimationFrame(() => {
+      data.rafId = null;
+      const speed = calculateSpeed();
+      if (Math.abs(speed - data.speed) >= speedEpsilon) {
+        data.speed = speed;
+        setScrollSpeed(speed);
       }
+    });
 
-      // rAF 合并状态更新，避免每次 scroll 事件触发 setState
-      data.rafId ??= requestAnimationFrame(() => {
-        data.rafId = null;
-        const speed = calculateSpeed();
-        if (Math.abs(speed - data.speed) >= speedEpsilon) {
-          data.speed = speed;
-          setScrollSpeed(speed);
-        }
-      });
+    // 清除之前的定时器
+    if (data.timer !== null) {
+      clearTimeout(data.timer);
+    }
 
-      // 清除之前的定时器
-      if (data.timer !== null) {
-        clearTimeout(data.timer);
+    // 设置新的定时器，检测滚动停止
+    data.timer = setTimeout(() => {
+      data.isScrolling = false;
+      if (data.speed !== 0) {
+        data.speed = 0;
+        setScrollSpeed(0);
       }
-
-      // 设置新的定时器，检测滚动停止
-      data.timer = setTimeout(() => {
-        data.isScrolling = false;
-        if (data.speed !== 0) {
-          data.speed = 0;
-          setScrollSpeed(0);
-        }
-        setIsScrolling(false);
-        // 清空样本数据
-        data.positions = [];
-      }, scrollEndDelay);
-    },
-    [calculateSpeed, recordSample, scrollEndDelay, speedEpsilon],
-  );
+      setIsScrolling(false);
+      // 清空样本数据
+      data.positions = [];
+    }, scrollEndDelay);
+  };
 
   /**
    * 检查是否为快速滚动
@@ -175,7 +169,7 @@ export function useOptimizedScroll(options: ScrollSpeedOptions = {}): {
   /**
    * 重置滚动状态
    */
-  const reset = useCallback(() => {
+  const reset = () => {
     const data = scrollDataRef.current;
     setIsScrolling(false);
     setScrollSpeed(0);
@@ -192,7 +186,7 @@ export function useOptimizedScroll(options: ScrollSpeedOptions = {}): {
       cancelAnimationFrame(data.rafId);
       data.rafId = null;
     }
-  }, []);
+  };
 
   useEffect(() => {
     const data = scrollDataRef.current;

@@ -174,12 +174,13 @@ export async function getContents(
  * 获取文件内容。
  *
  * @param fileUrl - GitHub 原始文件或代理文件的 URL
+ * @param signal - 可选中断信号，用于取消正在执行的请求
  * @returns 文件文本内容
  *
  * @remarks
  * 同样优先尝试缓存与首屏注水数据，其次根据环境选择代理策略，统一处理失败日志与错误信息。
  */
-export async function getFileContent(fileUrl: string): Promise<string> {
+export async function getFileContent(fileUrl: string, signal?: AbortSignal): Promise<string> {
   await ensureCacheInitialized();
 
   const branch = getCurrentBranch();
@@ -200,7 +201,9 @@ export async function getFileContent(fileUrl: string): Promise<string> {
     const response = await (async () => {
       if (getForceServerProxy()) {
         const serverApiUrl = buildServerApiUrlForGitHubResource(fileUrl, branch);
-        return fetch(serverApiUrl);
+        return fetch(serverApiUrl, {
+          signal,
+        });
       }
 
       let proxyUrl: string;
@@ -212,6 +215,7 @@ export async function getFileContent(fileUrl: string): Promise<string> {
 
       return fetch(proxyUrl, {
         headers: USE_TOKEN_MODE ? getAuthHeaders() : {},
+        signal,
       });
     })();
 

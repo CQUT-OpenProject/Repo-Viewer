@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React from "react";
 import { useTheme } from "@mui/material";
 
 /**
@@ -59,20 +59,17 @@ export const MarkdownLink: React.FC<MarkdownLinkProps> = ({
   const hasValidHref = resolvedHref.length > 0;
   const isExternal = isExternalLink(resolvedHref);
 
-  const handleClick = useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement>) => {
-      // 如果是外部链接或没有内部链接回调，使用默认行为
-      if (isExternal || onInternalLinkClick === undefined) {
-        return;
-      }
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // 如果是外部链接或没有内部链接回调，使用默认行为
+    if (isExternal || onInternalLinkClick === undefined) {
+      return;
+    }
 
-      // 阻止默认行为，使用内部导航
-      e.preventDefault();
-      e.stopPropagation();
-      onInternalLinkClick(resolvedHref);
-    },
-    [isExternal, onInternalLinkClick, resolvedHref],
-  );
+    // 阻止默认行为，使用内部导航
+    e.preventDefault();
+    e.stopPropagation();
+    onInternalLinkClick(resolvedHref);
+  };
 
   // 对于外部链接，使用 target="_blank"
   // 对于内部链接，不设置 target，通过 onClick 处理

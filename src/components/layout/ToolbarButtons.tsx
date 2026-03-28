@@ -1,4 +1,4 @@
-import React, { useContext, useState, useCallback, useEffect, useRef, lazy, Suspense } from "react";
+import React, { useContext, useState, useEffect, useRef, lazy, Suspense } from "react";
 import { Box, IconButton, Tooltip, useTheme } from "@mui/material";
 import {
   DarkMode as DarkModeIcon,
@@ -92,29 +92,18 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
   const storedRefreshStateRef = useRef<RefreshSessionState | null>(null);
   const branchValueRef = useRef(currentBranch);
   const pathValueRef = useRef(currentPath);
-
-  useEffect(() => {
-    branchValueRef.current = currentBranch;
-  }, [currentBranch]);
-
-  useEffect(() => {
-    pathValueRef.current = currentPath;
-  }, [currentPath]);
-
-  const buildRefreshSessionState = useCallback(
-    (): RefreshSessionState => ({
-      version: 1,
-      branch: branchValueRef.current,
-      path: pathValueRef.current,
-      timestamp: Date.now(),
-    }),
-    [],
-  );
+  branchValueRef.current = currentBranch;
+  pathValueRef.current = currentPath;
 
   useEffect(() => {
     const handleBeforeUnload = (): void => {
       try {
-        const state = buildRefreshSessionState();
+        const state: RefreshSessionState = {
+          version: 1,
+          branch: branchValueRef.current,
+          path: pathValueRef.current,
+          timestamp: Date.now(),
+        };
         sessionStorage.setItem(BROWSER_REFRESH_FLAG, JSON.stringify(state));
       } catch (error) {
         logger.debug("无法在刷新前缓存状态标记", error);
@@ -126,7 +115,7 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [buildRefreshSessionState]);
+  }, []);
 
   useEffect(() => {
     if (refreshSyncHandledRef.current) {
@@ -319,7 +308,7 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
 
   // 处理主题切换按钮点击
   // 如果存在文本文件预览，先关闭预览，切换主题，然后自动重新打开
-  const onThemeToggleClick = useCallback(async () => {
+  const onThemeToggleClick = async () => {
     // 检查是否有文本文件预览（性能优化：避免主题切换时的卡顿）
     const hasTextPreview =
       previewState.previewType === "text" && previewState.previewingItem !== null;
@@ -348,10 +337,10 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
         void selectFile(previewItemToRestore);
       }, 650);
     }
-  }, [toggleColorMode, previewState, closePreview, selectFile]);
+  };
 
   // 处理GitHub按钮点击
-  const onGitHubClick = useCallback(() => {
+  const onGitHubClick = () => {
     const { repoOwner, repoName } = repoInfo;
 
     const activeBranch = currentBranch !== "" ? currentBranch : defaultBranch;
@@ -393,15 +382,15 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
     }
 
     window.open(githubUrl, "_blank");
-  }, [repoInfo, currentBranch, defaultBranch, currentPath]);
+  };
 
-  const openSearchDrawer = useCallback(() => {
+  const openSearchDrawer = () => {
     setSearchDrawerOpen(true);
-  }, []);
+  };
 
-  const closeSearchDrawer = useCallback(() => {
+  const closeSearchDrawer = () => {
     setSearchDrawerOpen(false);
-  }, []);
+  };
 
   // 保留分支逻辑但不显示UI：这些代码确保分支功能的后台逻辑正常工作
   // branchLabelId, handleBranchChange, handleBranchOpen, branchOptions 等

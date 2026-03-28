@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useEffect } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { Container, useTheme, useMediaQuery, Box, Portal } from "@mui/material";
 import BreadcrumbNavigation from "@/components/layout/BreadcrumbNavigation";
 import FileList from "@/components/file/FileList";
@@ -139,6 +139,8 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
 
   const isHomePage = breadcrumbSegments.length <= 1;
   const shouldShowInToolbar = showBreadcrumbInToolbar && !isHomePage;
+  const [toolbarBreadcrumbContainer, setToolbarBreadcrumbContainer] =
+    useState<HTMLDivElement | null>(null);
 
   // 使用面包屑布局 Hook
   const { breadcrumbsMaxItems, breadcrumbsContainerRef } = useBreadcrumbLayout({
@@ -147,61 +149,49 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
   });
 
   // 处理面包屑点击
-  const handleBreadcrumbClick = useCallback(
-    (path: string, direction: NavigationDirection = "backward"): void => {
-      // 如果有正在预览的文件，直接关闭预览
-      const previewingItem = previewState.previewingItem ?? previewState.previewingImageItem;
-      if (previewingItem !== null) {
-        closePreview();
-      }
+  const handleBreadcrumbClick = (
+    path: string,
+    direction: NavigationDirection = "backward",
+  ): void => {
+    // 如果有正在预览的文件，直接关闭预览
+    const previewingItem = previewState.previewingItem ?? previewState.previewingImageItem;
+    if (previewingItem !== null) {
+      closePreview();
+    }
 
-      navigateTo(path, direction);
-    },
-    [navigateTo, previewState.previewingItem, previewState.previewingImageItem, closePreview],
-  );
+    navigateTo(path, direction);
+  };
 
   // 处理文件/文件夹点击
-  const handleItemClick = useCallback(
-    (item: GitHubContent): void => {
-      if (item.type === "dir") {
-        navigateTo(item.path, "forward");
-        return;
-      }
+  const handleItemClick = (item: GitHubContent): void => {
+    if (item.type === "dir") {
+      navigateTo(item.path, "forward");
+      return;
+    }
 
-      void selectFile(item);
-    },
-    [navigateTo, selectFile],
-  );
+    void selectFile(item);
+  };
 
   // 处理下载点击
-  const handleDownloadClick = useCallback(
-    (e: React.MouseEvent, item: GitHubContent): void => {
-      e.preventDefault();
-      e.stopPropagation();
-      void downloadFile(item);
-    },
-    [downloadFile],
-  );
+  const handleDownloadClick = (e: React.MouseEvent, item: GitHubContent): void => {
+    e.preventDefault();
+    e.stopPropagation();
+    void downloadFile(item);
+  };
 
   // 处理文件夹下载点击
-  const handleFolderDownloadClick = useCallback(
-    (e: React.MouseEvent, item: GitHubContent): void => {
-      e.preventDefault();
-      e.stopPropagation();
-      void downloadFolder(item.path, item.name);
-    },
-    [downloadFolder],
-  );
+  const handleFolderDownloadClick = (e: React.MouseEvent, item: GitHubContent): void => {
+    e.preventDefault();
+    e.stopPropagation();
+    void downloadFolder(item.path, item.name);
+  };
 
   // 处理取消下载点击
-  const handleCancelDownload = useCallback(
-    (e: React.MouseEvent): void => {
-      e.preventDefault();
-      e.stopPropagation();
-      cancelDownload();
-    },
-    [cancelDownload],
-  );
+  const handleCancelDownload = (e: React.MouseEvent): void => {
+    e.preventDefault();
+    e.stopPropagation();
+    cancelDownload();
+  };
 
   // 使用 URL 预览加载 Hook
   usePreviewFromUrl({
@@ -259,54 +249,40 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
     };
   }, [currentPath, previewState.previewingItem, previewState.previewingImageItem]);
 
-  // 获取顶部栏面包屑容器
-  const toolbarBreadcrumbContainer =
-    typeof document !== "undefined"
-      ? document.getElementById("toolbar-breadcrumb-container")
-      : null;
+  // 吸顶切换时在 effect 阶段重新解析容器，避免渲染阶段拿到空节点
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    const container = document.getElementById("toolbar-breadcrumb-container");
+    setToolbarBreadcrumbContainer(container as HTMLDivElement | null);
+  }, [showBreadcrumbInToolbar]);
 
   // 渲染面包屑导航组件
-  const breadcrumbNavigation = useMemo(
-    () => (
-      <BreadcrumbNavigation
-        breadcrumbSegments={breadcrumbSegments}
-        handleBreadcrumbClick={handleBreadcrumbClick}
-        breadcrumbsMaxItems={breadcrumbsMaxItems}
-        isSmallScreen={isSmallScreen}
-        breadcrumbsContainerRef={breadcrumbsContainerRef as React.RefObject<HTMLDivElement>}
-        compact={false}
-        data-oid="c02a2p5"
-      />
-    ),
-    [
-      breadcrumbSegments,
-      handleBreadcrumbClick,
-      breadcrumbsMaxItems,
-      isSmallScreen,
-      breadcrumbsContainerRef,
-    ],
+  const breadcrumbNavigation = (
+    <BreadcrumbNavigation
+      breadcrumbSegments={breadcrumbSegments}
+      handleBreadcrumbClick={handleBreadcrumbClick}
+      breadcrumbsMaxItems={breadcrumbsMaxItems}
+      isSmallScreen={isSmallScreen}
+      breadcrumbsContainerRef={breadcrumbsContainerRef as React.RefObject<HTMLDivElement>}
+      compact={false}
+      data-oid="c02a2p5"
+    />
   );
 
   // 紧凑模式的面包屑（用于顶部栏）
-  const compactBreadcrumbNavigation = useMemo(
-    () => (
-      <BreadcrumbNavigation
-        breadcrumbSegments={breadcrumbSegments}
-        handleBreadcrumbClick={handleBreadcrumbClick}
-        breadcrumbsMaxItems={breadcrumbsMaxItems}
-        isSmallScreen={isSmallScreen}
-        breadcrumbsContainerRef={breadcrumbsContainerRef as React.RefObject<HTMLDivElement>}
-        compact={true}
-        data-oid="c02a2p5-compact"
-      />
-    ),
-    [
-      breadcrumbSegments,
-      handleBreadcrumbClick,
-      breadcrumbsMaxItems,
-      isSmallScreen,
-      breadcrumbsContainerRef,
-    ],
+  const compactBreadcrumbNavigation = (
+    <BreadcrumbNavigation
+      breadcrumbSegments={breadcrumbSegments}
+      handleBreadcrumbClick={handleBreadcrumbClick}
+      breadcrumbsMaxItems={breadcrumbsMaxItems}
+      isSmallScreen={isSmallScreen}
+      breadcrumbsContainerRef={breadcrumbsContainerRef as React.RefObject<HTMLDivElement>}
+      compact={true}
+      data-oid="c02a2p5-compact"
+    />
   );
 
   return (

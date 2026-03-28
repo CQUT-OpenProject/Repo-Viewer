@@ -68,7 +68,7 @@ if (typeof window === "undefined") {
 }
 
 import { shouldUseServerAPI } from "../../config";
-const { clearBatcherCache, getContents } = await import("./service");
+const { clearBatcherCache, getContents, getFileContent } = await import("./service");
 
 describe("content service abort handling", () => {
   beforeEach(() => {
@@ -145,5 +145,35 @@ describe("content service abort handling", () => {
         signal: controller.signal,
       },
     );
+  });
+
+  it("propagates abort to file content fetch requests", async () => {
+    let fetchSignal: AbortSignal | undefined;
+    let resolveFetchStarted: (() => void) | null = null;
+    const fetchStarted = new Promise<void>((resolve) => {
+      resolveFetchStarted = resolve;
+    });
+    const fetchMock = vi.fn((_: RequestInfo | URL, init?: RequestInit) => {
+      fetchSignal = init?.signal;
+      resolveFetchStarted?.();
+
+      return new Promise<Response>((_, reject) => {
+        fetchSignal?.addEventListener("abort", () => reject(createAbortError("Request aborted")), {
+          once: true,
+        });
+      });
+    });
+    const controller = new AbortController();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const promise = getFileContent(
+      "https://raw.githubusercontent.com/test-owner/test-repo/main/docs/readme.md",
+      controller.signal,
+    );
+    await fetchStarted;
+    controller.abort();
+
+    await expect(promise).rejects.toMatchObject({ name: "AbortError" });
+    expect(fetchSignal?.aborted).toBe(true);
   });
 });

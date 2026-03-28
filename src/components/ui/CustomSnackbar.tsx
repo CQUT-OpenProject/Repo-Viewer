@@ -1,4 +1,4 @@
-import React, { forwardRef, memo } from "react";
+import React, { forwardRef } from "react";
 import { Alert, AlertTitle, Box, IconButton, LinearProgress, alpha } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useSnackbar } from "notistack";
@@ -19,8 +19,8 @@ interface CustomSnackbarProps extends CustomContentProps {
  *
  * 提供增强的通知UI，支持进度显示和自定义样式。
  */
-const CustomSnackbar = memo(
-  forwardRef<HTMLDivElement, CustomSnackbarProps>(({ id, message, variant, progress }, ref) => {
+const CustomSnackbar = forwardRef<HTMLDivElement, CustomSnackbarProps>(
+  ({ id, message, variant, progress }, ref) => {
     const { closeSnackbar } = useSnackbar();
     const { t } = useI18n();
 
@@ -134,7 +134,7 @@ const CustomSnackbar = memo(
         </Box>
       </Alert>
     );
-  }),
+  },
 );
 
 CustomSnackbar.displayName = "CustomSnackbar";

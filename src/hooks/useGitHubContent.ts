@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import type { GitHubContent } from "@/types";
 import type { NavigationDirection } from "@/contexts/unified";
 import { getGithubConfig } from "@/config";
@@ -69,21 +69,18 @@ export const useGitHubContent = (): {
   });
 
   // 处理分支切换时的副作用
-  const handleBranchChange = useCallback(
-    (branch: string) => {
-      branchState.setCurrentBranch(branch);
-      // 切换分支时导航到根目录
-      pathState.setCurrentPath("", "none");
-    },
-    [branchState, pathState],
-  );
+  const handleBranchChange = (branch: string) => {
+    branchState.setCurrentBranch(branch);
+    // 切换分支时导航到根目录
+    pathState.setCurrentPath("", "none");
+  };
 
   // 处理刷新内容
-  const refreshContents = useCallback(() => {
+  const refreshContents = () => {
     pathState.setRefreshState(true, pathState.currentPath);
     contentState.refresh();
     pathState.setNavigationDirection("none");
-  }, [pathState, contentState]);
+  };
 
   // 同步刷新状态
   useEffect(() => {

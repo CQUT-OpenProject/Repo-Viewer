@@ -8,7 +8,7 @@
  * @module hooks/useRefresh
  */
 
-import { useCallback, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { useContentContext } from "@/contexts/unified";
 import { removeLatexElements, restoreLatexElements } from "@/utils/rendering/latexOptimizer";
 import { logger } from "@/utils";
@@ -75,7 +75,7 @@ export const useRefresh = (): (() => void) => {
     }
   }, [loading]);
 
-  return useCallback(() => {
+  return () => {
     // 主题切换期间跳过刷新
     if (isThemeChangingRef.current) {
       logger.info("主题切换中，跳过内容刷新");
@@ -114,5 +114,5 @@ export const useRefresh = (): (() => void) => {
         }
       }, 3000);
     }, 10);
-  }, [refresh, isThemeChangingRef]);
+  };
 };

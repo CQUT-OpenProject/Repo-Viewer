@@ -9,6 +9,7 @@
 
 import axios from "axios";
 import { SmartCache } from "@/utils/cache/SmartCache";
+import { createAbortError, isAbortError } from "@/utils/network/abort";
 
 import { GITHUB_API_BASE, GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "../Config";
 import { shouldUseServerAPI } from "../../config";
@@ -66,24 +67,37 @@ function normalizeSha(value: string | undefined): string | null {
   return normalized !== undefined && normalized !== "" ? normalized : null;
 }
 
-async function fetchBranchHeadShaViaServerApi(branch: string): Promise<string | null> {
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted === true) {
+    throw createAbortError("Request aborted");
+  }
+}
+
+async function fetchBranchHeadShaViaServerApi(
+  branch: string,
+  signal?: AbortSignal,
+): Promise<string | null> {
   const query = new URLSearchParams({
     action: "getGitRef",
     ref: `heads/${branch}`,
   });
 
-  const response = await axios.get(`/api/github?${query.toString()}`);
+  const response = await axios.get(`/api/github?${query.toString()}`, { signal });
   const data = response.data as GitRefResponse;
   return normalizeSha(data.object?.sha);
 }
 
-async function fetchBranchHeadShaDirectly(branch: string): Promise<string | null> {
+async function fetchBranchHeadShaDirectly(
+  branch: string,
+  signal?: AbortSignal,
+): Promise<string | null> {
   const encodedRef = encodePathSegments(`heads/${branch}`);
   const apiUrl = `${GITHUB_API_BASE}/repos/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/git/ref/${encodedRef}`;
 
   const response = await fetch(apiUrl, {
     method: "GET",
     headers: getAuthHeaders(),
+    signal,
   });
 
   if (!response.ok) {
@@ -94,12 +108,12 @@ async function fetchBranchHeadShaDirectly(branch: string): Promise<string | null
   return normalizeSha(data.object?.sha);
 }
 
-async function resolveBranchHeadSha(branch: string): Promise<string | null> {
+async function resolveBranchHeadSha(branch: string, signal?: AbortSignal): Promise<string | null> {
   if (shouldUseServerAPI()) {
-    return fetchBranchHeadShaViaServerApi(branch);
+    return fetchBranchHeadShaViaServerApi(branch, signal);
   }
 
-  return fetchBranchHeadShaDirectly(branch);
+  return fetchBranchHeadShaDirectly(branch, signal);
 }
 
 /**
@@ -108,13 +122,16 @@ async function resolveBranchHeadSha(branch: string): Promise<string | null> {
  * @param branch - 分支名称
  * @returns Promise，解析为树节点数组，失败时返回 null
  */
-async function fetchTreeViaServerApi(branch: string): Promise<GitTreeItem[] | null> {
+async function fetchTreeViaServerApi(
+  branch: string,
+  signal?: AbortSignal,
+): Promise<GitTreeItem[] | null> {
   const query = new URLSearchParams({
     action: "getTree",
     branch,
     recursive: "1",
   });
-  const response = await axios.get(`/api/github?${query.toString()}`);
+  const response = await axios.get(`/api/github?${query.toString()}`, { signal });
   const data = response.data as { tree?: GitTreeItem[] };
   return Array.isArray(data.tree) ? data.tree : null;
 }
@@ -126,12 +143,16 @@ async function fetchTreeViaServerApi(branch: string): Promise<GitTreeItem[] | nu
  * @returns Promise，解析为树节点数组，失败时抛出错误
  * @throws 当 API 请求失败时抛出错误
  */
-async function fetchTreeDirectly(branch: string): Promise<GitTreeItem[] | null> {
+async function fetchTreeDirectly(
+  branch: string,
+  signal?: AbortSignal,
+): Promise<GitTreeItem[] | null> {
   const apiUrl = `${GITHUB_API_BASE}/repos/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/git/trees/${encodeURIComponent(branch)}?recursive=1`;
 
   const response = await fetch(apiUrl, {
     method: "GET",
     headers: getAuthHeaders(),
+    signal,
   });
 
   if (!response.ok) {
@@ -164,7 +185,10 @@ export function clearBranchTreeCache(): void {
  * @param branch - 分支名称
  * @returns Promise，解析为树节点数组，失败时返回 null
  */
-export async function getBranchTree(branch: string): Promise<GitTreeItem[] | null> {
+export async function getBranchTree(
+  branch: string,
+  signal?: AbortSignal,
+): Promise<GitTreeItem[] | null> {
   const normalizedBranch = branch.trim();
   if (normalizedBranch === "") {
     return null;
@@ -172,35 +196,53 @@ export async function getBranchTree(branch: string): Promise<GitTreeItem[] | nul
 
   let branchHeadSha: string | null = null;
   try {
-    branchHeadSha = await resolveBranchHeadSha(normalizedBranch);
-  } catch {
+    branchHeadSha = await resolveBranchHeadSha(normalizedBranch, signal);
+  } catch (error) {
+    if (isAbortError(error)) {
+      throw createAbortError("Request aborted");
+    }
     // Ref 查询失败时回退到分支名级别缓存，避免影响搜索可用性。
   }
 
   const cacheKey = getTreeCacheKey(normalizedBranch, branchHeadSha);
   const cached = branchTreeCache.get(cacheKey);
   if (cached !== null) {
+    throwIfAborted(signal);
     return cached.tree;
   }
 
-  const inFlightRequest = inFlightTreeRequests.get(cacheKey);
-  if (inFlightRequest !== undefined) {
-    return inFlightRequest;
+  if (signal === undefined) {
+    const inFlightRequest = inFlightTreeRequests.get(cacheKey);
+    if (inFlightRequest !== undefined) {
+      return inFlightRequest;
+    }
   }
 
   const request = (
     shouldUseServerAPI()
-      ? fetchTreeViaServerApi(normalizedBranch)
-      : fetchTreeDirectly(normalizedBranch)
+      ? fetchTreeViaServerApi(normalizedBranch, signal)
+      : fetchTreeDirectly(normalizedBranch, signal)
   )
     .then((tree) => {
+      throwIfAborted(signal);
       branchTreeCache.set(cacheKey, { tree });
       return tree;
     })
-    .finally(() => {
-      inFlightTreeRequests.delete(cacheKey);
+    .catch((error: unknown) => {
+      if (isAbortError(error)) {
+        throw createAbortError("Request aborted");
+      }
+      throw error;
     });
 
-  inFlightTreeRequests.set(cacheKey, request);
+  if (signal === undefined) {
+    inFlightTreeRequests.set(
+      cacheKey,
+      request.finally(() => {
+        inFlightTreeRequests.delete(cacheKey);
+      }),
+    );
+  }
+
   return request;
 }
