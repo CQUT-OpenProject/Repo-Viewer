@@ -2,8 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { createAbortError } from "@/utils/network/abort";
 
-const { axiosGetMock } = vi.hoisted(() => ({
+const { axiosGetMock, getCurrentProxyServiceMock, applyProxyToUrlMock } = vi.hoisted(() => ({
   axiosGetMock: vi.fn(),
+  getCurrentProxyServiceMock: vi.fn(() => "https://proxy.example.com"),
+  applyProxyToUrlMock: vi.fn(
+    (url: string, proxyUrl: string) => `${proxyUrl}/${url.replace(/^https?:\/\//u, "")}`,
+  ),
 }));
 
 vi.mock("axios", () => ({
@@ -43,6 +47,13 @@ vi.mock("../../schemas", () => ({
   validateGitHubContentsArray: vi.fn(() => ({ isValid: true, invalidItems: [] })),
 }));
 
+vi.mock("../../proxy", () => ({
+  getCurrentProxyService: getCurrentProxyServiceMock,
+  ProxyUrlTransformer: {
+    applyProxyToUrl: applyProxyToUrlMock,
+  },
+}));
+
 vi.mock("./cacheState", () => ({
   ensureCacheInitialized: vi.fn(async () => {}),
   getCachedDirectoryContents: vi.fn(async () => null),
@@ -67,7 +78,7 @@ if (typeof window === "undefined") {
   vi.stubGlobal("window", globalThis);
 }
 
-import { shouldUseServerAPI } from "../../config";
+import { getForceServerProxy, shouldUseServerAPI } from "../../config";
 const { clearBatcherCache, getContents, getFileContent } = await import("./service");
 
 describe("content service abort handling", () => {
@@ -77,6 +88,11 @@ describe("content service abort handling", () => {
     vi.stubGlobal("window", globalThis);
     clearBatcherCache();
     vi.mocked(shouldUseServerAPI).mockReturnValue(false);
+    vi.mocked(getForceServerProxy).mockReturnValue(false);
+    getCurrentProxyServiceMock.mockReturnValue("https://proxy.example.com");
+    applyProxyToUrlMock.mockImplementation(
+      (url: string, proxyUrl: string) => `${proxyUrl}/${url.replace(/^https?:\/\//u, "")}`,
+    );
   });
 
   it("propagates abort to direct fetch requests", async () => {
@@ -175,5 +191,57 @@ describe("content service abort handling", () => {
 
     await expect(promise).rejects.toMatchObject({ name: "AbortError" });
     expect(fetchSignal?.aborted).toBe(true);
+  });
+
+  it("prefers direct proxy URL for file content requests", async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      text: async () => "proxy content",
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const content = await getFileContent(
+      "https://raw.githubusercontent.com/test-owner/test-repo/main/docs/readme.md",
+    );
+
+    expect(content).toBe("proxy content");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      "https://proxy.example.com/raw.githubusercontent.com/test-owner/test-repo/main/docs/readme.md",
+    );
+  });
+
+  it("falls back to server API when direct proxy request fails in force mode", async () => {
+    vi.mocked(getForceServerProxy).mockReturnValue(true);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 502,
+        statusText: "Bad Gateway",
+        text: async () => "",
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        text: async () => "fallback content",
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const content = await getFileContent(
+      "https://raw.githubusercontent.com/test-owner/test-repo/main/docs/readme.md",
+    );
+
+    expect(content).toBe("fallback content");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      "https://proxy.example.com/raw.githubusercontent.com/test-owner/test-repo/main/docs/readme.md",
+    );
+    expect(String(fetchMock.mock.calls[1]?.[0] ?? "")).toContain(
+      "/api/github?action=getGitHubAsset&url=",
+    );
   });
 });

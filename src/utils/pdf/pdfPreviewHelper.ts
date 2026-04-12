@@ -310,7 +310,7 @@ function createFallbackLink(downloadUrl: string): void {
  * ```
  */
 export async function openPDFPreview(options: PDFPreviewOptions): Promise<void> {
-  const { fileName, downloadUrl, serverProxyUrl, theme, translations, isDev = false } = options;
+  const { fileName, downloadUrl, serverProxyUrl, theme, translations } = options;
 
   // 初始化预览窗口
   const newTab = initializePDFWindow(fileName, theme, translations);
@@ -323,12 +323,8 @@ export async function openPDFPreview(options: PDFPreviewOptions): Promise<void> 
 
   const themeColors = extractPDFThemeColors(theme);
 
-  // 根据环境选择下载 URL
-  const finalDownloadUrl =
-    serverProxyUrl ??
-    (isDev
-      ? downloadUrl
-      : `/api/github?action=getGitHubAsset&url=${encodeURIComponent(downloadUrl)}`);
+  // 优先使用显式代理URL，否则直接使用传入下载地址。
+  const finalDownloadUrl = serverProxyUrl ?? downloadUrl;
 
   // 下载并显示 PDF
   await downloadAndDisplayPDF(newTab, finalDownloadUrl, fileName, themeColors, translations);

@@ -20,7 +20,7 @@ import {
   type FolderDownloadEntry,
   type ZipOutputSink,
 } from "@/utils/download/folderZipPipeline";
-import { getForceServerProxy } from "@/services/github/config/ProxyForceManager";
+import { ProxyUrlTransformer } from "@/services/github/proxy";
 import { useI18n } from "@/contexts/I18nContext";
 
 /** 下载状态初始值 */
@@ -112,6 +112,14 @@ export const useDownload = (
 
   const hasBeenCancelled = () => isCancelledRef.current;
 
+  const getDirectProxyDownloadUrl = (sourceUrl: string): string => {
+    const proxyService = GitHub.Proxy.getCurrentProxyService();
+    if (proxyService.trim() === "") {
+      return sourceUrl;
+    }
+    return ProxyUrlTransformer.applyProxyToUrl(sourceUrl, proxyService);
+  };
+
   // 取消下载
   const cancelDownload = () => {
     if (!isDownloading) {
@@ -152,26 +160,13 @@ export const useDownload = (
 
     isCancelledRef.current = false;
     dispatch({ type: "SET_DOWNLOADING_FILE", path: item.path });
-
-    // 创建新的AbortController
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
 
     try {
-      // 使用代理URL获取文件
-      let downloadUrl = item.download_url;
-
-      // 如果是非开发环境或启用了令牌模式，使用服务端API代理
-      if (getForceServerProxy()) {
-        downloadUrl = GitHub.Content.getServerRepoFileProxyUrl(
-          item.path,
-          GitHub.Branch.getCurrentBranch(),
-        );
-      }
-
+      const downloadUrl = getDirectProxyDownloadUrl(item.download_url);
       const response = await fetch(downloadUrl, { signal });
 
-      // 检查是否已取消 (ref可在异步期间被cancelDownload修改)
       if (hasBeenCancelled()) {
         logger.info("文件下载已取消");
         return;
@@ -186,14 +181,12 @@ export const useDownload = (
 
       const blob = await response.blob();
 
-      // 再次检查是否已取消 (ref可在异步期间被cancelDownload修改)
       if (hasBeenCancelled()) {
         logger.info("文件下载已取消");
         return;
       }
 
       saveAs(blob, item.name);
-
       logger.info(`文件下载成功: ${item.path}`);
     } catch (e: unknown) {
       const error = e as Error;
@@ -243,14 +236,7 @@ export const useDownload = (
             continue;
           }
 
-          // 如果是非开发环境或启用了令牌模式，使用服务端API代理
-          let downloadUrl = item.download_url;
-          if (getForceServerProxy()) {
-            downloadUrl = GitHub.Content.getServerRepoFileProxyUrl(
-              item.path,
-              GitHub.Branch.getCurrentBranch(),
-            );
-          }
+          const downloadUrl = getDirectProxyDownloadUrl(item.download_url);
 
           fileList.push({
             path: relativePath,

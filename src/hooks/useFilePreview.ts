@@ -20,7 +20,6 @@ import {
   updateUrlWithHistory,
   hasPreviewParam,
 } from "@/utils/routing/urlManager";
-import { getForceServerProxy } from "@/services/github/config/ProxyForceManager";
 import { useI18n } from "@/contexts/I18nContext";
 
 /** 预览状态初始值 */
@@ -206,11 +205,9 @@ export const useFilePreview = (
       dispatch({ type: "RESET_PREVIEW" });
 
       try {
-        const currentBranch = GitHub.Branch.getCurrentBranch();
-        const proxyUrl = getForceServerProxy()
-          ? GitHub.Content.getServerRepoFileProxyUrl(item.path, currentBranch)
-          : (GitHub.Proxy.transformImageUrl(item.download_url, item.path, useTokenMode) ??
-            item.download_url);
+        const proxyUrl =
+          GitHub.Proxy.transformImageUrl(item.download_url, item.path, useTokenMode) ??
+          item.download_url;
 
         const fileNameLower = item.name.toLowerCase();
         const isCurrentTarget = (): boolean => currentPreviewItemRef.current?.path === targetPath;
@@ -286,10 +283,7 @@ export const useFilePreview = (
           try {
             await pdf.openPDFPreview({
               fileName: item.name,
-              downloadUrl: item.download_url,
-              serverProxyUrl: getForceServerProxy()
-                ? GitHub.Content.getServerRepoFileProxyUrl(item.path, currentBranch)
-                : undefined,
+              downloadUrl: proxyUrl,
               theme: muiTheme,
               translations: {
                 loading: t("ui.pdf.loading"),

@@ -13,7 +13,8 @@ import {
   validateGitHubContentsArray,
 } from "../../schemas";
 import { getAuthHeaders } from "../Auth";
-import { USE_TOKEN_MODE, getApiUrl, getCurrentBranch } from "../Config";
+import { getApiUrl, getCurrentBranch } from "../Config";
+import { getCurrentProxyService, ProxyUrlTransformer } from "../../proxy";
 import {
   ensureCacheInitialized,
   getCachedDirectoryContents,
@@ -198,32 +199,36 @@ export async function getFileContent(fileUrl: string, signal?: AbortSignal): Pro
   }
 
   try {
-    const response = await (async () => {
-      if (getForceServerProxy()) {
-        const serverApiUrl = buildServerApiUrlForGitHubResource(fileUrl, branch);
-        return fetch(serverApiUrl, {
-          signal,
-        });
+    const fetchTextByUrl = async (targetUrl: string): Promise<string> => {
+      const response = await fetch(targetUrl, { signal });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status.toString()}: ${response.statusText}`);
+      }
+      return response.text();
+    };
+
+    const currentProxyService = getCurrentProxyService().trim();
+    const directProxyUrl =
+      currentProxyService === ""
+        ? fileUrl
+        : ProxyUrlTransformer.applyProxyToUrl(fileUrl, currentProxyService);
+
+    let content: string;
+    try {
+      content = await fetchTextByUrl(directProxyUrl);
+    } catch (directError) {
+      if (isAbortError(directError)) {
+        throw createAbortError("Request aborted");
       }
 
-      let proxyUrl: string;
-      if (fileUrl.includes("raw.githubusercontent.com")) {
-        proxyUrl = fileUrl.replace("https://raw.githubusercontent.com", "/github-raw");
-      } else {
-        proxyUrl = fileUrl;
+      if (!getForceServerProxy()) {
+        throw directError;
       }
 
-      return fetch(proxyUrl, {
-        headers: USE_TOKEN_MODE ? getAuthHeaders() : {},
-        signal,
-      });
-    })();
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status.toString()}: ${response.statusText}`);
+      const serverApiUrl = buildServerApiUrlForGitHubResource(fileUrl, branch);
+      logger.warn(`直连代理获取文件失败，回退服务端API: ${directProxyUrl}`);
+      content = await fetchTextByUrl(serverApiUrl);
     }
-
-    const content = await response.text();
 
     await storeFileContent(cacheKey, fileUrl, content);
 

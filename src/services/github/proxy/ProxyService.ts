@@ -1,10 +1,8 @@
 import { logger } from "@/utils";
 import { getProxyConfig, getRuntimeConfig } from "@/config";
 import { USE_TOKEN_MODE, PROXY_SERVICES } from "./ProxyConfig";
-import { getForceServerProxy } from "../config";
 import { proxyHealthManager } from "./ProxyHealthManager";
 import { ProxyUrlTransformer } from "./ProxyUrlTransformer";
-import { buildServerApiUrlForGitHubResource } from "../core/content/serverApiUrls";
 
 const proxyConfig = getProxyConfig();
 const runtimeConfig = getRuntimeConfig();
@@ -43,17 +41,12 @@ export async function getProxiedUrl(
     return url;
   }
 
-  // 优先使用服务端API代理
-  if (getForceServerProxy()) {
-    return buildServerApiUrlForGitHubResource(url);
-  }
-
   // 使用智能代理选择
   const bestProxy = proxyHealthManager.getBestProxy();
 
   if (bestProxy === "") {
-    logger.warn("没有可用代理，使用服务端API");
-    return buildServerApiUrlForGitHubResource(url);
+    logger.warn("没有可用代理，直接使用原始URL");
+    return url;
   }
 
   const proxiedUrl = ProxyUrlTransformer.applyProxyToUrl(url, bestProxy);
@@ -89,13 +82,9 @@ export function getProxiedUrlSync(url: string): string {
     return url;
   }
 
-  if (getForceServerProxy()) {
-    return buildServerApiUrlForGitHubResource(url);
-  }
-
   const bestProxy = proxyHealthManager.getBestProxy();
   if (bestProxy === "") {
-    return buildServerApiUrlForGitHubResource(url);
+    return url;
   }
 
   return ProxyUrlTransformer.applyProxyToUrl(url, bestProxy);

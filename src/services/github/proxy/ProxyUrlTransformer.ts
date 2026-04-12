@@ -1,8 +1,6 @@
 import { logger } from "@/utils";
 import { getGithubConfig, getRuntimeConfig } from "@/config";
 import { getCurrentBranch } from "../core/Config";
-import { getForceServerProxy } from "../config";
-import { buildGitHubAssetApiUrl } from "../core/content/serverApiUrls";
 
 const githubConfig = getGithubConfig();
 const runtimeConfig = getRuntimeConfig();
@@ -116,22 +114,6 @@ function transformImageUrl(
 
   try {
     const normalizedSrc = src.replace(/\\/g, "/");
-
-    if (getForceServerProxy() && normalizedSrc.startsWith("http")) {
-      try {
-        const host = new URL(normalizedSrc).hostname;
-        if (!isGithubHost(host)) {
-          logger.debug("强制模式下的非GitHub域名，直接返回原URL:", normalizedSrc);
-          return normalizedSrc;
-        }
-      } catch {
-        logger.warn("强制模式解析URL失败，按GitHub域名处理");
-      }
-
-      const proxyUrl = buildGitHubAssetApiUrl(normalizedSrc);
-      logger.debug("使用服务端API代理:", proxyUrl);
-      return proxyUrl;
-    }
 
     if (normalizedSrc.startsWith("http")) {
       try {
