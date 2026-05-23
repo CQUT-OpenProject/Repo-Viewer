@@ -46,6 +46,115 @@ interface TextPreviewContentProps extends Omit<TextPreviewProps, "content" | "lo
   content: string;
 }
 
+interface TextPreviewRowProps {
+  highlightedLines: string[];
+  escapedLines: string[];
+  wrapText: boolean;
+  isSmallScreen: boolean;
+  lineNumberColumnWidth: string;
+  lineNumberFontSize: string;
+  contentFontSize: string;
+  themeSpacing: (value: number) => string;
+  dividerColor: string;
+  lineNumberColor: string;
+  lineNumberBackgroundColor: string;
+}
+
+const TextPreviewRow = ({
+  index,
+  style,
+  ariaAttributes,
+  highlightedLines,
+  escapedLines,
+  wrapText,
+  isSmallScreen,
+  lineNumberColumnWidth,
+  lineNumberFontSize,
+  contentFontSize,
+  themeSpacing,
+  dividerColor,
+  lineNumberColor,
+  lineNumberBackgroundColor,
+}: RowComponentProps<TextPreviewRowProps>): React.ReactElement => {
+  const lineHtml =
+    index < highlightedLines.length
+      ? (highlightedLines[index] ?? "\u00A0")
+      : (escapedLines[index] ?? "\u00A0");
+
+  return (
+    <Box
+      style={{ ...style, width: "100%" }}
+      {...ariaAttributes}
+      sx={{
+        display: "flex",
+        alignItems: "flex-start",
+        minWidth: wrapText ? "100%" : "max-content",
+      }}
+    >
+      <Box
+        component="div"
+        sx={{
+          textAlign: "right",
+          userSelect: "none",
+          alignSelf: "flex-start",
+          padding: isSmallScreen
+            ? `${themeSpacing(0.25)} ${themeSpacing(0.75)}`
+            : `${themeSpacing(0.25)} ${themeSpacing(1)}`,
+          width: `calc(${lineNumberColumnWidth} + ${isSmallScreen ? themeSpacing(0.75) : themeSpacing(1)})`,
+          borderRight: `1px solid ${dividerColor}`,
+          color: lineNumberColor,
+          backgroundColor: lineNumberBackgroundColor,
+          position: "sticky",
+          left: 0,
+          fontSize: lineNumberFontSize,
+          flexShrink: 0,
+        }}
+      >
+        {index + 1}
+      </Box>
+      <Box
+        component="div"
+        sx={{
+          padding: isSmallScreen
+            ? `${themeSpacing(0.25)} ${themeSpacing(2)} ${themeSpacing(0.25)} ${themeSpacing(1.5)}`
+            : `${themeSpacing(0.25)} ${themeSpacing(3)} ${themeSpacing(0.25)} ${themeSpacing(2)}`,
+        }}
+      >
+        <Box
+          component="span"
+          sx={{
+            display: "block",
+            fontFamily: MONO_FONT_STACK,
+            fontSize: contentFontSize,
+            lineHeight: 1.6,
+            whiteSpace: wrapText ? "pre-wrap" : "pre",
+            wordBreak: wrapText ? "break-word" : "normal",
+            minWidth: wrapText ? "auto" : "max-content",
+            "& code": {
+              fontFamily: "inherit",
+              fontSize: "inherit",
+              background: "transparent",
+              padding: 0,
+              borderRadius: 0,
+            },
+            "& .token": {
+              fontFamily: "inherit",
+              fontSize: "inherit",
+            },
+            "& span.token": {
+              fontFamily: "inherit",
+              fontSize: "inherit",
+            },
+          }}
+          dangerouslySetInnerHTML={{
+            __html: lineHtml,
+          }}
+        />
+      </Box>
+    </Box>
+  );
+};
+
 /**
  * 文本预览内容组件
  *
@@ -272,19 +381,9 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
     return Math.min(maxContainerHeight, estimated);
   }, [baseRowHeight, lineCount, maxContainerHeight]);
 
-  const listWidth = useMemo(() => {
-    return containerSize.width > 0 ? containerSize.width : 1;
-  }, [containerSize.width]);
+  const listWidth = containerSize.width > 0 ? containerSize.width : 1;
 
-  const rowHeightCacheKey = useMemo(() => {
-    return `${String(wrapText)}-${String(containerSize.width)}-${contentFontSize}-${lineNumberColumnWidth}-${String(normalizedLines.length)}`;
-  }, [
-    wrapText,
-    containerSize.width,
-    contentFontSize,
-    lineNumberColumnWidth,
-    normalizedLines.length,
-  ]);
+  const rowHeightCacheKey = `${String(wrapText)}-${String(containerSize.width)}-${contentFontSize}-${lineNumberColumnWidth}-${String(normalizedLines.length)}`;
 
   // 自动换行时使用动态行高缓存，避免重新计算整表
   const dynamicRowHeight = useDynamicRowHeight({
@@ -292,87 +391,34 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
     key: rowHeightCacheKey,
   });
   const rowHeight = wrapText ? dynamicRowHeight : baseRowHeight;
-  const emptyRowProps = useMemo(() => ({}), []);
-
-  const Row = ({ index, style, ariaAttributes }: RowComponentProps): React.ReactElement => {
-    const lineHtml =
-      index < highlightedLines.length
-        ? (highlightedLines[index] ?? "\u00A0")
-        : (escapedLines[index] ?? "\u00A0");
-
-    return (
-      <Box
-        style={{ ...style, width: "100%" }}
-        {...ariaAttributes}
-        sx={{
-          display: "flex",
-          alignItems: "flex-start",
-          minWidth: wrapText ? "100%" : "max-content",
-        }}
-      >
-        <Box
-          component="div"
-          sx={{
-            textAlign: "right",
-            userSelect: "none",
-            alignSelf: "flex-start",
-            padding: isSmallScreen
-              ? `${theme.spacing(0.25)} ${theme.spacing(0.75)}`
-              : `${theme.spacing(0.25)} ${theme.spacing(1)}`,
-            width: `calc(${lineNumberColumnWidth} + ${isSmallScreen ? theme.spacing(0.75) : theme.spacing(1)})`,
-            borderRight: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-            color: alpha(theme.palette.text.secondary, 0.9),
-            backgroundColor: alpha(theme.palette.background.default, 0.35),
-            position: "sticky",
-            left: 0,
-            fontSize: lineNumberFontSize,
-            flexShrink: 0,
-          }}
-        >
-          {index + 1}
-        </Box>
-        <Box
-          component="div"
-          sx={{
-            padding: isSmallScreen
-              ? `${theme.spacing(0.25)} ${theme.spacing(2)} ${theme.spacing(0.25)} ${theme.spacing(1.5)}`
-              : `${theme.spacing(0.25)} ${theme.spacing(3)} ${theme.spacing(0.25)} ${theme.spacing(2)}`,
-          }}
-        >
-          <Box
-            component="span"
-            sx={{
-              display: "block",
-              fontFamily: MONO_FONT_STACK,
-              fontSize: contentFontSize,
-              lineHeight: 1.6,
-              whiteSpace: wrapText ? "pre-wrap" : "pre",
-              wordBreak: wrapText ? "break-word" : "normal",
-              minWidth: wrapText ? "auto" : "max-content",
-              "& code": {
-                fontFamily: "inherit",
-                fontSize: "inherit",
-                background: "transparent",
-                padding: 0,
-                borderRadius: 0,
-              },
-              "& .token": {
-                fontFamily: "inherit",
-                fontSize: "inherit",
-              },
-              "& span.token": {
-                fontFamily: "inherit",
-                fontSize: "inherit",
-              },
-            }}
-            dangerouslySetInnerHTML={{
-              __html: lineHtml,
-            }}
-          />
-        </Box>
-      </Box>
-    );
-  };
+  const rowProps = useMemo<TextPreviewRowProps>(
+    () => ({
+      highlightedLines,
+      escapedLines,
+      wrapText,
+      isSmallScreen,
+      lineNumberColumnWidth,
+      lineNumberFontSize,
+      contentFontSize,
+      themeSpacing: theme.spacing,
+      dividerColor: alpha(theme.palette.divider, 0.3),
+      lineNumberColor: alpha(theme.palette.text.secondary, 0.9),
+      lineNumberBackgroundColor: alpha(theme.palette.background.default, 0.35),
+    }),
+    [
+      highlightedLines,
+      escapedLines,
+      wrapText,
+      isSmallScreen,
+      lineNumberColumnWidth,
+      lineNumberFontSize,
+      contentFontSize,
+      theme.spacing,
+      theme.palette.divider,
+      theme.palette.text.secondary,
+      theme.palette.background.default,
+    ],
+  );
 
   const handleCopy = (): void => {
     if (typeof content === "string") {
@@ -752,8 +798,8 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
           <VirtualList
             rowCount={normalizedLines.length}
             rowHeight={rowHeight}
-            rowComponent={Row}
-            rowProps={emptyRowProps}
+            rowComponent={TextPreviewRow}
+            rowProps={rowProps}
             defaultHeight={listHeight}
             overscanCount={6}
             className="text-preview__code-table"

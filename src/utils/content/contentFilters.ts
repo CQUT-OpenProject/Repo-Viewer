@@ -5,7 +5,7 @@
  */
 
 import type { GitHubContent } from "@/types";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { sortContentsByPinyin } from "@/utils/sorting/contentSorting";
 
 /**

@@ -1,15 +1,13 @@
 import { createTheme, type PaletteMode, type Theme } from "@mui/material/styles";
 import { g3BorderRadius, G3_PRESETS } from "./g3Curves";
-import { getLightPalette, getDarkPalette } from "./palettes";
+import { getLightPalette, getDarkPalette } from "./palettes/themePalettes";
 import { getCurrentTheme } from "./utils";
 import { typographyConfig } from "./typography";
-import {
-  buttonStyles,
-  navigationStyles,
-  containerStyles,
-  listStyles,
-  miscStyles,
-} from "./components";
+import { buttonStyles } from "./components/buttons";
+import { navigationStyles } from "./components/navigation";
+import { containerStyles } from "./components/containers";
+import { listStyles } from "./components/lists";
+import { miscStyles } from "./components/misc";
 
 /**
  * 创建Material You主题
@@ -43,8 +41,6 @@ export const createMaterialYouTheme = (mode: PaletteMode): Theme => {
   return createTheme(themeConfig);
 };
 
-const materialYouTheme = createMaterialYouTheme("light");
-export default materialYouTheme;
 export { getCurrentThemeName } from "./utils";
 export * from "./g3Curves";
 export * from "./animations";

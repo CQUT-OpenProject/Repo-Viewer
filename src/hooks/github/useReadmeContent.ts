@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import type { GitHubContent } from "@/types";
 import { GitHub } from "@/services/github";
 import { GITHUB_REPO_OWNER, GITHUB_REPO_NAME } from "@/services/github/core/Config";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { handleError } from "@/utils/error/errorHandler";
 import { isAbortError } from "@/utils/network/abort";
 import type { ReadmeContentState } from "./types";

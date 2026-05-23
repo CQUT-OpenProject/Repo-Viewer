@@ -1,6 +1,6 @@
 import React from "react";
 import { Box } from "@mui/material";
-import { motion, type Variants } from "framer-motion";
+import { m, useReducedMotion, type Variants } from "framer-motion";
 import BreadcrumbNavigation from "@/components/layout/BreadcrumbNavigation";
 import { LazyMarkdownPreview, LazyImagePreview, LazyTextPreview } from "@/utils/lazy-loading";
 import type { PreviewState, GitHubContent } from "@/types";
@@ -35,7 +35,18 @@ const previewAnimation: Variants = {
   },
 };
 
-const MotionBox = motion.create(Box);
+const reducedMotionPreviewAnimation: Variants = {
+  hidden: { opacity: 1, marginTop: 0 },
+  visible: {
+    opacity: 1,
+    marginTop: 0,
+    transition: {
+      duration: 0,
+    },
+  },
+};
+
+const MotionBox = m.create(Box);
 
 const FilePreviewPage: React.FC<FilePreviewPageProps> = ({
   previewState,
@@ -52,6 +63,7 @@ const FilePreviewPage: React.FC<FilePreviewPageProps> = ({
   onPreviousImage,
   onNextImage,
 }) => {
+  const shouldReduceMotion = useReducedMotion();
   const previewingFile: GitHubContent | null =
     previewState.previewingItem ?? previewState.previewingImageItem;
 
@@ -115,7 +127,7 @@ const FilePreviewPage: React.FC<FilePreviewPageProps> = ({
         <MotionBox
           initial="hidden"
           animate="visible"
-          variants={previewAnimation}
+          variants={shouldReduceMotion ? reducedMotionPreviewAnimation : previewAnimation}
           sx={{
             display: "flex",
             flexDirection: "column",

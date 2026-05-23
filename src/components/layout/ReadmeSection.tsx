@@ -1,12 +1,13 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence, useReducedMotion } from "framer-motion";
 import { LazyMarkdownPreview } from "@/utils/lazy-loading";
 import { MarkdownPreviewSkeleton } from "@/components/ui/skeletons";
 import type { GitHubContent } from "@/types";
 import { useI18n } from "@/contexts/I18nContext";
 import { useContentContext, usePreviewContext } from "@/contexts/unified";
-import { scroll, logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
+import { scrollToTop } from "@/utils/scroll/scrollUtils";
 
 /**
  * README预览区域组件属性接口
@@ -48,6 +49,7 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
   const { t } = useI18n();
   const { navigateTo, findFileItemByPath, currentPath } = useContentContext();
   const { selectFile } = usePreviewContext();
+  const shouldReduceMotion = useReducedMotion();
   const pendingScrollRef = React.useRef(false);
   const pendingScrollTimerRef = React.useRef<number | null>(null);
 
@@ -77,9 +79,16 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
         return;
       }
       pendingScrollRef.current = false;
-      void scroll.scrollToTop();
+      void scrollToTop();
     }, 1000);
   };
+
+  const clearPendingScrollTimer = React.useCallback((): void => {
+    if (pendingScrollTimerRef.current !== null) {
+      window.clearTimeout(pendingScrollTimerRef.current);
+      pendingScrollTimerRef.current = null;
+    }
+  }, []);
 
   const handleReadmeRenderComplete = (): void => {
     if (!pendingScrollRef.current) {
@@ -88,21 +97,14 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
 
     pendingScrollRef.current = false;
 
-    if (pendingScrollTimerRef.current !== null) {
-      window.clearTimeout(pendingScrollTimerRef.current);
-      pendingScrollTimerRef.current = null;
-    }
+    clearPendingScrollTimer();
 
-    void scroll.scrollToTop();
+    void scrollToTop();
   };
 
   React.useEffect(() => {
-    return () => {
-      if (pendingScrollTimerRef.current !== null) {
-        window.clearTimeout(pendingScrollTimerRef.current);
-      }
-    };
-  }, []);
+    return clearPendingScrollTimer;
+  }, [clearPendingScrollTimer]);
 
   // 处理内部链接点击
   const handleInternalLinkClick = (relativePath: string) => {
@@ -188,22 +190,21 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
 
   const hasReadmeContent = typeof readmeContent === "string" && readmeContent.trim().length > 0;
   const shouldShowReadmeSkeleton = !hasReadmeContent && (!readmeLoaded || loadingReadme);
+  const readmeExitState = shouldReduceMotion
+    ? { opacity: 1, transition: { duration: 0 } }
+    : {
+        opacity: 0,
+        scale: 0.96,
+        transition: {
+          duration: 0.125,
+          ease: [0.4, 0, 0.2, 1],
+        },
+      };
 
   return (
     <AnimatePresence mode="wait">
       {!isTransitioning && (
-        <motion.div
-          initial={{ opacity: 1, scale: 1 }}
-          exit={{
-            opacity: 0,
-            scale: 0.96,
-            transition: {
-              duration: 0.125,
-              ease: [0.4, 0, 0.2, 1],
-            },
-          }}
-          style={{ width: "100%" }}
-        >
+        <m.div initial={{ opacity: 1, scale: 1 }} exit={readmeExitState} style={{ width: "100%" }}>
           <Box
             className="readme-container"
             sx={{
@@ -259,7 +260,7 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
               </Typography>
             ) : null}
           </Box>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

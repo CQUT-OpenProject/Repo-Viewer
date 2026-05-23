@@ -10,6 +10,10 @@ import {
 import { useContentContext } from "@/contexts/unified";
 import { useI18n } from "@/contexts/I18nContext";
 
+const CHARS_PER_LINE = 12;
+const MAX_VISIBLE_LINES = 2;
+const BRANCH_NAME_SEPARATORS = new Set(["/", "-", "_"]);
+
 /**
  * 分支切换器组件属性接口
  */
@@ -35,8 +39,6 @@ const BranchSwitcher: React.FC<BranchSwitcherProps> = ({ showLabel = true }) => 
   const open = Boolean(anchorEl);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const CHARS_PER_LINE = 12;
-  const MAX_VISIBLE_LINES = 2;
   const getDisplayBranchName = (branchName: string): string =>
     branchName !== "" ? branchName : "main";
 
@@ -48,7 +50,6 @@ const BranchSwitcher: React.FC<BranchSwitcherProps> = ({ showLabel = true }) => 
       return [normalized];
     }
 
-    const separators = ["/", "-", "_"];
     const lines: string[] = [];
     let remaining = normalized;
 
@@ -68,7 +69,7 @@ const BranchSwitcher: React.FC<BranchSwitcherProps> = ({ showLabel = true }) => 
 
       for (let i = searchLimit; i > 0; i--) {
         const char = remaining[i - 1];
-        if (char !== undefined && separators.includes(char)) {
+        if (char !== undefined && BRANCH_NAME_SEPARATORS.has(char)) {
           splitIndex = i;
           break;
         }
@@ -96,6 +97,11 @@ const BranchSwitcher: React.FC<BranchSwitcherProps> = ({ showLabel = true }) => 
     formatBranchName(
       getDisplayBranchName(isAnimating && animatingBranch !== "" ? animatingBranch : currentBranch),
     );
+  const selectableBranches = branches.filter((branch) => branch !== currentBranch);
+  const expandedBranchHeight = selectableBranches.reduce(
+    (acc, branch) => acc + getBranchHeight(branch),
+    0,
+  );
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl !== null ? null : event.currentTarget);
@@ -113,12 +119,11 @@ const BranchSwitcher: React.FC<BranchSwitcherProps> = ({ showLabel = true }) => 
     }
 
     // 计算被选中分支的起始Y位置（相对于容器顶部）
-    const otherBranches = branches.filter((b) => b !== currentBranch);
-    const selectedIndex = otherBranches.findIndex((b) => b === branch);
+    const selectedIndex = selectableBranches.findIndex((b) => b === branch);
 
     let startY = 0;
     for (let i = 0; i < selectedIndex; i++) {
-      const branchAtIndex = otherBranches[i];
+      const branchAtIndex = selectableBranches[i];
       if (branchAtIndex !== undefined) {
         const branchLines = formatBranchName(branchAtIndex);
         startY += branchLines.length * 14 + 14;
@@ -223,11 +228,8 @@ const BranchSwitcher: React.FC<BranchSwitcherProps> = ({ showLabel = true }) => 
               height:
                 open && !isAnimating
                   ? (() => {
-                      const totalHeight = branches
-                        .filter((branch) => branch !== currentBranch)
-                        .reduce((acc, branch) => acc + getBranchHeight(branch), 0);
                       const currentBranchHeight = getBranchHeight(currentBranch);
-                      return Math.min(totalHeight + currentBranchHeight, 280);
+                      return Math.min(expandedBranchHeight + currentBranchHeight, 280);
                     })()
                   : getCurrentBranchHeight(),
               maxHeight: 280,
@@ -263,64 +265,62 @@ const BranchSwitcher: React.FC<BranchSwitcherProps> = ({ showLabel = true }) => 
                     width: "100%",
                   }}
                 >
-                  {branches
-                    .filter((b) => b !== currentBranch)
-                    .map((branch, index) => {
-                      const branchLines = formatBranchName(branch);
-                      return (
-                        <ButtonBase
-                          key={branch}
-                          onClick={() => {
-                            handleBranchSelect(branch);
-                          }}
-                          disabled={isAnimating}
-                          sx={{
-                            px: 1,
-                            height: branchLines.length * 14 + 14,
-                            minHeight: branchLines.length * 14 + 14,
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            fontSize: "0.75rem",
-                            fontWeight: 400,
-                            color: "text.primary",
-                            backgroundColor: "transparent",
-                            borderBottom: `1px dashed ${theme.palette.divider}`,
-                            borderRadius: index === 0 ? "8px 8px 0 0" : "0",
-                            transition:
-                              "background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                            cursor: "pointer",
-                            "&:hover": {
-                              backgroundColor:
-                                theme.palette.mode === "light"
-                                  ? "rgba(103, 80, 164, 0.12)"
-                                  : "rgba(208, 188, 255, 0.12)",
-                            },
-                            "&:disabled": {
-                              opacity: 0.5,
-                              cursor: "not-allowed",
-                            },
-                          }}
-                        >
-                          {branchLines.map((line, lineIndex) => (
-                            <Box
-                              key={lineIndex}
-                              sx={{
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                width: "100%",
-                                textAlign: "center",
-                                lineHeight: "14px",
-                              }}
-                            >
-                              {line}
-                            </Box>
-                          ))}
-                        </ButtonBase>
-                      );
-                    })}
+                  {selectableBranches.map((branch, index) => {
+                    const branchLines = formatBranchName(branch);
+                    return (
+                      <ButtonBase
+                        key={branch}
+                        onClick={() => {
+                          handleBranchSelect(branch);
+                        }}
+                        disabled={isAnimating}
+                        sx={{
+                          px: 1,
+                          height: branchLines.length * 14 + 14,
+                          minHeight: branchLines.length * 14 + 14,
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          fontSize: "0.75rem",
+                          fontWeight: 400,
+                          color: "text.primary",
+                          backgroundColor: "transparent",
+                          borderBottom: `1px dashed ${theme.palette.divider}`,
+                          borderRadius: index === 0 ? "8px 8px 0 0" : "0",
+                          transition:
+                            "background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                          cursor: "pointer",
+                          "&:hover": {
+                            backgroundColor:
+                              theme.palette.mode === "light"
+                                ? "rgba(103, 80, 164, 0.12)"
+                                : "rgba(208, 188, 255, 0.12)",
+                          },
+                          "&:disabled": {
+                            opacity: 0.5,
+                            cursor: "not-allowed",
+                          },
+                        }}
+                      >
+                        {branchLines.map((line, lineIndex) => (
+                          <Box
+                            key={`${branch}-${lineIndex.toString()}-${line}`}
+                            sx={{
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              width: "100%",
+                              textAlign: "center",
+                              lineHeight: "14px",
+                            }}
+                          >
+                            {line}
+                          </Box>
+                        ))}
+                      </ButtonBase>
+                    );
+                  })}
                 </Box>
               </Box>
             )}
@@ -335,11 +335,8 @@ const BranchSwitcher: React.FC<BranchSwitcherProps> = ({ showLabel = true }) => 
                 // 起始位置：从底部向上偏移到原来在列表中的位置
                 // 计算：展开时的总高度 - 收缩后的高度 - animatingBranchStartY
                 const expandedHeight = (() => {
-                  const totalHeight = branches
-                    .filter((branch) => branch !== currentBranch)
-                    .reduce((acc, branch) => acc + getBranchHeight(branch), 0);
                   const currentBranchHeight = getBranchHeight(currentBranch);
-                  return Math.min(totalHeight + currentBranchHeight, 280);
+                  return Math.min(expandedBranchHeight + currentBranchHeight, 280);
                 })();
 
                 // 从底部算起，需要向上偏移的距离
@@ -378,7 +375,7 @@ const BranchSwitcher: React.FC<BranchSwitcherProps> = ({ showLabel = true }) => 
                   >
                     {animatingBranchLines.map((line, lineIndex) => (
                       <Box
-                        key={lineIndex}
+                        key={`${animatingBranch}-${lineIndex.toString()}-${line}`}
                         sx={{
                           whiteSpace: "nowrap",
                           overflow: "hidden",
@@ -439,7 +436,7 @@ const BranchSwitcher: React.FC<BranchSwitcherProps> = ({ showLabel = true }) => 
             >
               {getCollapsedBranchLines().map((line, lineIndex) => (
                 <Box
-                  key={lineIndex}
+                  key={`${currentBranch}-${lineIndex.toString()}-${line}`}
                   sx={{
                     whiteSpace: "nowrap",
                     overflow: "hidden",

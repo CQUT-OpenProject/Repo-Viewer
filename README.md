@@ -1,14 +1,8 @@
-<h1 align="center">
-  <em>Repo-Viewer</em>
-</h1>
+## Repo-Viewer
 
-<p align="center">
-  <strong>基于 Material Design 3设计风格的 GitHub仓库浏览应用</strong>
-  &nbsp;&nbsp;
-  <a href="https://deepwiki.com/CQUT-OpenProject/Repo-Viewer" target="_blank">
-    <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki">
-  </a>
-</p>
+基于 Material Design 3设计风格的 GitHub仓库浏览应用
+
+[![React Doctor](https://www.react.doctor/share/badge?p=repo-viewer&s=85&w=82&f=36)](https://www.react.doctor/share?p=repo-viewer&s=85&w=82&f=36) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/CQUT-OpenProject/Repo-Viewer)
 
 ![Preview Dark](docs/image/dark.png)
 

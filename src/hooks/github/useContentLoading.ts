@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import type { GitHubContent } from "@/types";
 import { GitHub } from "@/services/github";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { requestManager } from "@/utils/request/requestManager";
 import { handleError } from "@/utils/error/errorHandler";
 import { processContents } from "@/utils/content";

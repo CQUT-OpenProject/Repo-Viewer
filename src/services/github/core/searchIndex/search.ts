@@ -66,10 +66,13 @@ function normalizeExtensions(extensions?: string[]): Set<string> | null {
   if (extensions === undefined) {
     return null;
   }
-  const normalized = extensions
-    .map((ext) => ext.trim().toLowerCase())
-    .filter((ext) => ext.length > 0)
-    .map((ext) => (ext.startsWith(".") ? ext.slice(1) : ext));
+  const normalized: string[] = [];
+  for (const extension of extensions) {
+    const ext = extension.trim().toLowerCase();
+    if (ext.length > 0) {
+      normalized.push(ext.startsWith(".") ? ext.slice(1) : ext);
+    }
+  }
   return normalized.length > 0 ? new Set(normalized) : null;
 }
 
@@ -190,9 +193,13 @@ export async function searchIndex(
       ? options.branches
       : [config.defaultBranch];
 
-  let candidateBranches = requestedBranches
-    .map((branch) => branch.trim())
-    .filter((branch) => branch.length > 0);
+  let candidateBranches: string[] = [];
+  for (const branch of requestedBranches) {
+    const trimmed = branch.trim();
+    if (trimmed.length > 0) {
+      candidateBranches.push(trimmed);
+    }
+  }
 
   if (candidateBranches.length === 0) {
     candidateBranches = manifestBranches;

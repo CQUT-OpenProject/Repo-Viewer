@@ -1,8 +1,7 @@
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { getCurrentBranch } from "../core/Config";
 import type { CacheStats } from "./CacheTypes";
 import { AdvancedCache } from "./AdvancedCache";
-import { LRUCache } from "./LRUCache";
 import { CONTENT_CACHE_CONFIG, FILE_CACHE_CONFIG } from "./CacheConfig";
 
 const CONTENT_CACHE_ROOT_KEY = "__root__";
@@ -147,9 +146,3 @@ class CacheManagerImpl {
  * 全局缓存管理器，用于管理内容和文件缓存。
  */
 export const CacheManager = new CacheManagerImpl();
-
-export { AdvancedCache, LRUCache };
-export type { CacheStats };
-export { CONTENT_CACHE_CONFIG, FILE_CACHE_CONFIG };
-export type { CacheConfig } from "./CacheTypes";
-export { DEFAULT_CACHE_CONFIG } from "./CacheConfig";

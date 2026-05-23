@@ -115,7 +115,8 @@ export const MarkdownCodeBlock: React.FC<MarkdownCodeBlockProps> = ({
     >
       <pre
         className={className}
-        tabIndex={0}
+        role="region"
+        aria-label={language !== undefined ? `${language} code block` : "Code block"}
         data-language={language ?? undefined}
         data-oid={dataOid}
       >

@@ -1,7 +1,7 @@
 import { getAccessConfig, getProxyConfig } from "@/config";
 
 // 获取配置
-export const accessConfig = getAccessConfig();
+const accessConfig = getAccessConfig();
 const proxyConfig = getProxyConfig();
 
 // 模式设置

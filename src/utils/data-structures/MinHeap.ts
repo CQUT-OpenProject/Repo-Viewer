@@ -5,7 +5,7 @@
  *
  * @template T - 堆中元素的类型
  */
-export class MinHeap<T> {
+class MinHeap<T> {
   private heap: T[] = [];
   private readonly compareFn: (a: T, b: T) => number;
 
@@ -187,7 +187,7 @@ export class MinHeap<T> {
  */
 export function getMinK<T>(items: T[], k: number, compareFn: (a: T, b: T) => number): T[] {
   if (k >= items.length) {
-    return [...items].sort(compareFn);
+    return items.toSorted(compareFn);
   }
 
   const heap = MinHeap.fromArray(items, compareFn);

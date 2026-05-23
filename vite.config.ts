@@ -341,7 +341,7 @@ const createRuntimeConfigPlugin = (
                 "interaction-vendor": ["react-zoom-pan-pinch"],
                 "http-vendor": ["axios"],
                 "file-vendor": ["jszip", "file-saver"],
-                "react-utils": ["react-use", "react-helmet-async", "notistack"],
+                "react-utils": ["react-helmet-async", "notistack"],
                 virtualization: ["react-virtualized-auto-sizer", "react-window"],
                 validation: ["zod"],
               };
@@ -526,14 +526,6 @@ export default defineConfig({
           ],
         },
       ],
-      "no-restricted-syntax": [
-        "error",
-        {
-          selector: "CallExpression[callee.object.name='React'][callee.property.name='memo']",
-          message:
-            "React Compiler replaces React.memo in this project. Remove the wrapper unless the code documents a semantic requirement.",
-        },
-      ],
       eqeqeq: ["error", "always"],
       curly: ["error", "all"],
       "no-console": ["warn", { allow: ["warn", "error"] }],
@@ -620,7 +612,6 @@ export default defineConfig({
       "@emotion/styled",
       "axios",
       "framer-motion",
-      "react-use",
       "style-to-js",
       "style-to-object",
       "react-markdown",

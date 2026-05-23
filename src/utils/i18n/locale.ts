@@ -19,7 +19,7 @@ const RTL_LANG_CODES = [
  * @param localeCode - 语言代码，如 'zh-CN', 'en-US'
  * @returns 'rtl' 或 'ltr'
  */
-export function getPageDir(localeCode: string): "rtl" | "ltr" {
+function getPageDir(localeCode: string): "rtl" | "ltr" {
   const parts = localeCode.split("-");
   const twoLettersLangCode = parts[0]?.toLowerCase() ?? "";
   const isRTLLang = RTL_LANG_CODES.includes(twoLettersLangCode);
@@ -54,7 +54,7 @@ export function getLocAttributes(locale: string): {
  * @param locale - 原始语言代码
  * @returns 标准化后的语言代码
  */
-export function normalizeLocale(locale: string): Locale {
+function normalizeLocale(locale: string): Locale {
   // 标准化格式：将下划线替换为连字符，转换为小写
   const normalized = locale.toLowerCase().replace("_", "-");
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography, Button, alpha, useTheme } from "@mui/material";
+import { Typography, Button, Box, alpha, useTheme } from "@mui/material";
 import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -23,8 +23,8 @@ export const ImageErrorDisplay: React.FC<ImageErrorDisplayProps> = ({ imgSrc, on
   const displaySrc = trimmedSrc.length > 0 ? imgSrc : "未知图片路径";
 
   return (
-    <div
-      style={{
+    <Box
+      sx={{
         position: "relative",
         margin: "1em 0",
         border: `1px dashed ${theme.palette.error.main}`,
@@ -70,6 +70,6 @@ export const ImageErrorDisplay: React.FC<ImageErrorDisplayProps> = ({ imgSrc, on
       >
         重试加载
       </Button>
-    </div>
+    </Box>
   );
 };

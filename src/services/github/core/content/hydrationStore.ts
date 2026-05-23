@@ -6,9 +6,9 @@ import type {
   InitialContentFileEntry,
   InitialContentHydrationPayload,
 } from "@/types";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 
-import { filterAndNormalizeGitHubContents } from "../../schemas";
+import { filterAndNormalizeGitHubContents } from "../../schemas/dataTransformers";
 import { storeDirectoryContents, storeFileContent } from "./cacheState";
 import { normalizeDirectoryPath, normalizeFilePath, escapeRegExp } from "./pathUtils";
 
@@ -51,7 +51,7 @@ const makeFileStoreKey = (branch: string, path: string): FileStoreKey =>
   `${branch}::file::${normalizeFilePath(path)}`;
 
 const isHydrationActiveForBranch = (branch: string): boolean =>
-  initialHydrationMeta !== null && initialHydrationMeta.branch === branch;
+  initialHydrationMeta?.branch === branch;
 
 const isReadmePath = (filePath: string): boolean => {
   const filename = filePath.split("/").pop()?.toLowerCase() ?? "";

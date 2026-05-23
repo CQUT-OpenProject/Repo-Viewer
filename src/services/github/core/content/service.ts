@@ -1,20 +1,21 @@
 import axios from "axios";
 
 import type { GitHubContent, InitialContentHydrationPayload } from "@/types";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { createAbortError, isAbortError } from "@/utils/network/abort";
 
 import { RequestBatcher } from "../../RequestBatcher";
-import { getForceServerProxy, shouldUseServerAPI } from "../../config";
+import { getForceServerProxy, shouldUseServerAPI } from "../../config/ProxyForceManager";
+import { safeValidateGitHubContentsResponse } from "../../schemas/apiSchemas";
 import {
-  safeValidateGitHubContentsResponse,
   filterAndNormalizeGitHubContents,
   transformGitHubContentsResponse,
   validateGitHubContentsArray,
-} from "../../schemas";
+} from "../../schemas/dataTransformers";
 import { getAuthHeaders } from "../Auth";
 import { getApiUrl, getCurrentBranch } from "../Config";
-import { getCurrentProxyService, ProxyUrlTransformer } from "../../proxy";
+import { getCurrentProxyService } from "../../proxy/ProxyService";
+import { ProxyUrlTransformer } from "../../proxy/ProxyUrlTransformer";
 import {
   ensureCacheInitialized,
   getCachedDirectoryContents,

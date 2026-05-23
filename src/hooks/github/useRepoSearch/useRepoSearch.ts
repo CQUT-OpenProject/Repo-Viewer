@@ -15,7 +15,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { GitHub } from "@/services/github";
 import { SearchIndexError, SearchIndexErrorCode } from "@/services/github/core/searchIndex";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { isAbortError } from "@/utils/network/abort";
 import { requestManager } from "@/utils/request/requestManager";
 import type { GitHubContent } from "@/types";

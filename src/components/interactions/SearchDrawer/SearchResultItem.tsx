@@ -24,6 +24,27 @@ import { useI18n } from "@/contexts/I18nContext";
 import React from "react";
 import type { CSSProperties } from "react";
 
+interface HighlightPart {
+  text: string;
+  highlight: boolean;
+}
+
+interface KeyedHighlightPart extends HighlightPart {
+  key: string;
+}
+
+const withStableHighlightKeys = (parts: HighlightPart[], prefix: string): KeyedHighlightPart[] => {
+  let offset = 0;
+  return parts.map((part) => {
+    const start = offset;
+    offset += part.text.length;
+    return {
+      ...part,
+      key: `${prefix}-${part.highlight ? "hit" : "text"}-${start}-${offset}`,
+    };
+  });
+};
+
 /**
  * 搜索结果项组件属性接口
  */
@@ -70,7 +91,10 @@ export const SearchResultItem: React.FC<SearchResultItemProps> = ({
 }) => {
   const { t } = useI18n();
 
-  const pathParts = highlightKeyword(item.path, keyword, keywordLower);
+  const pathParts = withStableHighlightKeys(
+    highlightKeyword(item.path, keyword, keywordLower),
+    "path",
+  );
   const githubUrl = resolveItemHtmlUrl(item);
 
   const snippet =
@@ -79,7 +103,7 @@ export const SearchResultItem: React.FC<SearchResultItemProps> = ({
       : undefined;
   const snippetParts =
     snippet !== undefined && snippet.length > 0
-      ? highlightKeywords(snippet, keyword, highlightRegex)
+      ? withStableHighlightKeys(highlightKeywords(snippet, keyword, highlightRegex), "snippet")
       : null;
 
   const listItemProps = {
@@ -131,11 +155,11 @@ export const SearchResultItem: React.FC<SearchResultItemProps> = ({
             secondary={
               <Box component="span">
                 <Box component="span">
-                  {pathParts.map((part: { text: string; highlight: boolean }, idx: number) =>
+                  {pathParts.map((part) =>
                     part.highlight ? (
                       <Box
                         component="span"
-                        key={idx}
+                        key={part.key}
                         sx={{
                           color: (theme) => theme.palette.primary.main,
                           fontWeight: 600,
@@ -144,7 +168,7 @@ export const SearchResultItem: React.FC<SearchResultItemProps> = ({
                         {part.text}
                       </Box>
                     ) : (
-                      <Box component="span" key={idx}>
+                      <Box component="span" key={part.key}>
                         {part.text}
                       </Box>
                     ),
@@ -152,11 +176,11 @@ export const SearchResultItem: React.FC<SearchResultItemProps> = ({
                 </Box>
                 {snippetParts !== null && snippetParts.length > 0 && (
                   <Box component="span" display="block" mt={0.5}>
-                    {snippetParts.map((part: { text: string; highlight: boolean }, idx: number) =>
+                    {snippetParts.map((part) =>
                       part.highlight ? (
                         <Box
                           component="span"
-                          key={idx}
+                          key={part.key}
                           sx={{
                             color: (theme) => theme.palette.primary.main,
                             fontWeight: 600,
@@ -165,7 +189,7 @@ export const SearchResultItem: React.FC<SearchResultItemProps> = ({
                           {part.text}
                         </Box>
                       ) : (
-                        <Box component="span" key={idx}>
+                        <Box component="span" key={part.key}>
                           {part.text}
                         </Box>
                       ),

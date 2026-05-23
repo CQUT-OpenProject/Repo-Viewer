@@ -2,7 +2,7 @@ import { createLazyPreviewComponent } from "../core/createLazyPreviewComponent";
 import type { ExtendedMarkdownPreviewProps } from "../../../components/preview/markdown/MarkdownPreview";
 import type { ImagePreviewProps } from "../../../components/preview/image/types";
 import type { TextPreviewProps } from "../../../components/preview/text/types";
-import { MarkdownPreviewSkeleton } from "../../../components/ui/skeletons";
+import { MarkdownPreviewSkeleton } from "../../../components/ui/skeletons/MarkdownPreviewSkeleton";
 
 /**
  * 懒加载Markdown预览组件

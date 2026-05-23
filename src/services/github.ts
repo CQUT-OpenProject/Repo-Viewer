@@ -5,11 +5,11 @@
  */
 
 // 导入各个服务模块
-import * as ContentServiceModule from "./github/core/content";
+import * as ContentServiceModule from "./github/core/content/service";
 import * as AuthModule from "./github/core/Auth";
 import * as ConfigModule from "./github/core/Config";
 import { getSearchIndexConfig } from "@/config";
-import { CacheManager as CacheManagerClass } from "./github/cache";
+import { CacheManager as CacheManagerClass } from "./github/cache/CacheManager";
 import { GitHubTokenManager } from "./github/TokenManager";
 import {
   getProxiedUrl as proxyGetProxiedUrl,
@@ -19,7 +19,7 @@ import {
   resetFailedProxyServices as proxyResetFailedProxyServices,
   getProxyHealthStats as proxyGetProxyHealthStats,
   transformImageUrl as proxyTransformImageUrl,
-} from "./github/proxy";
+} from "./github/proxy/ProxyService";
 import { RequestBatcher as RequestBatcherClass } from "./github/RequestBatcher";
 
 type SearchServiceModule = typeof import("./github/core/search");

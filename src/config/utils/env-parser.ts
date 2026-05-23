@@ -18,7 +18,7 @@ const normalizeString = (value: unknown): string | undefined => {
  * @param value - 字符串值
  * @returns 如果值为'true'返回true，否则返回false
  */
-export const parseBoolean = (value: string | undefined): boolean => value === "true";
+const parseBoolean = (value: string | undefined): boolean => value === "true";
 
 /**
  * 解析字符串数组
@@ -28,7 +28,7 @@ export const parseBoolean = (value: string | undefined): boolean => value === "t
  * @param value - 逗号分隔的字符串
  * @returns 解析后的字符串数组
  */
-export const parseStringArray = (value: string | undefined): string[] => {
+const parseStringArray = (value: string | undefined): string[] => {
   const normalized = normalizeString(value);
   if (normalized === undefined) {
     return [];
@@ -52,7 +52,7 @@ interface ParseIntegerOptions {
  * @param options - 附加的最小/最大值约束
  * @returns 解析后的整数值
  */
-export const parseInteger = (
+const parseInteger = (
   value: string | undefined,
   fallback: number,
   options: ParseIntegerOptions = {},
@@ -87,7 +87,7 @@ export const parseInteger = (
  * @param token - 待验证的token
  * @returns 如果是有效token返回true，否则返回false
  */
-export const validateToken = (token: unknown): token is string => {
+const validateToken = (token: unknown): token is string => {
   const normalized = normalizeString(token);
   if (normalized === undefined) {
     return false;

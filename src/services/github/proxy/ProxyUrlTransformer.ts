@@ -1,4 +1,4 @@
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { getGithubConfig, getRuntimeConfig } from "@/config";
 import { getCurrentBranch } from "../core/Config";
 

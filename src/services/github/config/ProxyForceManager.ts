@@ -1,5 +1,5 @@
 import { getConfig, getAccessConfig, getRuntimeConfig, configManager } from "@/config";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 
 // 代理强制模式配置管理器，统一管理所有代理相关的配置逻辑
 // 内部状态变量

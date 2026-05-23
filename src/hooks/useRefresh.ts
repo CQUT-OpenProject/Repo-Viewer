@@ -11,7 +11,7 @@
 import { useRef, useEffect } from "react";
 import { useContentContext } from "@/contexts/unified";
 import { removeLatexElements, restoreLatexElements } from "@/utils/rendering/latexOptimizer";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { useThemeTransitionFlag } from "@/hooks/useThemeTransition";
 
 /** 最小动画持续时间（毫秒） */

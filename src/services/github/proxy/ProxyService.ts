@@ -1,4 +1,4 @@
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { getProxyConfig, getRuntimeConfig } from "@/config";
 import { USE_TOKEN_MODE, PROXY_SERVICES } from "./ProxyConfig";
 import { proxyHealthManager } from "./ProxyHealthManager";

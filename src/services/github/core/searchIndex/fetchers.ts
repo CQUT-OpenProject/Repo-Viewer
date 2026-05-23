@@ -8,14 +8,14 @@
  */
 
 import { getSearchIndexConfig } from "@/config";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { buildAbsoluteAppUrl } from "@/utils/routing/basePath";
 
 import {
   safeValidateSearchIndexManifest,
   type SearchIndexManifest,
   type SearchIndexBranchEntry,
-} from "../../schemas";
+} from "../../schemas/searchIndexSchemas";
 import {
   clearCaches,
   getManifestCache,

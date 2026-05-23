@@ -4,7 +4,7 @@
  * 提供统一的错误处理和恢复策略。
  */
 
-import { ErrorManager } from "./index";
+import { ErrorManager } from "./core/ErrorManager";
 import { logger } from "../logging/logger";
 import { ErrorCategory, type AppError } from "@/types/errors";
 

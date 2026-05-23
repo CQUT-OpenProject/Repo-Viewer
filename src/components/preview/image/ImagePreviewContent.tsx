@@ -9,14 +9,12 @@ import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { ImagePreviewSkeleton } from "@/components/ui/skeletons";
 import ImageToolbar from "./ImageToolbar";
 import type { ImagePreviewContentProps } from "./types";
-import {
-  useAspectRatioTracker,
-  useContainerSize,
-  useDesktopNavigation,
-  useTouchNavigation,
-  useKeyboardNavigation,
-  useStageMetrics,
-} from "./hooks";
+import { useAspectRatioTracker } from "./hooks/useAspectRatioTracker";
+import { useContainerSize } from "./hooks/useContainerSize";
+import { useDesktopNavigation } from "./hooks/useDesktopNavigation";
+import { useTouchNavigation } from "./hooks/useTouchNavigation";
+import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
+import { useStageMetrics } from "./hooks/useStageMetrics";
 import { useI18n } from "@/contexts/I18nContext";
 
 /**

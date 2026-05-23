@@ -17,7 +17,8 @@ import {
   Download as DownloadIcon,
   Cancel as CancelIcon,
 } from "@mui/icons-material";
-import { logger, theme as themeUtils } from "@/utils";
+import { createG3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
+import { logger } from "@/utils/logging/logger";
 import { fileExtensionIcons } from "@/utils/files/fileHelpers";
 import type { GitHubContent } from "@/types";
 import { getFeaturesConfig } from "@/config";
@@ -28,6 +29,7 @@ const HOMEPAGE_FILTER_ENABLED = featuresConfig.homepageFilter.enabled;
 const HOMEPAGE_ALLOWED_FOLDERS = featuresConfig.homepageFilter.allowedFolders;
 const HIDE_MAIN_FOLDER_DOWNLOAD = featuresConfig.hideDownload.enabled;
 const HIDE_DOWNLOAD_FOLDERS = featuresConfig.hideDownload.hiddenFolders;
+const EMPTY_CONTENTS: GitHubContent[] = [];
 
 /**
  * 文件列表项组件属性接口
@@ -63,7 +65,7 @@ const FileListItem: React.FC<FileListItemProps> = ({
   handleFolderDownloadClick,
   handleCancelDownload,
   currentPath,
-  contents = [], // 提供默认空数组值
+  contents = EMPTY_CONTENTS,
   isHighlighted = false,
   isVisible = true, // 默认可见
 }) => {
@@ -76,13 +78,8 @@ const FileListItem: React.FC<FileListItemProps> = ({
   const isFolderDownloading = downloadingFolderPath === item.path;
   const isItemDownloading = isDownloading || isFolderDownloading;
 
-  // 当下载状态改变时重置悬停计数
-  React.useEffect(() => {
-    if (!isItemDownloading) {
-      setHoverCount(0);
-      setIsHoveringDownload(false);
-    }
-  }, [isItemDownloading]);
+  const displayHoverCount = isItemDownloading ? hoverCount : 0;
+  const displayIsHoveringDownload = isItemDownloading ? isHoveringDownload : false;
 
   const IconComponent = React.useMemo(() => {
     if (item.type === "dir") {
@@ -199,7 +196,7 @@ const FileListItem: React.FC<FileListItemProps> = ({
           <Tooltip
             title={
               isItemDownloading
-                ? hoverCount >= 2
+                ? displayHoverCount >= 2
                   ? t("ui.download.cancel")
                   : ""
                 : item.type === "file"
@@ -216,7 +213,7 @@ const FileListItem: React.FC<FileListItemProps> = ({
                   bgcolor: "background.paper",
                   color: "text.primary",
                   boxShadow: 3,
-                  borderRadius: themeUtils.createG3BorderRadius(themeUtils.G3_PRESETS.tooltip),
+                  borderRadius: createG3BorderRadius(G3_PRESETS.tooltip),
                   p: 1.5,
                   border: "1px solid",
                   borderColor: "divider",
@@ -264,7 +261,7 @@ const FileListItem: React.FC<FileListItemProps> = ({
                 }
                 onClick={
                   isItemDownloading
-                    ? isHoveringDownload
+                    ? displayIsHoveringDownload
                       ? onCancelDownload
                       : undefined
                     : item.type === "file"
@@ -304,13 +301,13 @@ const FileListItem: React.FC<FileListItemProps> = ({
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        opacity: isHoveringDownload ? 1 : 0,
+                        opacity: displayIsHoveringDownload ? 1 : 0,
                         transition: "opacity 0.2s ease-in-out",
-                        backgroundColor: isHoveringDownload
+                        backgroundColor: displayIsHoveringDownload
                           ? alpha(theme.palette.error.main, 0.1)
                           : "transparent",
                         borderRadius: "50%",
-                        pointerEvents: isHoveringDownload ? "auto" : "none",
+                        pointerEvents: displayIsHoveringDownload ? "auto" : "none",
                       }}
                       data-oid="g-4-y6c"
                     >
@@ -319,7 +316,7 @@ const FileListItem: React.FC<FileListItemProps> = ({
                         sx={{
                           fontSize: "0.8rem",
                           color: "error.main",
-                          transform: isHoveringDownload ? "scale(1)" : "scale(0.8)",
+                          transform: displayIsHoveringDownload ? "scale(1)" : "scale(0.8)",
                           transition: "transform 0.2s ease-in-out",
                         }}
                         data-oid="6_m3uc-"
@@ -343,7 +340,7 @@ const FileListItem: React.FC<FileListItemProps> = ({
         disableTouchRipple={disableTouchRipple}
         {...(isVisible ? {} : { tabIndex: -1 })}
         sx={{
-          borderRadius: themeUtils.createG3BorderRadius(themeUtils.G3_PRESETS.fileListItem),
+          borderRadius: createG3BorderRadius(G3_PRESETS.fileListItem),
           transition:
             "transform 0.1s ease-in-out, background-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out",
           // 高亮状态样式（应用悬停效果）

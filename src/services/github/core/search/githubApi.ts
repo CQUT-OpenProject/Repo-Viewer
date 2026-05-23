@@ -10,15 +10,15 @@
 import axios from "axios";
 
 import type { GitHubContent } from "@/types";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 
 import { RequestBatcher } from "../../RequestBatcher";
-import { shouldUseServerAPI } from "../../config";
+import { shouldUseServerAPI } from "../../config/ProxyForceManager";
+import { safeValidateGitHubSearchResponse } from "../../schemas/apiSchemas";
 import {
-  safeValidateGitHubSearchResponse,
   filterAndNormalizeGitHubContents,
   transformGitHubSearchResponse,
-} from "../../schemas";
+} from "../../schemas/dataTransformers";
 import { getAuthHeaders } from "../Auth";
 import { GITHUB_API_BASE, GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "../Config";
 

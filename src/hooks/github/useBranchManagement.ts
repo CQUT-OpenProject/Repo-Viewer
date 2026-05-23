@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { GitHub } from "@/services/github";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { getBranchFromUrl } from "@/utils/routing/urlManager";
 import type { BranchManagementState } from "./types";
 

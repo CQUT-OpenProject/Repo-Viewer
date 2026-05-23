@@ -1,5 +1,5 @@
 import { GitHub } from "@/services/github";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import type { RepoSearchItem } from "@/hooks/github/useRepoSearch";
 import type { GitHubContent } from "@/types";
 

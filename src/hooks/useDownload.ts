@@ -11,7 +11,7 @@ import { useReducer, useRef } from "react";
 import { saveAs } from "file-saver";
 import type { DownloadState, DownloadAction, GitHubContent } from "@/types";
 import { GitHub } from "@/services/github";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { isAbortError } from "@/utils/network/abort";
 import { requestManager } from "@/utils/request/requestManager";
 import {

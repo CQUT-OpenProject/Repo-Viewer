@@ -1,4 +1,4 @@
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { isAbortError } from "@/utils/network/abort";
 import { createTimeWheel } from "@/utils/data-structures/TimeWheel";
 import type { TimeWheel } from "@/utils/data-structures/TimeWheel";

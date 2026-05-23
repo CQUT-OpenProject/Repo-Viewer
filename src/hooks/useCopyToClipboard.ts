@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 
 /**
  * 复制成功后重置状态的默认延迟时间（毫秒）
@@ -58,21 +58,20 @@ export function useCopyToClipboard(
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current !== null) {
-        window.clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, []);
-
-  const reset = () => {
-    setCopied(false);
+  const clearResetTimer = (): void => {
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);
       timerRef.current = null;
     }
+  };
+
+  useEffect(() => {
+    return clearResetTimer;
+  }, []);
+
+  const reset = () => {
+    setCopied(false);
+    clearResetTimer();
   };
 
   const copy = async (text: string): Promise<boolean> => {
@@ -94,9 +93,7 @@ export function useCopyToClipboard(
       await clipboard.writeText(text);
 
       setCopied(true);
-      if (timerRef.current !== null) {
-        window.clearTimeout(timerRef.current);
-      }
+      clearResetTimer();
       timerRef.current = window.setTimeout(() => {
         setCopied(false);
         timerRef.current = null;

@@ -16,7 +16,7 @@ vi.mock("axios", () => ({
   },
 }));
 
-vi.mock("@/utils", () => ({
+vi.mock("@/utils/logging/logger", () => ({
   logger: {
     debug: vi.fn(),
     info: vi.fn(),
@@ -25,7 +25,7 @@ vi.mock("@/utils", () => ({
   },
 }));
 
-vi.mock("../../config", () => ({
+vi.mock("../../config/ProxyForceManager", () => ({
   getForceServerProxy: vi.fn(() => false),
   shouldUseServerAPI: vi.fn(() => false),
 }));
@@ -40,15 +40,21 @@ vi.mock("../Config", () => ({
   getCurrentBranch: vi.fn(() => "main"),
 }));
 
-vi.mock("../../schemas", () => ({
+vi.mock("../../schemas/apiSchemas", () => ({
   safeValidateGitHubContentsResponse: vi.fn((data: unknown) => ({ success: true, data })),
+}));
+
+vi.mock("../../schemas/dataTransformers", () => ({
   filterAndNormalizeGitHubContents: vi.fn((data: unknown) => data),
   transformGitHubContentsResponse: vi.fn((data: unknown) => data),
   validateGitHubContentsArray: vi.fn(() => ({ isValid: true, invalidItems: [] })),
 }));
 
-vi.mock("../../proxy", () => ({
+vi.mock("../../proxy/ProxyService", () => ({
   getCurrentProxyService: getCurrentProxyServiceMock,
+}));
+
+vi.mock("../../proxy/ProxyUrlTransformer", () => ({
   ProxyUrlTransformer: {
     applyProxyToUrl: applyProxyToUrlMock,
   },
@@ -78,7 +84,7 @@ if (typeof window === "undefined") {
   vi.stubGlobal("window", globalThis);
 }
 
-import { getForceServerProxy, shouldUseServerAPI } from "../../config";
+import { getForceServerProxy, shouldUseServerAPI } from "../../config/ProxyForceManager";
 const { clearBatcherCache, getContents, getFileContent } = await import("./service");
 
 describe("content service abort handling", () => {

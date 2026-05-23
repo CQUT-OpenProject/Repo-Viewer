@@ -92,23 +92,3 @@ function setupUnhandledRejectionHandler(errorManager: typeof ErrorManager): void
     }, PROMISE_REJECTION_THROTTLE_MS);
   });
 }
-
-/**
- * 清理全局错误处理器
- *
- * 用于测试或需要重置错误处理器的场景。
- */
-export function cleanupGlobalErrorHandlers(): void {
-  if (errorThrottleTimer !== null) {
-    clearTimeout(errorThrottleTimer);
-    errorThrottleTimer = null;
-  }
-
-  if (promiseRejectionThrottleTimer !== null) {
-    clearTimeout(promiseRejectionThrottleTimer);
-    promiseRejectionThrottleTimer = null;
-  }
-
-  errorThrottled = false;
-  promiseRejectionThrottled = false;
-}

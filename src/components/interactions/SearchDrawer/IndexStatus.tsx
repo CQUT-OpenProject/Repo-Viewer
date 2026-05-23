@@ -182,8 +182,8 @@ export const IndexStatus: React.FC<IndexStatusProps> = ({
               </span>
             </Tooltip>
           </Box>
-          {scenario.description.map((line, index) => (
-            <Typography key={index} variant={isSmallScreen ? "caption" : "body2"}>
+          {scenario.description.map((line) => (
+            <Typography key={line} variant={isSmallScreen ? "caption" : "body2"}>
               {line}
             </Typography>
           ))}

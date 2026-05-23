@@ -1,6 +1,6 @@
 import { GitHub } from "@/services/github";
 import type { GitHubContent } from "@/types";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 
 const GITHUB_USER_CONTENT_PATH_REGEX = /githubusercontent\.com\/[^/]+\/[^/]+\/[^/]+\/(.+)/;
 

@@ -25,7 +25,7 @@ export interface AppEvents {
  * @template T - 事件映射类型
  */
 // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-export class TypedEventEmitter<T extends Record<string, any>> {
+class TypedEventEmitter<T extends Record<string, any>> {
   private events = new Map<keyof T, Set<(data: T[keyof T]) => void>>();
 
   /**

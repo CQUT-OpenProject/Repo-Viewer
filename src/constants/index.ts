@@ -7,7 +7,7 @@
  * @module constants
  */
 
-import { getSiteConfig } from "../config";
+import { getSiteConfig } from "../config/utils/config-accessors";
 
 /**
  * 网站标题

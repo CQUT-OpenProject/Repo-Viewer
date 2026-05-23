@@ -1,4 +1,4 @@
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import type { CacheConfig, CacheStats, CacheItemMeta } from "./CacheTypes";
 import { calculateTTL, estimateSize } from "./CacheUtils";
 import {

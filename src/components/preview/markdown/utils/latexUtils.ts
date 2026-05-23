@@ -1,8 +1,8 @@
 import React from "react";
 import type { PropsWithChildren, ReactElement, HTMLAttributes, ClassAttributes } from "react";
-import { MarkdownCodeBlock } from "../components";
+import { MarkdownCodeBlock } from "../components/MarkdownCodeBlock";
 import { countLatexElements } from "@/utils/rendering/latexOptimizer";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 
 /**
  * 检测LaTeX公式数量

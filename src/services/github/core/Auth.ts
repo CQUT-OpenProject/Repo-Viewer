@@ -1,7 +1,7 @@
 import { GitHubTokenManager } from "../TokenManager";
-import { ErrorManager } from "@/utils/error";
+import { ErrorManager } from "@/utils/error/core/ErrorManager";
 import type { GitHubError } from "@/types/errors";
-import { shouldUseServerAPI } from "../config";
+import { shouldUseServerAPI } from "../config/ProxyForceManager";
 
 // GitHub认证管理器
 const tokenManager = new GitHubTokenManager();

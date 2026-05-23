@@ -1,5 +1,5 @@
 import { GitHub } from "@/services/github";
-import { logger } from "../index";
+import { logger } from "../logging/logger";
 import { buildAppPath, stripBasePath } from "./basePath";
 
 /**

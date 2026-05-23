@@ -8,7 +8,7 @@ import { FILE_ITEM_CONFIG, LIST_HEIGHT_CONFIG } from "./utils/fileListConfig";
 import { calculateLayoutMetrics, getListPadding, getRowMetrics } from "./utils/fileListLayout";
 import type { VirtualListItemData, FileListLayoutMetrics } from "./utils/types";
 import type { GitHubContent } from "@/types";
-import { theme } from "@/utils";
+import { responsiveG3Styles } from "@/theme/g3Curves";
 import { useOptimizedScroll } from "@/hooks/useScroll";
 
 /**
@@ -65,6 +65,13 @@ const FileList: React.FC<FileListProps> = ({
   const highlightTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const visibleAlphabetIndex = showAlphabetIndex && !isPreviewActive;
 
+  const clearHighlightTimeout = React.useCallback((): void => {
+    if (highlightTimeoutRef.current !== null) {
+      clearTimeout(highlightTimeoutRef.current);
+      highlightTimeoutRef.current = null;
+    }
+  }, []);
+
   // 计算每个文件项的高度（包括间距）
   // 这个计算需要与 FileListItem 的实际高度保持一致
   const { rowHeight, rowPaddingBottom } = useMemo(() => {
@@ -84,24 +91,19 @@ const FileList: React.FC<FileListProps> = ({
 
       setHighlightedIndex(index);
 
-      if (highlightTimeoutRef.current !== null) {
-        clearTimeout(highlightTimeoutRef.current);
-      }
+      clearHighlightTimeout();
 
       highlightTimeoutRef.current = setTimeout(() => {
         setHighlightedIndex(null);
+        highlightTimeoutRef.current = null;
       }, 1500);
     }
   };
 
   // 清理定时器
   React.useEffect(() => {
-    return () => {
-      if (highlightTimeoutRef.current !== null) {
-        clearTimeout(highlightTimeoutRef.current);
-      }
-    };
-  }, []);
+    return clearHighlightTimeout;
+  }, [clearHighlightTimeout]);
 
   // 计算悬停效果所需的额外空间
   const hoverExtraSpace = useMemo((): number => {
@@ -245,7 +247,7 @@ const FileList: React.FC<FileListProps> = ({
   const containerStyle = {
     width: "100%",
     bgcolor: "background.paper",
-    borderRadius: theme.responsiveG3Styles.fileListContainer(isSmallScreen),
+    borderRadius: responsiveG3Styles.fileListContainer(isSmallScreen),
     mb: 2,
     overflow: "hidden",
     boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",

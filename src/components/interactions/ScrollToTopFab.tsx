@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Fab, useTheme, useMediaQuery, Zoom, alpha, Tooltip } from "@mui/material";
 import { KeyboardArrowUp as ArrowUpIcon } from "@mui/icons-material";
 import { useI18n } from "@/contexts/I18nContext";
-import { scroll } from "@/utils";
+import { getScrollTop, scrollToTop } from "@/utils/scroll/scrollUtils";
 
 /**
  * 返回顶部浮动按钮组件属性接口
@@ -19,6 +19,8 @@ interface ScrollToTopFabProps {
   showOnlyWithContent?: boolean;
 }
 
+const EMPTY_SX: object = {};
+
 /**
  * 返回顶部浮动按钮组件
  *
@@ -28,7 +30,7 @@ interface ScrollToTopFabProps {
 const ScrollToTopFab: FC<ScrollToTopFabProps> = ({
   threshold = 200,
   scrollDuration = 800,
-  sx = {},
+  sx = EMPTY_SX,
   showOnlyWithContent = true,
 }) => {
   const theme = useTheme();
@@ -39,7 +41,7 @@ const ScrollToTopFab: FC<ScrollToTopFabProps> = ({
       return false;
     }
 
-    const scrollTop = scroll.getScrollTop();
+    const scrollTop = getScrollTop();
     const hasContent = showOnlyWithContent ? document.body.scrollHeight > window.innerHeight : true;
 
     return scrollTop > threshold && hasContent;
@@ -55,7 +57,7 @@ const ScrollToTopFab: FC<ScrollToTopFabProps> = ({
     }
 
     setIsScrolling(true);
-    void scroll.scrollToTop({ duration: scrollDuration }).finally(() => {
+    void scrollToTop({ duration: scrollDuration }).finally(() => {
       setIsScrolling(false);
     });
   };
@@ -73,7 +75,7 @@ const ScrollToTopFab: FC<ScrollToTopFabProps> = ({
         return;
       }
 
-      const scrollTop = scroll.getScrollTop();
+      const scrollTop = getScrollTop();
       const hasContent = showOnlyWithContent
         ? document.body.scrollHeight > window.innerHeight
         : true;

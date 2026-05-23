@@ -7,7 +7,7 @@ import { THEME_COLORS, type ThemeColorConfig } from "./palettes/themeColors";
  *
  * @returns 主题索引
  */
-export function getThemeIndexByDate(): number {
+function getThemeIndexByDate(): number {
   const today = new Date();
   const dayCount = Math.floor(today.getTime() / (24 * 60 * 60 * 1000));
   return dayCount % THEME_COLORS.length;

@@ -8,13 +8,13 @@ import {
 } from "@mui/icons-material";
 import { ColorModeContext } from "@/contexts/colorModeContext";
 import { useRefresh } from "@/hooks/useRefresh";
-import { GitHub } from "@/services/github";
 import axios from "axios";
 import { getGithubConfig } from "@/config";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { useContentContext, usePreviewContext } from "@/contexts/unified";
 import { useI18n } from "@/contexts/I18nContext";
-import { getPreviewFromUrl } from "@/utils/routing/urlManager";
+import { useRefreshSync } from "./hooks/useRefreshSync";
+import { buildGitHubUrl } from "./utils/githubUrl";
 
 // 懒加载搜索组件
 const SearchDrawer = lazy(async () => import("@/components/interactions/SearchDrawer"));
@@ -48,13 +48,6 @@ interface ToolbarButtonsProps {
   isSmallScreen?: boolean;
 }
 
-interface RefreshSessionState {
-  version: number;
-  branch?: string;
-  path?: string;
-  timestamp: number;
-}
-
 /**
  * 工具栏按钮组件
  *
@@ -69,13 +62,15 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
   const handleRefresh = useRefresh();
   const [searchDrawerOpen, setSearchDrawerOpen] = useState<boolean>(false);
   const { t } = useI18n();
-  const [repoInfo, setRepoInfo] = useState<RepoInfo>(() => {
-    const githubConfig = getGithubConfig();
-    return {
-      repoOwner: githubConfig.repoOwner,
-      repoName: githubConfig.repoName,
-    };
-  });
+  const repoInfoRef = useRef<RepoInfo>(
+    (() => {
+      const githubConfig = getGithubConfig();
+      return {
+        repoOwner: githubConfig.repoOwner,
+        repoName: githubConfig.repoName,
+      };
+    })(),
+  );
   const {
     currentBranch,
     defaultBranch,
@@ -87,198 +82,14 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
 
   const { previewState, selectFile, closePreview } = usePreviewContext();
 
-  const BROWSER_REFRESH_FLAG = "repo-viewer:pending-refresh";
-  const refreshSyncHandledRef = useRef<boolean>(false);
-  const storedRefreshStateRef = useRef<RefreshSessionState | null>(null);
-  const branchValueRef = useRef(currentBranch);
-  const pathValueRef = useRef(currentPath);
-  branchValueRef.current = currentBranch;
-  pathValueRef.current = currentPath;
-
-  useEffect(() => {
-    const handleBeforeUnload = (): void => {
-      try {
-        const state: RefreshSessionState = {
-          version: 1,
-          branch: branchValueRef.current,
-          path: pathValueRef.current,
-          timestamp: Date.now(),
-        };
-        sessionStorage.setItem(BROWSER_REFRESH_FLAG, JSON.stringify(state));
-      } catch (error) {
-        logger.debug("无法在刷新前缓存状态标记", error);
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (refreshSyncHandledRef.current) {
-      return;
-    }
-
-    let isActive = true;
-
-    const readStoredRefreshState = (): RefreshSessionState | null => {
-      try {
-        const raw = sessionStorage.getItem(BROWSER_REFRESH_FLAG);
-        if (raw === null) {
-          return null;
-        }
-
-        if (raw === "1") {
-          return {
-            version: 0,
-            timestamp: Date.now(),
-          };
-        }
-
-        const parsed = JSON.parse(raw) as Partial<RefreshSessionState> | null;
-
-        if (parsed === null || typeof parsed !== "object") {
-          return null;
-        }
-
-        const state: RefreshSessionState = {
-          version: typeof parsed.version === "number" ? parsed.version : 0,
-          timestamp: typeof parsed.timestamp === "number" ? parsed.timestamp : Date.now(),
-        };
-
-        if (typeof parsed.branch === "string") {
-          state.branch = parsed.branch;
-        }
-
-        if (typeof parsed.path === "string") {
-          state.path = parsed.path;
-        }
-
-        return state;
-      } catch (error) {
-        logger.debug("解析刷新状态标记失败", error);
-        return null;
-      }
-    };
-
-    const isReloadNavigation = (): boolean => {
-      try {
-        const entries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
-        const navigationEntry = entries[0];
-
-        if (navigationEntry !== undefined) {
-          return navigationEntry.type === "reload";
-        }
-      } catch (error) {
-        logger.debug("检测浏览器刷新时发生错误", error);
-      }
-
-      return false;
-    };
-
-    const shouldTriggerRefresh = (): boolean => {
-      storedRefreshStateRef.current = readStoredRefreshState();
-
-      if (storedRefreshStateRef.current !== null) {
-        return true;
-      }
-
-      try {
-        if (sessionStorage.getItem(BROWSER_REFRESH_FLAG) === "1") {
-          return true;
-        }
-      } catch (error) {
-        logger.debug("读取刷新状态标记失败", error);
-      }
-
-      return isReloadNavigation();
-    };
-
-    if (!shouldTriggerRefresh()) {
-      return () => {
-        isActive = false;
-      };
-    }
-
-    refreshSyncHandledRef.current = true;
-
-    try {
-      sessionStorage.removeItem(BROWSER_REFRESH_FLAG);
-    } catch (error) {
-      logger.debug("移除刷新状态标记失败", error);
-    }
-
-    const applyStoredState = (): void => {
-      const storedState = storedRefreshStateRef.current;
-
-      if (storedState === null) {
-        return;
-      }
-
-      const targetBranch = typeof storedState.branch === "string" ? storedState.branch.trim() : "";
-      const targetPath = typeof storedState.path === "string" ? storedState.path : null;
-      let branchChanged = false;
-
-      if (targetBranch.length > 0 && targetBranch !== branchValueRef.current) {
-        setCurrentBranch(targetBranch);
-        branchChanged = true;
-      }
-
-      if (targetPath !== null) {
-        const restorePath = (): void => {
-          setCurrentPath(targetPath, "none");
-        };
-
-        if (branchChanged) {
-          window.setTimeout(restorePath, 0);
-        } else if (targetPath !== pathValueRef.current) {
-          restorePath();
-        }
-      }
-    };
-
-    applyStoredState();
-
-    const runRefresh = async (): Promise<void> => {
-      try {
-        await GitHub.Cache.clearCache();
-      } catch (error) {
-        logger.error("清除缓存失败:", error);
-      }
-
-      if (!isActive) {
-        return;
-      }
-
-      logger.info("检测到浏览器刷新，执行同步刷新逻辑");
-      handleRefresh();
-      void refreshBranches();
-    };
-
-    if (storedRefreshStateRef.current !== null) {
-      const schedule =
-        typeof window.requestAnimationFrame === "function"
-          ? window.requestAnimationFrame.bind(window)
-          : (callback: FrameRequestCallback): void => {
-              window.setTimeout(() => {
-                callback(performance.now());
-              }, 0);
-            };
-
-      schedule(() => {
-        void runRefresh();
-      });
-    } else {
-      void runRefresh();
-    }
-
-    return () => {
-      isActive = false;
-    };
-  }, [handleRefresh, refreshBranches, setCurrentBranch, setCurrentPath]);
+  useRefreshSync({
+    handleRefresh,
+    refreshBranches,
+    currentBranch,
+    currentPath,
+    setCurrentBranch,
+    setCurrentPath,
+  });
 
   // 在组件加载时获取仓库信息
   useEffect(() => {
@@ -294,7 +105,7 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
             typeof repoName === "string" &&
             repoName.length > 0
           ) {
-            setRepoInfo({ repoOwner, repoName });
+            repoInfoRef.current = { repoOwner, repoName };
           }
         }
       } catch (error) {
@@ -341,47 +152,8 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
 
   // 处理GitHub按钮点击
   const onGitHubClick = () => {
-    const { repoOwner, repoName } = repoInfo;
-
-    const activeBranch = currentBranch !== "" ? currentBranch : defaultBranch;
-    const encodedBranch = encodeURIComponent(activeBranch);
-
-    const encodeSegment = (segment: string): string => {
-      try {
-        return encodeURIComponent(decodeURIComponent(segment));
-      } catch (error) {
-        logger.debug("路径片段解码失败，使用原始片段", error);
-        return encodeURIComponent(segment);
-      }
-    };
-
-    const safePath = currentPath
-      .split("/")
-      .filter((segment) => segment.length > 0)
-      .map(encodeSegment)
-      .join("/");
-
-    let githubUrl = `https://github.com/${repoOwner}/${repoName}`;
-
-    const previewTarget = getPreviewFromUrl();
-    const hasPathname = safePath.length > 0;
-
-    if (typeof previewTarget === "string" && previewTarget.length > 0 && hasPathname) {
-      let decodedFileName = previewTarget;
-      try {
-        decodedFileName = decodeURIComponent(previewTarget);
-      } catch (error) {
-        logger.debug("预览文件名解码失败，使用原始值", error);
-      }
-      const safeFileName = encodeURIComponent(decodedFileName);
-      githubUrl += `/blob/${encodedBranch}/${safePath}/${safeFileName}`;
-    } else if (hasPathname) {
-      githubUrl += `/tree/${encodedBranch}/${safePath}`;
-    } else {
-      githubUrl += `/tree/${encodedBranch}`;
-    }
-
-    window.open(githubUrl, "_blank");
+    const url = buildGitHubUrl(repoInfoRef.current, currentBranch, defaultBranch, currentPath);
+    window.open(url, "_blank");
   };
 
   const openSearchDrawer = () => {

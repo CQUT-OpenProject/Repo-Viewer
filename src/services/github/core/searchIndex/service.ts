@@ -15,7 +15,7 @@
 
 import { getSearchIndexConfig } from "@/config";
 
-import type { SearchIndexManifest } from "../../schemas";
+import type { SearchIndexManifest } from "../../schemas/searchIndexSchemas";
 import {
   fetchManifest,
   invalidateSearchIndexCache as clearSearchIndexCache,

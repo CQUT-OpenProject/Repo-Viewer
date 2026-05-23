@@ -1,4 +1,4 @@
-import React, { useState, type ReactNode } from "react";
+import React, { useMemo, useState, type ReactNode } from "react";
 import { MetadataContext, type MetadataData, DEFAULT_METADATA } from "./context";
 
 /**
@@ -20,15 +20,15 @@ export const MetadataProvider: React.FC<MetadataProviderProps> = ({ children }) 
   const [ogImage, setOgImage] = useState<string>(DEFAULT_METADATA.ogImage);
 
   // 重置SEO数据到默认值
-  const resetMetadata = (): void => {
+  const resetMetadata = React.useCallback((): void => {
     setTitle(DEFAULT_METADATA.title);
     setDescription(DEFAULT_METADATA.description);
     setKeywords(DEFAULT_METADATA.keywords);
     setOgImage(DEFAULT_METADATA.ogImage);
-  };
+  }, []);
 
   // 批量更新SEO数据
-  const updateMetadata = (data: Partial<MetadataData>): void => {
+  const updateMetadata = React.useCallback((data: Partial<MetadataData>): void => {
     if (typeof data.title === "string") {
       setTitle(data.title);
     }
@@ -41,27 +41,27 @@ export const MetadataProvider: React.FC<MetadataProviderProps> = ({ children }) 
     if (typeof data.ogImage === "string") {
       setOgImage(data.ogImage);
     }
-  };
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({
+      title,
+      description,
+      keywords,
+      ogImage,
+      setTitle,
+      setDescription,
+      setKeywords,
+      setOgImage,
+      resetMetadata,
+      updateMetadata,
+    }),
+    [description, keywords, ogImage, resetMetadata, title, updateMetadata],
+  );
 
   return (
-    <MetadataContext.Provider
-      value={{
-        title,
-        description,
-        keywords,
-        ogImage,
-        setTitle,
-        setDescription,
-        setKeywords,
-        setOgImage,
-        resetMetadata,
-        updateMetadata,
-      }}
-      data-oid="2::o-n6"
-    >
+    <MetadataContext.Provider value={contextValue} data-oid="2::o-n6">
       {children}
     </MetadataContext.Provider>
   );
 };
-
-export default MetadataProvider;

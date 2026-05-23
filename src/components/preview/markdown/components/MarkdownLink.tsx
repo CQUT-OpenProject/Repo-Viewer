@@ -59,7 +59,7 @@ export const MarkdownLink: React.FC<MarkdownLinkProps> = ({
   const hasValidHref = resolvedHref.length > 0;
   const isExternal = isExternalLink(resolvedHref);
 
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleMarkdownLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // 如果是外部链接或没有内部链接回调，使用默认行为
     if (isExternal || onInternalLinkClick === undefined) {
       return;
@@ -71,24 +71,32 @@ export const MarkdownLink: React.FC<MarkdownLinkProps> = ({
     onInternalLinkClick(resolvedHref);
   };
 
-  // 对于外部链接，使用 target="_blank"
-  // 对于内部链接，不设置 target，通过 onClick 处理
-  const linkProps = isExternal
-    ? {
-        href: hasValidHref ? resolvedHref : undefined,
-        target: "_blank" as const,
-        rel: "noopener noreferrer",
-      }
-    : {
-        href: hasValidHref ? resolvedHref : undefined,
-        // 内部链接不设置 target，保持在当前页面
-      };
+  const shouldInterceptClick = hasValidHref && !isExternal && onInternalLinkClick !== undefined;
+
+  if (!hasValidHref) {
+    return (
+      <span
+        {...props}
+        style={{
+          color: theme.palette.primary.main,
+          textDecoration: "none",
+          cursor: "default",
+          ...style,
+        }}
+        data-oid="wswk6df"
+      >
+        {children}
+      </span>
+    );
+  }
 
   return (
     <a
       {...props}
-      {...linkProps}
-      onClick={handleClick}
+      href={resolvedHref}
+      target={isExternal ? "_blank" : undefined}
+      rel={isExternal ? "noopener noreferrer" : undefined}
+      onClick={shouldInterceptClick ? handleMarkdownLinkClick : undefined}
       style={{
         color: theme.palette.primary.main,
         textDecoration: "none",

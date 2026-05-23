@@ -49,7 +49,7 @@ export function getSortKey(name: string): string {
  * @returns 排序后的新数组
  */
 export function sortContentsByPinyin(contents: GitHubContent[]): GitHubContent[] {
-  return [...contents].sort((a, b) => {
+  return contents.toSorted((a, b) => {
     // 目录优先
     if (a.type !== b.type) {
       return a.type === "dir" ? -1 : 1;

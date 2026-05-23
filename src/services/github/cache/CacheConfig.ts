@@ -3,7 +3,7 @@ import type { CacheConfig } from "./CacheTypes";
 /**
  * 默认缓存配置
  */
-export const DEFAULT_CACHE_CONFIG: CacheConfig = {
+const DEFAULT_CACHE_CONFIG: CacheConfig = {
   defaultTTL: 5 * 60 * 1000,
   maxTTL: 60 * 60 * 1000,
   minTTL: 30 * 1000,

@@ -17,7 +17,7 @@ import type { ImageLoadingState } from "./utils/imageUtils";
 import { checkLatexCount, createLatexCodeHandler } from "./utils/latexUtils";
 import { MarkdownImage } from "./components/MarkdownImage";
 import { MarkdownLink } from "./components/MarkdownLink";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { MarkdownPreviewSkeleton } from "@/components/ui/skeletons";
 
 /**

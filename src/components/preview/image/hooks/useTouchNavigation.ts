@@ -1,10 +1,32 @@
-import { useState, useEffect } from "react";
+import { useReducer, useEffect } from "react";
 import type { TouchEvent } from "react";
 
 interface TouchStart {
   x: number;
   y: number;
   time: number;
+}
+
+interface TouchState {
+  touchStart: TouchStart | null;
+  dragOffset: number;
+  isDragging: boolean;
+}
+
+type TouchAction =
+  | { type: "TOUCH_START"; touchStart: TouchStart }
+  | { type: "DRAG"; offset: number }
+  | { type: "RESET" };
+
+function touchReducer(state: TouchState, action: TouchAction): TouchState {
+  switch (action.type) {
+    case "TOUCH_START":
+      return { ...state, touchStart: action.touchStart };
+    case "DRAG":
+      return { touchStart: state.touchStart, dragOffset: action.offset, isDragging: true };
+    case "RESET":
+      return { touchStart: null, dragOffset: 0, isDragging: false };
+  }
 }
 
 interface UseTouchNavigationOptions {
@@ -43,16 +65,16 @@ export function useTouchNavigation({
   onPrevious,
   onNext,
 }: UseTouchNavigationOptions): UseTouchNavigationReturn {
-  const [touchStart, setTouchStart] = useState<TouchStart | null>(null);
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+  const [touchState, dispatch] = useReducer(touchReducer, {
+    touchStart: null,
+    dragOffset: 0,
+    isDragging: false,
+  });
 
   // 图片切换时重置移动端拖动状态
   useEffect(() => {
     const rafId = window.requestAnimationFrame(() => {
-      setTouchStart(null);
-      setDragOffset(0);
-      setIsDragging(false);
+      dispatch({ type: "RESET" });
     });
 
     return () => {
@@ -68,16 +90,25 @@ export function useTouchNavigation({
 
     const touch = e.touches[0];
     if (touch !== undefined) {
-      setTouchStart({
-        x: touch.clientX,
-        y: touch.clientY,
-        time: Date.now(),
+      dispatch({
+        type: "TOUCH_START",
+        touchStart: {
+          x: touch.clientX,
+          y: touch.clientY,
+          time: Date.now(),
+        },
       });
     }
   };
 
   const handleTouchMove = (e: TouchEvent): void => {
-    if (touchStart === null || !isSmallScreen || currentScale !== 1 || hasError || loading) {
+    if (
+      touchState.touchStart === null ||
+      !isSmallScreen ||
+      currentScale !== 1 ||
+      hasError ||
+      loading
+    ) {
       return;
     }
 
@@ -86,13 +117,11 @@ export function useTouchNavigation({
       return;
     }
 
-    const deltaX = touch.clientX - touchStart.x;
-    const deltaY = touch.clientY - touchStart.y;
+    const deltaX = touch.clientX - touchState.touchStart.x;
+    const deltaY = touch.clientY - touchState.touchStart.y;
 
     // 判断是否为水平拖动（横向移动大于纵向移动）
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
-      setIsDragging(true);
-
       // 限制拖动范围
       let offset = deltaX;
 
@@ -106,42 +135,47 @@ export function useTouchNavigation({
         offset = deltaX * 0.3;
       }
 
-      setDragOffset(offset);
+      dispatch({ type: "DRAG", offset });
     }
   };
 
   const handleTouchEnd = (): void => {
-    if (touchStart === null || !isSmallScreen || currentScale !== 1 || hasError || loading) {
-      setTouchStart(null);
-      setDragOffset(0);
-      setIsDragging(false);
+    if (
+      touchState.touchStart === null ||
+      !isSmallScreen ||
+      currentScale !== 1 ||
+      hasError ||
+      loading
+    ) {
+      dispatch({ type: "RESET" });
       return;
     }
 
     const threshold = 80; // 切换阈值（像素）
-    const duration = Date.now() - touchStart.time;
-    const velocity = Math.abs(dragOffset) / duration; // 速度（像素/毫秒）
+    const duration = Date.now() - touchState.touchStart.time;
+    const velocity = Math.abs(touchState.dragOffset) / duration; // 速度（像素/毫秒）
 
     // 快速滑动或者超过阈值
-    if (Math.abs(dragOffset) > threshold || (velocity > 0.5 && Math.abs(dragOffset) > 30)) {
-      if (dragOffset > 0 && hasPrevious && onPrevious !== undefined) {
+    if (
+      Math.abs(touchState.dragOffset) > threshold ||
+      (velocity > 0.5 && Math.abs(touchState.dragOffset) > 30)
+    ) {
+      if (touchState.dragOffset > 0 && hasPrevious && onPrevious !== undefined) {
         // 向右拖动，上一张
         onPrevious();
-      } else if (dragOffset < 0 && hasNext && onNext !== undefined) {
+      } else if (touchState.dragOffset < 0 && hasNext && onNext !== undefined) {
         // 向左拖动，下一张
         onNext();
       }
     }
 
     // 重置状态
-    setTouchStart(null);
-    setDragOffset(0);
-    setIsDragging(false);
+    dispatch({ type: "RESET" });
   };
 
   return {
-    dragOffset,
-    isDragging,
+    dragOffset: touchState.dragOffset,
+    isDragging: touchState.isDragging,
     handleTouchStart,
     handleTouchMove,
     handleTouchEnd,

@@ -15,7 +15,7 @@ import I18N from "@/utils/i18n/i18n";
 import type { Locale, ILocaleJSON } from "@/utils/i18n/types";
 import { getBrowserLocale, getLocAttributes } from "@/utils/i18n/locale";
 import { I18nContext, type I18nContextValue } from "./context";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 
 /**
  * I18n Provider 组件属性接口
@@ -29,13 +29,24 @@ interface I18nProviderProps {
 /**
  * 动态导入翻译文件
  */
+
+const localeLoaders: Record<string, () => Promise<{ default?: ILocaleJSON } & ILocaleJSON>> = {
+  "zh-CN": () =>
+    import("@/locales/zh-CN/translations.json") as Promise<{ default?: ILocaleJSON } & ILocaleJSON>,
+  "en-US": () =>
+    import("@/locales/en-US/translations.json") as Promise<{ default?: ILocaleJSON } & ILocaleJSON>,
+  "ja-JP": () =>
+    import("@/locales/ja-JP/translations.json") as Promise<{ default?: ILocaleJSON } & ILocaleJSON>,
+};
+
 async function loadTranslations(locale: Locale): Promise<ILocaleJSON> {
   try {
-    // 动态导入翻译文件
-    const translations = (await import(`@/locales/${locale}/translations.json`)) as {
-      default?: ILocaleJSON;
-    } & ILocaleJSON;
-    return translations.default ?? translations;
+    const loader = localeLoaders[locale];
+    if (loader !== undefined) {
+      const translations = await loader();
+      return translations.default ?? translations;
+    }
+    return {};
   } catch (error) {
     logger.warn(`Failed to load translations for locale: ${locale}`, error);
 

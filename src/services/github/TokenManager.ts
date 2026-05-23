@@ -1,4 +1,4 @@
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { getGithubPATs, isTokenMode, isDeveloperMode, configManager, EnvParser } from "@/config";
 
 // 工具函数

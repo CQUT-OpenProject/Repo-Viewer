@@ -37,6 +37,8 @@ interface EmptyStateProps {
   sx?: Record<string, unknown>;
 }
 
+const EMPTY_SX: Record<string, unknown> = {};
+
 // 预定义的空状态配置
 const emptyStateConfigs = {
   "empty-directory": {
@@ -77,7 +79,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   onAction,
   showAction = true,
   isSmallScreen = false,
-  sx = {},
+  sx = EMPTY_SX,
 }) => {
   const theme = useTheme();
   const config = emptyStateConfigs[type];

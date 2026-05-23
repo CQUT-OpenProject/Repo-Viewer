@@ -17,13 +17,11 @@ import { useContentContext, usePreviewContext } from "@/contexts/unified";
 import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 import { resolveItemHtmlUrl } from "./utils";
 import { useI18n } from "@/contexts/I18nContext";
-import {
-  useSearchFilters,
-  useFallbackDialog,
-  useSearchDrawerInit,
-  useSearchActions,
-  useSearchFieldLabel,
-} from "./hooks";
+import { useSearchFilters } from "./hooks/useSearchFilters";
+import { useFallbackDialog } from "./hooks/useFallbackDialog";
+import { useSearchDrawerInit } from "./hooks/useSearchDrawerInit";
+import { useSearchActions } from "./hooks/useSearchActions";
+import { useSearchFieldLabel } from "./hooks/useSearchFieldLabel";
 import { SearchInput } from "./SearchInput";
 import { FilterSection, FilterToggleButton } from "./FilterSection";
 import { IndexStatus } from "./IndexStatus";

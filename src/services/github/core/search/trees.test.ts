@@ -11,7 +11,7 @@ vi.mock("axios", () => ({
   },
 }));
 
-vi.mock("../../config", () => ({
+vi.mock("../../config/ProxyForceManager", () => ({
   shouldUseServerAPI: vi.fn(() => true),
 }));
 

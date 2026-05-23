@@ -132,24 +132,6 @@ export type AppError =
   | ValidationError
   | SystemError;
 
-// 类型守卫函数
-export function isNetworkError(error: AppError): error is NetworkError {
-  return error.category === ErrorCategory.NETWORK && "url" in error;
-}
-
-export function isGitHubError(error: AppError): error is GitHubError {
-  return (
-    error.category === ErrorCategory.API &&
-    ("rateLimitRemaining" in error || "rateLimitReset" in error || "documentationUrl" in error)
-  );
-}
-
-export function isFileOperationError(error: AppError): error is FileOperationError {
-  return (
-    error.category === ErrorCategory.FILE_OPERATION && "fileName" in error && "operation" in error
-  );
-}
-
 // 错误上下文接口
 export interface ErrorContext {
   userId?: string;

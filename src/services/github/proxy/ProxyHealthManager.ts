@@ -1,6 +1,6 @@
 import { getProxyConfig } from "@/config";
 import { PROXY_SERVICES } from "./ProxyConfig";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 
 const proxyConfig = getProxyConfig();
 
@@ -23,7 +23,7 @@ export interface ProxyHealth {
  * 监控代理服务的健康状态，提供故障转移和自动恢复功能。
  * 支持定期健康检查和响应时间追踪。
  */
-export class ProxyHealthManager {
+class ProxyHealthManager {
   private proxyHealth = new Map<string, ProxyHealth>();
   private readonly MAX_FAILURES = 3;
   private healthCheckTimer: number | null = null;
@@ -137,7 +137,7 @@ export class ProxyHealthManager {
       (health) => !health.isHealthy && this.shouldRetryProxy(health),
     );
 
-    for (const health of unhealthyProxies) {
+    const healthCheckPromises = unhealthyProxies.map(async (health) => {
       let timeoutId: number | null = null;
       try {
         const testUrl = `${health.url}/health-check`;
@@ -162,7 +162,9 @@ export class ProxyHealthManager {
           window.clearTimeout(timeoutId);
         }
       }
-    }
+    });
+
+    await Promise.allSettled(healthCheckPromises);
   }
 
   /**

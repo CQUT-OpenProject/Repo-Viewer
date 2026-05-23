@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { GitHubContent } from "@/types";
 import { getPreviewFromUrl } from "@/utils/routing/urlManager";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 
 interface UsePreviewFromUrlOptions {
   contents: GitHubContent[];

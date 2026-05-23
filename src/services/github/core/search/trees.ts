@@ -12,7 +12,7 @@ import { SmartCache } from "@/utils/cache/SmartCache";
 import { createAbortError, isAbortError } from "@/utils/network/abort";
 
 import { GITHUB_API_BASE, GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "../Config";
-import { shouldUseServerAPI } from "../../config";
+import { shouldUseServerAPI } from "../../config/ProxyForceManager";
 import { getAuthHeaders } from "../Auth";
 
 /**

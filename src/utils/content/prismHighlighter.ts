@@ -1,7 +1,7 @@
 import * as Prism from "prismjs";
 import { detectLanguage } from "./languageDetector";
-import { highlightContent, highlightLines } from "./prismHighlightCore";
-import { logger } from "@/utils";
+import { highlightContent } from "./prismHighlightCore";
+import { logger } from "@/utils/logging/logger";
 export { highlightContent, highlightLines } from "./prismHighlightCore";
 export { encodeLines, normalizeContentLines } from "./textPreviewLines";
 

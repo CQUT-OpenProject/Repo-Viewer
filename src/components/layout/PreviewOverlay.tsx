@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, useTheme } from "@mui/material";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence, useReducedMotion } from "framer-motion";
 import { LazyMarkdownPreview, LazyImagePreview } from "@/utils/lazy-loading";
 import type { GitHubContent } from "@/types";
 
@@ -57,32 +57,40 @@ const PreviewOverlay: React.FC<PreviewOverlayProps> = ({
   onClose,
 }) => {
   const theme = useTheme();
+  const shouldReduceMotion = useReducedMotion();
+  const initialState = shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 30 };
+  const animateState = shouldReduceMotion
+    ? { opacity: 1, transition: { duration: 0 } }
+    : {
+        opacity: 1,
+        y: 0,
+        transition: {
+          duration: 0.125,
+          ease: [0.4, 0, 0.2, 1],
+          delay: 0.02,
+        },
+      };
+  const exitState = shouldReduceMotion
+    ? { opacity: 0, transition: { duration: 0 } }
+    : {
+        opacity: 0,
+        y: 50,
+        transition: {
+          duration: 0.125,
+          ease: [0.4, 0, 0.2, 1],
+        },
+      };
 
   return (
     <>
       {/* Markdown文件全屏预览（包括 README） */}
       <AnimatePresence mode="wait">
         {previewingItem !== null && previewContent !== null && (
-          <motion.div
+          <m.div
             key="md-preview"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              transition: {
-                duration: 0.125,
-                ease: [0.4, 0, 0.2, 1],
-                delay: 0.02,
-              },
-            }}
-            exit={{
-              opacity: 0,
-              y: 50,
-              transition: {
-                duration: 0.125,
-                ease: [0.4, 0, 0.2, 1],
-              },
-            }}
+            initial={initialState}
+            animate={animateState}
+            exit={exitState}
             style={{
               position: "fixed",
               top: 0,
@@ -118,7 +126,7 @@ const PreviewOverlay: React.FC<PreviewOverlayProps> = ({
                 data-oid="md-file-preview"
               />
             </Box>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 

@@ -8,7 +8,7 @@ vi.mock("@/config", () => ({
   }),
 }));
 
-vi.mock("@/utils", () => ({
+vi.mock("@/utils/logging/logger", () => ({
   logger: {
     debug: vi.fn(),
     info: vi.fn(),

@@ -1,6 +1,6 @@
 import Translator from "./translator";
 import type { Locale, InterpolationOptions, ILocaleJSON, ITranslator } from "./types";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 
 /**
  * 格式化插值选项

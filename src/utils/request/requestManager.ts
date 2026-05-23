@@ -4,7 +4,7 @@
  * 提供请求取消、防抖和竞态条件处理。
  */
 
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { createAbortError, isAbortError } from "@/utils/network/abort";
 
 /**

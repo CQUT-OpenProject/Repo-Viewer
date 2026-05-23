@@ -8,12 +8,11 @@
  */
 
 import type { GitHubContent } from "@/types";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { createAbortError, isAbortError } from "@/utils/network/abort";
 
 import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "../Config";
-import { getContents } from "../content";
-import type { GitTreeItem } from "./trees";
+import { getContents } from "../content/service";
 
 type FileTypeFilter = string | string[] | undefined;
 
@@ -225,55 +224,53 @@ async function searchBranchWithTreesApi(
     const normalizedPrefix = pathPrefix.trim().toLowerCase();
     const normalizedFileTypeFilters = normalizeFileTypeFilters(fileTypeFilter);
 
-    return tree
-      .filter((item: GitTreeItem) => item.type === "blob")
-      .filter((item) => {
-        const itemPath = item.path ?? "";
-        const fileName = itemPath.includes("/")
-          ? itemPath.slice(itemPath.lastIndexOf("/") + 1)
-          : itemPath;
+    const results: GitHubContent[] = [];
 
-        if (!fileName.toLowerCase().includes(normalizedSearchTerm)) {
-          return false;
+    for (const item of tree) {
+      if (item.type !== "blob") {
+        continue;
+      }
+
+      const itemPath = item.path ?? "";
+      const fileName = itemPath.includes("/")
+        ? itemPath.slice(itemPath.lastIndexOf("/") + 1)
+        : itemPath;
+
+      if (!fileName.toLowerCase().includes(normalizedSearchTerm)) {
+        continue;
+      }
+
+      if (normalizedPrefix.length > 0 && !itemPath.toLowerCase().startsWith(normalizedPrefix)) {
+        continue;
+      }
+
+      if (normalizedFileTypeFilters.size > 0) {
+        const ext = fileName.includes(".")
+          ? fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase()
+          : "";
+        if (!normalizedFileTypeFilters.has(ext)) {
+          continue;
         }
+      }
 
-        if (normalizedPrefix.length > 0 && !itemPath.toLowerCase().startsWith(normalizedPrefix)) {
-          return false;
-        }
+      const result: GitHubContent = {
+        name: fileName,
+        path: itemPath,
+        type: "file",
+        sha: item.sha ?? "",
+        url: item.url ?? "",
+        html_url: `https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/blob/${branch}/${itemPath}`,
+        download_url: `https://raw.githubusercontent.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/${branch}/${itemPath}`,
+      };
 
-        if (normalizedFileTypeFilters.size > 0) {
-          const ext = fileName.includes(".")
-            ? fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase()
-            : "";
-          if (!normalizedFileTypeFilters.has(ext)) {
-            return false;
-          }
-        }
+      if (item.size !== undefined) {
+        result.size = item.size;
+      }
 
-        return true;
-      })
-      .map((item) => {
-        const itemPath = item.path ?? "";
-        const fileName = itemPath.includes("/")
-          ? itemPath.slice(itemPath.lastIndexOf("/") + 1)
-          : itemPath;
+      results.push(result);
+    }
 
-        const result: GitHubContent = {
-          name: fileName,
-          path: itemPath,
-          type: "file",
-          sha: item.sha ?? "",
-          url: item.url ?? "",
-          html_url: `https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/blob/${branch}/${itemPath}`,
-          download_url: `https://raw.githubusercontent.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/${branch}/${itemPath}`,
-        };
-
-        if (item.size !== undefined) {
-          result.size = item.size;
-        }
-
-        return result;
-      });
+    return results;
   } catch (error) {
     if (isAbortError(error)) {
       throw createAbortError("Request aborted");

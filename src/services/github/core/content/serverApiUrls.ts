@@ -38,14 +38,14 @@ export function buildRepoFileContentApiUrl(filePath: string, branch?: string): s
   return `/api/github?${params.toString()}`;
 }
 
-export function buildGitHubAssetApiUrl(url: string): string {
+function buildGitHubAssetApiUrl(url: string): string {
   const params = new URLSearchParams();
   params.set("action", "getGitHubAsset");
   params.set("url", url);
   return `/api/github?${params.toString()}`;
 }
 
-export function parseConfiguredRepoRawUrl(
+function parseConfiguredRepoRawUrl(
   rawUrl: string,
   preferredBranch = getCurrentBranch(),
 ): ParsedConfiguredRepoRawUrl | null {
@@ -75,9 +75,10 @@ export function parseConfiguredRepoRawUrl(
       preferredBranchSegments.length > 0 &&
       branchAndPath.length > preferredBranchSegments.length
     ) {
-      const isPreferredBranch = preferredBranchSegments.every(
-        (segment, index) => branchAndPath[index] === segment,
-      );
+      const branchPrefix = branchAndPath.slice(0, preferredBranchSegments.length);
+      const isPreferredBranch =
+        branchPrefix.length === preferredBranchSegments.length &&
+        preferredBranchSegments.every((segment, index) => branchPrefix[index] === segment);
 
       if (isPreferredBranch) {
         const path = branchAndPath.slice(preferredBranchSegments.length).join("/");

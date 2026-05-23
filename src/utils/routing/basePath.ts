@@ -13,7 +13,7 @@ export function normalizeBaseUrl(baseUrl: string): string {
   return collapsed.endsWith(ROOT_PATH) ? collapsed : `${collapsed}${ROOT_PATH}`;
 }
 
-export function getAppBaseUrl(baseUrl: string = import.meta.env.BASE_URL): string {
+function getAppBaseUrl(baseUrl: string = import.meta.env.BASE_URL): string {
   return normalizeBaseUrl(baseUrl);
 }
 

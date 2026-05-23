@@ -4,7 +4,7 @@
  * 包含文件预览状态和操作的类型定义。
  */
 
-import type { GitHubContent } from "./index";
+import type { GitHubContent } from "./github";
 
 /**
  * 文件预览状态接口

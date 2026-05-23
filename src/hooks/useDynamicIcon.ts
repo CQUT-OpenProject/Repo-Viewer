@@ -9,7 +9,7 @@
 
 import { useState, useEffect } from "react";
 import { getCurrentThemeName } from "@/theme/index";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 
 /** 默认图标路径 */
 const DEFAULT_ICON = "/icons/icon-pink.svg";
@@ -59,7 +59,7 @@ interface DynamicIconHook {
  *
  * @returns 动态图标状态和操作函数
  */
-export const useDynamicIcon = (): DynamicIconHook => {
+const useDynamicIcon = (): DynamicIconHook => {
   const [iconPath, setIconPath] = useState<string>(getThemeIconPath);
 
   const updateIcon = (): void => {
@@ -72,6 +72,7 @@ export const useDynamicIcon = (): DynamicIconHook => {
     }
 
     logger.info("[DynamicIcon] 初始化动态图标系统");
+    const storageTimeouts = new Set<number>();
 
     // 监听主题变化
     const observer = new MutationObserver((mutations) => {
@@ -101,7 +102,11 @@ export const useDynamicIcon = (): DynamicIconHook => {
     const handleStorageChange = (e: StorageEvent): void => {
       if (e.key === "colorMode" || e.key === "themeData" || e.key === "lastThemeColorDate") {
         logger.debug("[DynamicIcon] 通过localStorage检测到主题变化:", e.key);
-        setTimeout(updateIcon, 100);
+        const timeoutId = window.setTimeout(() => {
+          storageTimeouts.delete(timeoutId);
+          updateIcon();
+        }, 100);
+        storageTimeouts.add(timeoutId);
       }
     };
 
@@ -110,6 +115,10 @@ export const useDynamicIcon = (): DynamicIconHook => {
     return () => {
       observer.disconnect();
       window.removeEventListener("storage", handleStorageChange);
+      storageTimeouts.forEach((timeoutId) => {
+        window.clearTimeout(timeoutId);
+      });
+      storageTimeouts.clear();
     };
   }, []);
 
@@ -138,6 +147,8 @@ export const useFaviconUpdater = (): string => {
       return;
     }
 
+    let faviconTimeout: number | null = null;
+
     const updateFavicon = (): void => {
       // 移除所有现有的favicon相关链接
       const existingFavicons = document.querySelectorAll('link[rel*="icon"]');
@@ -149,7 +160,7 @@ export const useFaviconUpdater = (): string => {
       });
 
       // 强制等待一点时间确保DOM更新
-      setTimeout(() => {
+      faviconTimeout = window.setTimeout(() => {
         const timestamp = Date.now().toString();
 
         // 创建主要的favicon链接
@@ -177,6 +188,12 @@ export const useFaviconUpdater = (): string => {
     };
 
     updateFavicon();
+
+    return () => {
+      if (faviconTimeout !== null) {
+        window.clearTimeout(faviconTimeout);
+      }
+    };
   }, [iconPath]);
 
   return iconPath;

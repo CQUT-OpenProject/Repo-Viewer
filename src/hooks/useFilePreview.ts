@@ -12,7 +12,8 @@ import type { RefObject } from "react";
 import { useTheme } from "@mui/material";
 import type { PreviewState, PreviewAction, GitHubContent } from "@/types";
 import { GitHub } from "@/services/github";
-import { logger, pdf } from "@/utils";
+import { logger } from "@/utils/logging/logger";
+import { openPDFPreview } from "@/utils/pdf/pdfPreviewHelper";
 import { isImageFile, isMarkdownFile, isPdfFile, isTextFile } from "@/utils/files/fileHelpers";
 import { isAbortError } from "@/utils/network/abort";
 import {
@@ -281,7 +282,7 @@ export const useFilePreview = (
         } else if (isPdfFile(fileNameLower)) {
           // 使用新的 PDF 预览工具函数
           try {
-            await pdf.openPDFPreview({
+            await openPDFPreview({
               fileName: item.name,
               downloadUrl: proxyUrl,
               theme: muiTheme,

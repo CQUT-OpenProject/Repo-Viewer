@@ -5,7 +5,7 @@ import {
   updateUrlWithHistory,
   updateUrlWithoutHistory,
 } from "@/utils/routing/urlManager";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import type { PathManagementState } from "./types";
 
 /**
@@ -53,7 +53,7 @@ export function usePathManagement(branch: string): PathManagementState {
     };
   }, []);
 
-  const [currentPath, setCurrentPathState] = useState<string>(getSavedPath());
+  const [currentPath, setCurrentPathState] = useState<string>(() => getSavedPath());
   const [navigationDirection, setNavigationDirection] = useState<NavigationDirection>("none");
 
   const isInitialLoad = useRef<boolean>(true);

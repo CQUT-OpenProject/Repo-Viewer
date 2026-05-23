@@ -1,7 +1,15 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import type { PaletteMode } from "@mui/material";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { removeLatexElements, restoreLatexElements } from "@/utils/rendering/latexOptimizer";
+
+interface SavedThemeData {
+  mode: PaletteMode;
+  timestamp: number;
+  isAutoMode?: boolean;
+}
+
+const ONE_HOUR = 60 * 60 * 1000;
 
 const getSystemBasedMode = (): PaletteMode => {
   if (typeof window !== "undefined") {
@@ -30,6 +38,39 @@ const shouldRefreshThemeColor = (): boolean => {
   return false;
 };
 
+const readSavedThemeData = (): SavedThemeData | null => {
+  const savedThemeData = localStorage.getItem("themeData");
+  if (savedThemeData === null) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(savedThemeData) as SavedThemeData;
+  } catch (e) {
+    logger.error("读取主题数据时出错:", e);
+    return null;
+  }
+};
+
+const isFreshThemeData = (themeData: SavedThemeData): boolean =>
+  new Date().getTime() - themeData.timestamp < ONE_HOUR;
+
+const getInitialThemeState = (): { mode: PaletteMode; isAutoMode: boolean } => {
+  const savedThemeData = readSavedThemeData();
+  if (savedThemeData !== null && isFreshThemeData(savedThemeData)) {
+    const isAutoMode = savedThemeData.isAutoMode ?? true;
+    return {
+      mode: isAutoMode ? getSystemBasedMode() : savedThemeData.mode,
+      isAutoMode,
+    };
+  }
+
+  return {
+    mode: getSystemBasedMode(),
+    isAutoMode: true,
+  };
+};
+
 /**
  * 主题模式Hook
  *
@@ -48,48 +89,9 @@ export const useThemeMode = (): {
   /** 是否为自动模式 */
   isAutoMode: boolean;
 } => {
-  const [mode, setMode] = useState<PaletteMode>(() => {
-    const savedThemeData = localStorage.getItem("themeData");
-    if (savedThemeData !== null) {
-      try {
-        const { mode, timestamp, isAutoMode } = JSON.parse(savedThemeData) as {
-          mode: PaletteMode;
-          timestamp: number;
-          isAutoMode: boolean;
-        };
-        const currentTime = new Date().getTime();
-        const oneHour = 60 * 60 * 1000;
-        if (currentTime - timestamp < oneHour) {
-          if (!isAutoMode) {
-            return mode;
-          }
-        }
-      } catch (e) {
-        logger.error("读取主题数据时出错:", e);
-      }
-    }
-    return getSystemBasedMode();
-  });
-
-  const [isAutoMode, setIsAutoMode] = useState<boolean>(() => {
-    const savedThemeData = localStorage.getItem("themeData");
-    if (savedThemeData !== null) {
-      try {
-        const { isAutoMode, timestamp } = JSON.parse(savedThemeData) as {
-          isAutoMode?: boolean;
-          timestamp: number;
-        };
-        const currentTime = new Date().getTime();
-        const oneHour = 60 * 60 * 1000;
-        if (currentTime - timestamp < oneHour) {
-          return isAutoMode ?? true;
-        }
-      } catch {
-        return true;
-      }
-    }
-    return true;
-  });
+  const [initialThemeState] = useState(getInitialThemeState);
+  const [mode, setMode] = useState<PaletteMode>(initialThemeState.mode);
+  const [isAutoMode, setIsAutoMode] = useState<boolean>(initialThemeState.isAutoMode);
 
   const [isTransitioning, setIsTransitioning] = useState(false);
   const modeRef = useRef(mode);
@@ -107,9 +109,13 @@ export const useThemeMode = (): {
   useEffect(() => {
     if (shouldRefreshThemeColor()) {
       logger.info("每隔一天更新主题色");
-      setTimeout(() => {
+      const refreshTimeout = window.setTimeout(() => {
         setMode((prevMode) => prevMode);
       }, 100);
+
+      return () => {
+        window.clearTimeout(refreshTimeout);
+      };
     }
   }, []);
 
@@ -134,6 +140,8 @@ export const useThemeMode = (): {
     window.dispatchEvent(new CustomEvent("theme:changing"));
 
     let transitionTimeout: number | null = null;
+    let finishTimeout: number | null = null;
+    let restoreTimeout: number | null = null;
 
     const startTransition = window.setTimeout(() => {
       setIsTransitioning(true);
@@ -143,7 +151,7 @@ export const useThemeMode = (): {
       transitionTimeout = window.setTimeout(() => {
         document.body.classList.remove("theme-transition");
 
-        window.setTimeout(() => {
+        finishTimeout = window.setTimeout(() => {
           setIsTransitioning(false);
 
           // 发出主题切换完成事件
@@ -153,7 +161,7 @@ export const useThemeMode = (): {
             }),
           );
 
-          window.setTimeout(() => {
+          restoreTimeout = window.setTimeout(() => {
             restoreLatexElements();
           }, 100);
         }, 50);
@@ -164,6 +172,12 @@ export const useThemeMode = (): {
       window.clearTimeout(startTransition);
       if (transitionTimeout !== null) {
         window.clearTimeout(transitionTimeout);
+      }
+      if (finishTimeout !== null) {
+        window.clearTimeout(finishTimeout);
+      }
+      if (restoreTimeout !== null) {
+        window.clearTimeout(restoreTimeout);
       }
       document.body.classList.remove("theme-transition");
     };

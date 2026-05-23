@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { createAbortError } from "@/utils/network/abort";
 
-vi.mock("@/utils", () => ({
+vi.mock("@/utils/logging/logger", () => ({
   logger: {
     debug: vi.fn(),
     info: vi.fn(),
@@ -14,7 +14,7 @@ vi.mock("./trees", () => ({
   getBranchTree: vi.fn(),
 }));
 
-vi.mock("../content", () => ({
+vi.mock("../content/service", () => ({
   getContents: vi.fn(),
 }));
 

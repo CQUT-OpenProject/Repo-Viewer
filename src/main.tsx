@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "@/App";
 import "@/index.css";
 import "github-markdown-css/github-markdown.css";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import ThemeProvider from "@/providers/ThemeProvider";
 import { GitHub } from "@/services/github";
 import { setupLatexOptimization } from "@/utils/rendering/latexOptimizer";

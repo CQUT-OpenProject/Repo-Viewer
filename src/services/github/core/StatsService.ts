@@ -7,9 +7,9 @@
  * @module StatsService
  */
 
-import { CacheManager } from "../cache";
-import { getProxyHealthStats, resetFailedProxyServices } from "../proxy";
-import { clearBatcherCache, getBatcher } from "./content";
+import { CacheManager } from "../cache/CacheManager";
+import { getProxyHealthStats, resetFailedProxyServices } from "../proxy/ProxyService";
+import { clearBatcherCache, getBatcher } from "./content/service";
 import { clearBranchTreeCache } from "./search/trees";
 
 /**

@@ -20,7 +20,7 @@ const NonEmptyStringSchema = z.string().min(1);
  *
  * 定义单个分支的索引信息结构，包括路径、哈希、文件数量和生成时间。
  */
-export const SearchIndexBranchEntrySchema = z.object({
+const SearchIndexBranchEntrySchema = z.object({
   docfindPath: NonEmptyStringSchema,
   hash: NonEmptyStringSchema,
   fileCount: z.number().int().nonnegative().optional(),
@@ -32,7 +32,7 @@ export const SearchIndexBranchEntrySchema = z.object({
  *
  * 定义完整的索引清单结构，包含schema版本、生成时间和所有分支的索引映射。
  */
-export const SearchIndexManifestSchema = z.object({
+const SearchIndexManifestSchema = z.object({
   schemaVersion: z.literal("docfind-1"),
   generatedAt: IsoDateStringSchema,
   branches: z.record(z.string(), SearchIndexBranchEntrySchema),

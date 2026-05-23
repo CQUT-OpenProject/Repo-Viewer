@@ -2,7 +2,7 @@ import type { GitHubContent } from "@/types";
 
 import { RequestBatcher } from "../../RequestBatcher";
 import { getAuthHeaders } from "../Auth";
-import { getFileContent } from "../content";
+import { getFileContent } from "../content/service";
 
 const batcher = new RequestBatcher();
 

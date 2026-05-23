@@ -11,18 +11,8 @@ import { logger as loggerInstance } from "./logging/logger";
 export const logger = loggerInstance;
 export const logging = { logger: loggerInstance };
 
-// 网络相关工具
-import { getProxiedUrl } from "./network/proxyHelper";
-export const network = {
-  getProxiedUrl,
-};
-
-// 认证工具
-import * as tokenHelper from "./auth/token-helper";
-export const auth = tokenHelper;
-
 // 错误管理工具
-import { ErrorManager as ErrorManagerClass } from "./error";
+import { ErrorManager as ErrorManagerClass } from "./error/core/ErrorManager";
 import * as errorHandlerModule from "./error/errorHandler";
 export const error = {
   ErrorManager: ErrorManagerClass,

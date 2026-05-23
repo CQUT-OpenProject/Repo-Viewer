@@ -147,8 +147,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   const showEmptyIndexResult =
     !loading &&
     keyword.trim() !== "" &&
-    searchResult !== null &&
-    searchResult.mode === "search-index" &&
+    searchResult?.mode === "search-index" &&
     searchResult.items.length === 0;
 
   return (

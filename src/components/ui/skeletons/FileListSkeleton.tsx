@@ -60,7 +60,7 @@ interface FileListItemSkeletonProps {
   visible?: boolean;
 }
 
-export const FileListItemSkeleton: React.FC<FileListItemSkeletonProps> = ({
+const FileListItemSkeleton: React.FC<FileListItemSkeletonProps> = ({
   isSmallScreen = false,
   visible = true,
 }) => {

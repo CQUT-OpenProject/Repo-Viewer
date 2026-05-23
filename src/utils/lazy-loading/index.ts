@@ -6,8 +6,8 @@ export type {
 export { createLazyPreviewComponent } from "./core/createLazyPreviewComponent";
 export { DefaultLoadingFallback } from "./components/DefaultLoadingFallback";
 export { LazyLoadErrorBoundary } from "./components/LazyLoadErrorBoundary";
-export { loadKatexStyles, loadStylesheet } from "./utils/styleLoaders";
-export { preloadPreviewComponents, preloadComponents } from "./utils/preloadUtils";
+export { loadKatexStyles } from "./utils/styleLoaders";
+export { preloadPreviewComponents } from "./utils/preloadUtils";
 export {
   LazyMarkdownPreview,
   LazyImagePreview,

@@ -1,6 +1,6 @@
 import { getGithubConfig } from "@/config";
 import type { InitialContentHydrationPayload } from "@/types";
-import { logger } from "@/utils";
+import { logger } from "@/utils/logging/logger";
 import { buildAbsoluteAppUrl } from "@/utils/routing/basePath";
 
 interface InitialContentManifestBranchEntry {
@@ -68,7 +68,7 @@ const isInitialContentPayload = (value: unknown): value is InitialContentHydrati
 
 const resolveInitialContentUrl = (path: string): string => buildAbsoluteAppUrl(path);
 
-export async function fetchInitialContentManifest(
+async function fetchInitialContentManifest(
   signal?: AbortSignal,
 ): Promise<InitialContentManifest | null> {
   const manifestUrl = resolveInitialContentUrl(INITIAL_CONTENT_MANIFEST_PATH);

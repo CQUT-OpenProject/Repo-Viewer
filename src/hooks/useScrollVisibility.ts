@@ -1,5 +1,20 @@
 import { useState, useEffect } from "react";
-import { performance } from "@/utils";
+
+const debounce = <F extends (...args: unknown[]) => unknown>(
+  func: F,
+  waitFor: number,
+): ((...args: Parameters<F>) => void) => {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
+  return (...args: Parameters<F>): void => {
+    if (timeout !== null) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(() => {
+      func(...args);
+    }, waitFor);
+  };
+};
 
 /**
  * 自定义 Hook：监听滚动位置以控制元素可见性
@@ -46,7 +61,7 @@ export function useScrollVisibility(threshold = 100): boolean {
 
     // 使用 debounce 进一步优化，减少高频滚动时的函数调用
     // 16ms 约等于 60fps，与 RAF 配合使用效果最佳
-    const debouncedHandleScroll = performance.debounce(handleScroll, 16);
+    const debouncedHandleScroll = debounce(handleScroll, 16);
 
     window.addEventListener("scroll", debouncedHandleScroll, { passive: true });
 

@@ -68,10 +68,12 @@ export const removeLatexElements = (): void => {
     // 替换为占位符元素，保持布局稳定
     const placeholder = document.createElement("div");
     placeholder.classList.add("latex-placeholder");
-    placeholder.style.height = `${element.offsetHeight.toString()}px`;
-    placeholder.style.width = `${element.offsetWidth.toString()}px`;
-    placeholder.style.display = "inline-block";
-    placeholder.style.visibility = "hidden";
+    placeholder.style.cssText = [
+      `height: ${element.offsetHeight.toString()}px`,
+      `width: ${element.offsetWidth.toString()}px`,
+      "display: inline-block",
+      "visibility: hidden",
+    ].join("; ");
 
     // 从DOM中移除原始元素
     parent.replaceChild(placeholder, element);
@@ -150,7 +152,7 @@ export const restoreLatexElements = (): void => {
 /**
  * 防抖版的LaTeX元素恢复函数
  */
-export const debouncedShowLatexElements = debounce(restoreLatexElements, 100);
+const debouncedShowLatexElements = debounce(restoreLatexElements, 100);
 
 /**
  * 计算页面中LaTeX元素的数量

@@ -6,7 +6,7 @@
  */
 
 import type { CSSProperties, ReactElement } from "react";
-import { motion } from "framer-motion";
+import { m, useReducedMotion } from "framer-motion";
 import type { MotionStyle } from "framer-motion";
 import type { RowComponentProps } from "react-window";
 
@@ -44,6 +44,7 @@ const RowComponent = ({
     highlightedIndex,
     rowPaddingBottom,
   } = rowData;
+  const shouldReduceMotion = useReducedMotion();
 
   const item = contents[index];
 
@@ -69,7 +70,9 @@ const RowComponent = ({
     ...optimizedAnimationStyle,
   };
 
-  const currentVariants = getDynamicItemVariants(scrollSpeed, isScrolling);
+  const currentVariants = shouldReduceMotion
+    ? undefined
+    : getDynamicItemVariants(scrollSpeed, isScrolling);
 
   return (
     <div
@@ -78,12 +81,12 @@ const RowComponent = ({
       {...ariaAttributes}
       data-oid="_c:db-1"
     >
-      <motion.div
+      <m.div
         style={innerStyle}
         variants={currentVariants}
         custom={index}
-        initial="hidden"
-        animate="visible"
+        initial={shouldReduceMotion ? false : "hidden"}
+        animate={shouldReduceMotion ? undefined : "visible"}
       >
         <FileListItem
           key={item.path}
@@ -100,7 +103,7 @@ const RowComponent = ({
           isHighlighted={isHighlighted}
           data-oid="k4zj3qr"
         />
-      </motion.div>
+      </m.div>
     </div>
   );
 };

@@ -8,14 +8,11 @@
  */
 
 import type { GitHubContent } from "@/types";
-import { logger } from "@/utils";
-import { CacheManager } from "../cache";
-import { getContents } from "./content";
-import {
-  prefetchFilesWithPriority,
-  selectPriorityDirectories,
-  selectPriorityFiles,
-} from "./prefetch";
+import { logger } from "@/utils/logging/logger";
+import { CacheManager } from "../cache/CacheManager";
+import { getContents } from "./content/service";
+import { prefetchFilesWithPriority } from "./prefetch/executor";
+import { selectPriorityDirectories, selectPriorityFiles } from "./prefetch/strategies";
 
 /**
  * 智能预取目录内容
