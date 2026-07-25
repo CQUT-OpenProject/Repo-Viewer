@@ -2,21 +2,21 @@ import React, { useMemo, useEffect, useState } from "react";
 import { Container, useTheme, useMediaQuery, Box, Portal } from "@mui/material";
 import BreadcrumbNavigation from "@/components/layout/BreadcrumbNavigation";
 import FileList from "@/components/file/FileList";
-import FilePreviewPage from "@/components/layout/FilePreviewPage";
+import FilePreview from "@/components/layout/FilePreview";
 import { preloadPreviewComponents } from "@/utils/lazy-loading";
 import ErrorDisplay from "@/components/ui/ErrorDisplay";
 import { useContentContext, usePreviewContext, useDownloadContext } from "@/contexts/unified";
 import { FileListSkeleton } from "@/components/ui/skeletons";
-import DynamicSEO from "@/components/seo/DynamicSEO";
+import PageSEO from "@/components/seo/PageSEO";
 import ScrollToTopFab from "@/components/interactions/ScrollToTopFab";
 import EmptyState from "@/components/ui/EmptyState";
 import ReadmeSection from "@/components/layout/ReadmeSection";
-import PreviewOverlay from "@/components/layout/PreviewOverlay";
 import {
   useImageNavigation,
   useBreadcrumbLayout,
   usePreviewFromUrl,
 } from "@/components/layout/hooks";
+import { useI18n } from "@/contexts/I18nContext";
 import type { NavigationDirection } from "@/contexts/unified";
 import type { BreadcrumbSegment, GitHubContent } from "@/types";
 
@@ -37,6 +37,7 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
   // 获取主题和响应式布局
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const { t } = useI18n();
 
   // 从上下文获取数据和方法
   const {
@@ -241,13 +242,15 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
     }
 
     // 否则使用当前目录信息
+    const rootLabel = t("ui.seo.rootDirectory");
     return {
-      title: currentPath.trim().length > 0 ? (currentPath.split("/").pop() ?? "根目录") : "根目录",
+      title:
+        currentPath.trim().length > 0 ? (currentPath.split("/").pop() ?? rootLabel) : rootLabel,
       filePath: currentPath,
       isDirectory: true,
       fileType: "",
     };
-  }, [currentPath, previewState.previewingItem, previewState.previewingImageItem]);
+  }, [currentPath, previewState.previewingItem, previewState.previewingImageItem, t]);
 
   // 吸顶切换时在 effect 阶段重新解析容器，避免渲染阶段拿到空节点
   useEffect(() => {
@@ -292,8 +295,7 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
         width: "100%",
       }}
     >
-      {/* 动态SEO组件 */}
-      <DynamicSEO
+      <PageSEO
         title={seoInfo.title}
         filePath={seoInfo.filePath}
         isDirectory={seoInfo.isDirectory}
@@ -336,7 +338,8 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
       )}
 
       {showPreviewPage ? (
-        <FilePreviewPage
+        <FilePreview
+          mode="page"
           previewState={previewState}
           onClose={closePreview}
           isSmallScreen={isSmallScreen}
@@ -346,10 +349,6 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
           handleBreadcrumbClick={handleBreadcrumbClick}
           breadcrumbsContainerRef={breadcrumbsContainerRef as React.RefObject<HTMLDivElement>}
           shouldShowInToolbar={shouldShowInToolbar}
-          hasPreviousImage={hasPreviousImage}
-          hasNextImage={hasNextImage}
-          onPreviousImage={handlePreviousImage}
-          onNextImage={handleNextImage}
         />
       ) : loading ? (
         <FileListSkeleton isSmallScreen={isSmallScreen} itemCount={8} />
@@ -386,20 +385,16 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
             isTransitioning={isPreviewingReadme}
           />
 
-          {/* Markdown 和图片全屏预览覆盖层 */}
-          <PreviewOverlay
-            previewingItem={previewState.previewingItem}
-            previewContent={previewState.previewContent}
-            loadingPreview={previewState.loadingPreview}
-            previewingImageItem={previewState.previewingImageItem}
-            imagePreviewUrl={previewState.imagePreviewUrl}
+          <FilePreview
+            mode="overlay"
+            previewState={previewState}
+            onClose={closePreview}
+            isSmallScreen={isSmallScreen}
+            currentBranch={currentBranch}
             hasPreviousImage={hasPreviousImage}
             hasNextImage={hasNextImage}
             onPreviousImage={handlePreviousImage}
             onNextImage={handleNextImage}
-            isSmallScreen={isSmallScreen}
-            currentBranch={currentBranch}
-            onClose={closePreview}
           />
         </>
       )}

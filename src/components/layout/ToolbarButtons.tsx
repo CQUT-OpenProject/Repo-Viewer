@@ -71,24 +71,13 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
       };
     })(),
   );
-  const {
-    currentBranch,
-    defaultBranch,
-    currentPath,
-    setCurrentBranch,
-    refreshBranches,
-    setCurrentPath,
-  } = useContentContext();
+  const { currentBranch, defaultBranch, currentPath, refreshBranches } = useContentContext();
 
   const { previewState, selectFile, closePreview } = usePreviewContext();
 
   useRefreshSync({
     handleRefresh,
     refreshBranches,
-    currentBranch,
-    currentPath,
-    setCurrentBranch,
-    setCurrentPath,
   });
 
   // 在组件加载时获取仓库信息

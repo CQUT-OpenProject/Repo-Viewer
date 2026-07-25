@@ -135,18 +135,10 @@ export function AppContextProvider({ children }: AppContextProviderProps): React
   const previewValue = useMemo<PreviewContextValue>(
     () => ({
       previewState: preview.previewState,
-      currentPreviewItemRef: preview.currentPreviewItemRef,
       selectFile: preview.selectFile,
       closePreview: preview.closePreview,
-      handleImageError: preview.handleImageError,
     }),
-    [
-      preview.previewState,
-      preview.currentPreviewItemRef,
-      preview.selectFile,
-      preview.closePreview,
-      preview.handleImageError,
-    ],
+    [preview.previewState, preview.selectFile, preview.closePreview],
   );
 
   const downloadValue = useMemo<DownloadContextValue>(

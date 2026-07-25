@@ -3,25 +3,37 @@ import { Box } from "@mui/material";
 import { m, useReducedMotion, type Variants } from "framer-motion";
 import BreadcrumbNavigation from "@/components/layout/BreadcrumbNavigation";
 import { LazyMarkdownPreview, LazyImagePreview, LazyTextPreview } from "@/utils/lazy-loading";
-import type { PreviewState, GitHubContent } from "@/types";
-import type { BreadcrumbSegment } from "@/types";
+import type { PreviewState, BreadcrumbSegment } from "@/types";
 import type { NavigationDirection } from "@/contexts/unified";
 
-interface FilePreviewPageProps {
+export type FilePreviewMode = "page" | "overlay";
+
+interface FilePreviewBaseProps {
+  mode: FilePreviewMode;
   previewState: PreviewState;
   onClose: () => void;
   isSmallScreen: boolean;
   currentBranch: string;
+}
+
+interface FilePreviewPageProps extends FilePreviewBaseProps {
+  mode: "page";
   breadcrumbSegments: BreadcrumbSegment[];
   breadcrumbsMaxItems: number;
   handleBreadcrumbClick: (path: string, direction?: NavigationDirection) => void;
   breadcrumbsContainerRef: React.RefObject<HTMLDivElement | null>;
   shouldShowInToolbar: boolean;
+}
+
+interface FilePreviewOverlayProps extends FilePreviewBaseProps {
+  mode: "overlay";
   hasPreviousImage: boolean;
   hasNextImage: boolean;
   onPreviousImage: () => void;
   onNextImage: () => void;
 }
+
+type FilePreviewProps = FilePreviewPageProps | FilePreviewOverlayProps;
 
 const previewAnimation: Variants = {
   hidden: { opacity: 0, marginTop: 16 },
@@ -40,49 +52,57 @@ const reducedMotionPreviewAnimation: Variants = {
   visible: {
     opacity: 1,
     marginTop: 0,
-    transition: {
-      duration: 0,
-    },
+    transition: { duration: 0 },
   },
 };
 
 const MotionBox = m.create(Box);
 
-const FilePreviewPage: React.FC<FilePreviewPageProps> = ({
-  previewState,
-  onClose,
-  isSmallScreen,
-  currentBranch,
-  breadcrumbSegments,
-  breadcrumbsMaxItems,
-  handleBreadcrumbClick,
-  breadcrumbsContainerRef,
-  shouldShowInToolbar,
-  hasPreviousImage,
-  hasNextImage,
-  onPreviousImage,
-  onNextImage,
-}) => {
+const FilePreview: React.FC<FilePreviewProps> = (props) => {
+  const { mode, previewState, onClose, isSmallScreen, currentBranch } = props;
   const shouldReduceMotion = useReducedMotion();
-  const previewingFile: GitHubContent | null =
-    previewState.previewingItem ?? previewState.previewingImageItem;
 
-  const imagePreviewUrl =
-    previewState.previewingImageItem !== null && typeof previewState.imagePreviewUrl === "string"
-      ? previewState.imagePreviewUrl
-      : null;
+  if (mode === "overlay") {
+    const { hasPreviousImage, hasNextImage, onPreviousImage, onNextImage } = props;
+    const imageUrl =
+      previewState.previewingImageItem !== null && typeof previewState.imagePreviewUrl === "string"
+        ? previewState.imagePreviewUrl
+        : null;
 
-  const hasImagePreview = imagePreviewUrl !== null;
+    if (previewState.previewingImageItem === null || imageUrl === null) {
+      return null;
+    }
 
-  const hasMarkdownPreview =
-    previewState.previewType === "markdown" && previewState.previewContent !== null;
+    return (
+      <LazyImagePreview
+        imageUrl={imageUrl}
+        fileName={previewState.previewingImageItem.name}
+        isFullScreen={true}
+        onClose={onClose}
+        lazyLoad={false}
+        hasPrevious={hasPreviousImage}
+        hasNext={hasNextImage}
+        onPrevious={onPreviousImage}
+        onNext={onNextImage}
+      />
+    );
+  }
 
-  const hasTextPreview =
-    previewState.previewType === "text" && previewState.previewContent !== null;
-
-  if (previewingFile === null) {
+  if (previewState.previewingItem === null) {
     return null;
   }
+
+  const hasMarkdown =
+    previewState.previewType === "markdown" && previewState.previewContent !== null;
+  const hasText = previewState.previewType === "text" && previewState.previewContent !== null;
+
+  const {
+    breadcrumbSegments,
+    breadcrumbsMaxItems,
+    handleBreadcrumbClick,
+    breadcrumbsContainerRef,
+    shouldShowInToolbar,
+  } = props;
 
   return (
     <Box
@@ -130,10 +150,10 @@ const FilePreviewPage: React.FC<FilePreviewPageProps> = ({
             display: "flex",
             flexDirection: "column",
             gap: { xs: 2.5, md: 3 },
-            minHeight: hasImagePreview ? "auto" : "320px",
+            minHeight: "320px",
           }}
         >
-          {hasMarkdownPreview ? (
+          {hasMarkdown ? (
             <LazyMarkdownPreview
               readmeContent={previewState.previewContent}
               loadingReadme={previewState.loadingPreview}
@@ -145,7 +165,7 @@ const FilePreviewPage: React.FC<FilePreviewPageProps> = ({
             />
           ) : null}
 
-          {hasTextPreview ? (
+          {hasText ? (
             <LazyTextPreview
               content={previewState.previewContent}
               loading={previewState.loadingPreview}
@@ -154,32 +174,10 @@ const FilePreviewPage: React.FC<FilePreviewPageProps> = ({
               onClose={onClose}
             />
           ) : null}
-
-          {imagePreviewUrl !== null ? (
-            <Box
-              sx={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "center",
-              }}
-            >
-              <LazyImagePreview
-                imageUrl={imagePreviewUrl}
-                fileName={previewState.previewingImageItem?.name ?? "图片预览"}
-                onClose={onClose}
-                isFullScreen={false}
-                lazyLoad={false}
-                hasPrevious={hasPreviousImage}
-                hasNext={hasNextImage}
-                onPrevious={hasPreviousImage ? onPreviousImage : undefined}
-                onNext={hasNextImage ? onNextImage : undefined}
-              />
-            </Box>
-          ) : null}
         </MotionBox>
       </Box>
     </Box>
   );
 };
 
-export default FilePreviewPage;
+export default FilePreview;

@@ -136,7 +136,6 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
         // 使用统一的错误处理
         handleError(e, "useContentLoading.loadContents", {
           silent: options?.silent === true,
-          userMessage: `获取目录内容失败: ${e instanceof Error ? e.message : "未知错误"}`,
         });
 
         const shouldSurfaceError = !silent || contentsRef.current.length === 0;

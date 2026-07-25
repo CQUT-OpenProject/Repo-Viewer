@@ -7,7 +7,6 @@ import { logger } from "@/utils/logging/logger";
 import ThemeProvider from "@/providers/ThemeProvider";
 import { GitHub } from "@/services/github";
 import { setupLatexOptimization } from "@/utils/rendering/latexOptimizer";
-import { MetadataProvider } from "@/contexts/MetadataContext";
 import { ResponsiveSnackbarProvider } from "@/components/ui/ResponsiveSnackbarProvider";
 import { getDeveloperConfig } from "@/config";
 import { ErrorManager, setupGlobalErrorHandlers } from "@/utils/error";
@@ -74,13 +73,11 @@ async function bootstrap(): Promise<void> {
   ReactDOM.createRoot(rootElement).render(
     // 开发环境已启用React严格模式以帮助发现潜在的错误，进行刷新后页面抽动属正常现象
     <React.StrictMode>
-      <MetadataProvider>
-        <ThemeProvider>
-          <ResponsiveSnackbarProvider>
-            <App />
-          </ResponsiveSnackbarProvider>
-        </ThemeProvider>
-      </MetadataProvider>
+      <ThemeProvider>
+        <ResponsiveSnackbarProvider>
+          <App />
+        </ResponsiveSnackbarProvider>
+      </ThemeProvider>
     </React.StrictMode>,
   );
 }

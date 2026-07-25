@@ -1,7 +1,5 @@
 import { logger } from "@/utils/logging/logger";
 import { isAbortError } from "@/utils/network/abort";
-import { createTimeWheel } from "@/utils/data-structures/TimeWheel";
-import type { TimeWheel } from "@/utils/data-structures/TimeWheel";
 
 /**
  * 批处理请求接口
@@ -48,24 +46,34 @@ export class RequestBatcher {
   // 进行中的请求
   private readonly pendingRequests = new Map<string, Promise<unknown>>();
 
-  // 请求指纹缓存（使用时间轮管理过期）
-  private readonly fingerprintWheel: TimeWheel<FingerprintData>;
+  private readonly fingerprintCache = new Map<string, FingerprintData & { expiresAt: number }>();
 
-  private batchTimeout: number | null = null;
-  private readonly batchDelay = 20; // 批处理延迟毫秒
-  private readonly maxRetries = 3; // 最大重试次数
-  private readonly fingerprintTTL = 5 * 60 * 1000; // 指纹缓存5分钟
+  private batchTimeout: ReturnType<typeof setTimeout> | null = null;
+  private readonly batchDelay = 20;
+  private readonly maxRetries = 3;
+  private readonly fingerprintTTL = 5 * 60 * 1000;
 
   constructor() {
-    // 使用时间轮管理指纹缓存
-    // 每个槽覆盖 1 分钟，共 10 个槽（覆盖 10 分钟，超过 TTL）
-    this.fingerprintWheel = createTimeWheel<FingerprintData>({
-      slotDuration: 60 * 1000, // 1 分钟
-      totalSlots: 10, // 10 个槽
-      tickInterval: 30 * 1000, // 每 30 秒清理一次
-    });
+    logger.debug("RequestBatcher 已启动");
+  }
 
-    logger.debug("RequestBatcher 已启动，使用时间轮管理指纹缓存");
+  private getFingerprint(fingerprint: string): FingerprintData | undefined {
+    const entry = this.fingerprintCache.get(fingerprint);
+    if (entry === undefined) {
+      return undefined;
+    }
+    if (Date.now() > entry.expiresAt) {
+      this.fingerprintCache.delete(fingerprint);
+      return undefined;
+    }
+    return entry;
+  }
+
+  private setFingerprint(fingerprint: string, data: FingerprintData): void {
+    this.fingerprintCache.set(fingerprint, {
+      ...data,
+      expiresAt: Date.now() + this.fingerprintTTL,
+    });
   }
 
   // 生成请求指纹（用于去重）
@@ -168,9 +176,8 @@ export class RequestBatcher {
     const fingerprint = this.generateFingerprint(key, method, headers);
 
     if (fingerprintCache === "use") {
-      const cachedData = this.fingerprintWheel.get(fingerprint);
+      const cachedData = this.getFingerprint(fingerprint);
       if (cachedData !== undefined) {
-        // 增加命中次数
         cachedData.hitCount++;
         logger.debug(`请求去重命中: ${key}，命中次数: ${cachedData.hitCount.toString()}`);
         return Promise.resolve(cachedData.result as T);
@@ -282,14 +289,10 @@ export class RequestBatcher {
 
       // 缓存成功响应的结果
       if (fingerprintCache === "use") {
-        this.fingerprintWheel.add(
-          fingerprint,
-          {
-            result,
-            hitCount: 1,
-          },
-          this.fingerprintTTL,
-        );
+        this.setFingerprint(fingerprint, {
+          result,
+          hitCount: 1,
+        });
       }
 
       // 所有批处理请求都收到相同的结果
@@ -325,7 +328,7 @@ export class RequestBatcher {
    * @returns void
    */
   public clearCache(): void {
-    this.fingerprintWheel.clear();
+    this.fingerprintCache.clear();
     logger.debug("已清除请求指纹缓存");
   }
 }

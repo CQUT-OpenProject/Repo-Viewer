@@ -18,7 +18,7 @@
       "noResultsHint": "尝试更换关键字或调整筛选条件",
       "emptyIndexResult": "未检索到索引结果，可尝试使用 API 模式搜索。",
       "apiSearchButton": "使用 API 模式搜索",
-      "apiSearchButtonShort": "API搜索",
+      "apiSearchButtonShort": "API 搜索",
       "source": {
         "index": "索引",
         "api": "API"
@@ -103,15 +103,15 @@
       "connection": "网络连接失败，请稍后重试"
     },
     "api": {
-      "forbidden": "API访问受限，请检查访问权限",
+      "forbidden": "API 访问被拒绝，请检查访问权限",
       "notFound": "请求的资源未找到",
       "serverError": "服务器错误，请稍后重试",
       "default": "请求失败"
     },
     "file": {
       "download": "文件下载失败，请重试",
-      "downloadFailed": "下载文件失败: @@message@@",
-      "folderDownloadFailed": "下载文件夹失败: @@message@@",
+      "downloadFailed": "下载文件失败：@@message@@",
+      "folderDownloadFailed": "下载文件夹失败：@@message@@",
       "downloadInProgress": "已有下载任务正在进行中，请等待当前下载完成",
       "downloadLinkUnavailable": "无法获取文件下载链接",
       "compress": "文件压缩失败，可能文件过大",
@@ -125,12 +125,12 @@
     "preview": {
       "unsupportedFileType": "不支持预览该文件类型",
       "downloadLinkUnavailable": "无法获取文件下载链接",
-      "markdownLoadFailed": "加载Markdown文件失败: @@message@@",
-      "textLoadFailed": "加载文本文件失败: @@message@@",
-      "pdfLoadFailed": "打开PDF失败: @@message@@",
-      "imageLoadFailed": "加载图片文件失败: @@message@@",
-      "filePreviewFailed": "预览文件失败: @@message@@",
-      "imageError": "图像加载失败: @@message@@"
+      "markdownLoadFailed": "加载 Markdown 文件失败：@@message@@",
+      "textLoadFailed": "加载文本文件失败：@@message@@",
+      "pdfLoadFailed": "打开 PDF 失败：@@message@@",
+      "imageLoadFailed": "加载图片文件失败：@@message@@",
+      "filePreviewFailed": "预览文件失败：@@message@@",
+      "imageError": "图像加载失败：@@message@@"
     },
     "boundary": {
       "retryExceeded": "多次重试后仍然出错，请刷新页面或联系技术支持",
@@ -154,7 +154,7 @@
       "loading": "正在加载图片",
       "loadFailed": "图片加载失败",
       "loaded": "图片已加载：@@name@@",
-      "loadError": "图像加载失败",
+      "loadError": "图像加载出错",
       "previous": "上一张",
       "next": "下一张",
       "close": "关闭",
@@ -171,7 +171,7 @@
     },
     "branch": {
       "label": "当前分支",
-      "loading": "加载中...",
+      "loading": "加载中…",
       "switch": "切换分支",
       "listLabel": "分支列表"
     },
@@ -196,7 +196,7 @@
         "aria": "返回首页"
       },
       "toSegment": {
-        "aria": "返回到@@name@@"
+        "aria": "返回到 @@name@@"
       }
     },
     "markdown": {
@@ -204,7 +204,9 @@
       "copy": {
         "button": "复制代码",
         "copied": "已复制",
-        "aria": "复制代码"
+        "aria": "复制代码",
+        "tableButton": "复制表格",
+        "tableAria": "复制表格"
       }
     },
     "scrollToTop": {
@@ -238,6 +240,15 @@
       "meta": {
         "totalLines": "共 @@count@@ 行"
       }
+    },
+    "seo": {
+      "rootDirectory": "根目录",
+      "repository": "仓库",
+      "file": "文件",
+      "directoryDescription": "查看 @@path@@ 目录中的内容",
+      "fileDescription": "查看 @@path@@ 的详细内容",
+      "fileTypeSuffix": "（@@fileType@@ 格式）",
+      "repoSuffix": " - @@owner@@/@@repo@@ GitHub 仓库"
     }
   }
 }

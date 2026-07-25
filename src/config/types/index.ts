@@ -63,7 +63,6 @@ export interface DeveloperLoggingConfig {
   enableConsole?: boolean;
   enableErrorReporting?: boolean;
   includeWarnInReporting?: boolean;
-  enableRecorder?: boolean;
   reportUrl?: string;
   baseLevel?: "debug" | "info" | "warn" | "error";
 }

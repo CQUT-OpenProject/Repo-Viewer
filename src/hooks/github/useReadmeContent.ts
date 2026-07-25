@@ -128,10 +128,7 @@ export function useReadmeContent(
         if (isAbortError(e)) {
           return;
         }
-        handleError(e, "useReadmeContent.loadReadmeContent", {
-          silent: true,
-          userMessage: `加载 README 失败: ${e instanceof Error ? e.message : "未知错误"}`,
-        });
+        handleError(e, "useReadmeContent.loadReadmeContent", { silent: true });
         logger.error(`加载 README 失败: ${e instanceof Error ? e.message : "未知错误"}`);
         if (!shouldPreserve) {
           setReadmeContent(null);

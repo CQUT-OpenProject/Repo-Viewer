@@ -29,5 +29,3 @@ export function normalizeFilePath(path: string): string {
   }
   return path.replace(/^\/+/u, "");
 }
-
-export { escapeRegExp } from "@/utils/string/escapeRegExp";

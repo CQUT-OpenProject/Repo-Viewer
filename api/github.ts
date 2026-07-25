@@ -13,6 +13,60 @@ const colors = {
   gray: "\x1b[90m",
 };
 
+class TokenRotator {
+  private tokens: string[] = [];
+  private currentIndex = 0;
+  private failedTokens = new Set<string>();
+
+  public setTokens(tokens: string[]): void {
+    this.tokens = [...new Set(tokens.map((t) => t.trim()).filter((t) => t.length > 0))];
+    this.currentIndex = 0;
+    this.failedTokens.clear();
+  }
+
+  public getCurrentToken(): string {
+    if (this.tokens.length === 0) {
+      return "";
+    }
+    return this.tokens[this.currentIndex] ?? "";
+  }
+
+  public getNextToken(): string {
+    if (this.tokens.length === 0) {
+      return "";
+    }
+
+    let attempts = 0;
+    while (attempts < this.tokens.length) {
+      this.currentIndex = (this.currentIndex + 1) % this.tokens.length;
+      const token = this.tokens[this.currentIndex];
+      if (token === undefined || token.length === 0 || this.failedTokens.has(token)) {
+        attempts += 1;
+        continue;
+      }
+      return token;
+    }
+
+    this.failedTokens.clear();
+    this.currentIndex = 0;
+    return this.tokens[0] ?? "";
+  }
+
+  public markTokenFailed(token: string): void {
+    if (token.length > 0) {
+      this.failedTokens.add(token);
+    }
+  }
+
+  public hasTokens(): boolean {
+    return this.tokens.length > 0;
+  }
+
+  public getTokenCount(): number {
+    return this.tokens.length;
+  }
+}
+
 // 配置常量
 const GITHUB_API_BASE = "https://api.github.com";
 const PROXY_REQUEST_TIMEOUT_MS = 15000;
@@ -91,38 +145,23 @@ const apiLogger = {
   },
 };
 
-// GitHub Token管理器
-class GitHubTokenManager {
-  private tokens: string[] = [];
-  private currentIndex = 0;
-  private failedTokens = new Set<string>();
+class ApiTokenManager {
+  private readonly rotator = new TokenRotator();
 
   constructor() {
     this.loadTokensFromEnv();
   }
 
   private loadTokensFromEnv(): void {
-    // 清空现有token
-    this.tokens = [];
-
     try {
-      // 尝试查找环境变量中的所有PAT
       const envKeys = Object.keys(process.env);
-      const patKeys = envKeys.filter((key) => {
-        if (!(key.startsWith("GITHUB_PAT") || key.startsWith("VITE_GITHUB_PAT"))) {
-          return false;
-        }
-        const value = process.env[key];
-        return value !== undefined && value.trim().length > 0;
-      });
-
-      // 收集所有有效的PAT
-      this.tokens = patKeys
+      const tokens = envKeys
+        .filter((key) => key.startsWith("GITHUB_PAT") || key.startsWith("VITE_GITHUB_PAT"))
         .map((key) => process.env[key])
         .filter((token): token is string => token !== undefined && token.trim().length > 0);
-
+      this.rotator.setTokens(tokens);
       apiLogger.info(
-        `${colors.green}Loaded${colors.reset} ${colors.brightWhite}${String(this.tokens.length)}${colors.reset} GitHub token(s)`,
+        `${colors.green}Loaded${colors.reset} ${colors.brightWhite}${String(this.rotator.getTokenCount())}${colors.reset} GitHub token(s)`,
       );
     } catch (error) {
       apiLogger.error(`${colors.red}Failed to load GitHub tokens:${colors.reset}`, error);
@@ -130,55 +169,27 @@ class GitHubTokenManager {
   }
 
   public getCurrentToken(): string {
-    if (this.tokens.length === 0) {
-      return "";
-    }
-    const token = this.tokens[this.currentIndex];
-    return token ?? "";
+    return this.rotator.getCurrentToken();
   }
 
   public getNextToken(): string {
-    if (this.tokens.length === 0) {
-      return "";
-    }
-
-    // 轮换到下一个有效的令牌
-    let attempts = 0;
-    while (attempts < this.tokens.length) {
-      this.currentIndex = (this.currentIndex + 1) % this.tokens.length;
-      const token = this.tokens[this.currentIndex];
-
-      // 跳过已知失败的令牌
-      if (token !== undefined && token.length > 0 && this.failedTokens.has(token)) {
-        attempts++;
-        continue;
-      }
-
-      return token ?? "";
-    }
-
-    // 如果所有令牌都失败，重置并返回第一个令牌
-    this.failedTokens.clear();
-    this.currentIndex = 0;
-    const firstToken = this.tokens[0];
-    return firstToken ?? "";
+    return this.rotator.getNextToken();
   }
 
   public markTokenFailed(token: string): void {
-    this.failedTokens.add(token);
+    this.rotator.markTokenFailed(token);
   }
 
   public hasTokens(): boolean {
-    return this.tokens.length > 0;
+    return this.rotator.hasTokens();
   }
 
   public getTokenCount(): number {
-    return this.tokens.length;
+    return this.rotator.getTokenCount();
   }
 }
 
-// 创建token管理器实例
-const tokenManager = new GitHubTokenManager();
+const tokenManager = new ApiTokenManager();
 
 const normalizeEnvValue = (value?: string | null): string | undefined => {
   if (typeof value !== "string") {

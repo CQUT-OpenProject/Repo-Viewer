@@ -165,14 +165,16 @@ export const createMarkdownStyles = (
       margin: theme.spacing(3, 0),
     },
 
+    "& .markdown-body .markdown-table-wrap": {
+      marginTop: theme.spacing(2),
+      marginBottom: theme.spacing(2),
+    },
+
     "& .markdown-body table": {
       width: "100%",
       borderCollapse: "collapse",
       borderSpacing: 0,
-      display: "block",
-      overflowX: "auto",
-      marginTop: theme.spacing(2),
-      marginBottom: theme.spacing(2),
+      display: "table",
     },
 
     "& .markdown-body table th, & .markdown-body table td": {

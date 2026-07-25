@@ -19,7 +19,7 @@ const DEFAULT_INTERPOLATION_REGEX = /@@(.*?)@@/g;
  * @param locale - 语言代码
  * @returns 插值后的字符串，如 "hello my name is Joe"
  */
-export function interpolateString(
+function interpolateString(
   key: string,
   phrase: string,
   options: InterpolationOptions,
@@ -64,17 +64,17 @@ export function interpolateString(
  * @param locale - 语言代码
  * @returns 复数形式的键，如 "item.one" 或 "item.other"
  */
-export const getPlural = (count: number, key: string, locale: Locale): string => {
+const getPlural = (count: number, key: string, locale: Locale): string => {
   const parts = locale.split("-");
   const lang = parts[0]?.toLowerCase() ?? "";
 
-  // 对于中文，通常不需要复数形式
-  if (lang === "zh") {
+  // 中文、日文等通常不需要复数形式
+  if (lang === "zh" || lang === "ja") {
     return key;
   }
 
   // 对于英文等语言，使用简单的复数规则
-  if (lang === "en" || lang.startsWith("en")) {
+  if (lang === "en") {
     return count === 1 ? `${key}.one` : `${key}.other`;
   }
 
@@ -172,30 +172,15 @@ class Translator implements ITranslator {
       internalKey = getPlural(count, key, this.locale);
     }
 
-    const keyValue = this.getValue(internalKey);
-
-    // 如果复数形式的键不存在，回退到原键
-    if (keyValue === null && internalKey !== key) {
-      const fallbackValue = this.getValue(key);
-      if (fallbackValue !== null) {
-        return interpolateString(
-          key,
-          fallbackValue,
-          options,
-          this.onMissingInterpolationFn,
-          this.locale,
-        );
-      }
-    }
+    // 复数键缺失时：原键 → .other → .one
+    const keyValue =
+      this.getValue(internalKey) ??
+      (internalKey !== key ? this.getValue(key) : null) ??
+      this.getValue(`${key}.other`) ??
+      this.getValue(`${key}.one`);
 
     return keyValue !== null
-      ? interpolateString(
-          internalKey,
-          keyValue,
-          options,
-          this.onMissingInterpolationFn,
-          this.locale,
-        )
+      ? interpolateString(key, keyValue, options, this.onMissingInterpolationFn, this.locale)
       : this.onMissingKeyFn(internalKey);
   }
 }

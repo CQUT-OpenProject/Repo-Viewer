@@ -18,7 +18,7 @@ vi.mock("../content/service", () => ({
   getContents: vi.fn(),
 }));
 
-import { searchMultipleBranchesWithTreesApi } from "./local";
+import { searchMultipleBranchesWithTreesApi } from "./treesSearch";
 import { getBranchTree } from "./trees";
 
 const mockedGetBranchTree = vi.mocked(getBranchTree);

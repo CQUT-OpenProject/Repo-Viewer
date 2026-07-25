@@ -7,11 +7,20 @@
       "inBranch": "Search in @@branch@@",
       "inBranches": "Search in @@branches@@",
       "inBranchesWithPath": "Search in @@branches@@: @@path@@",
-      "inMultipleBranches": "Search in @@count@@ branches",
-      "inMultipleBranchesWithPath": "Search in @@branches@@ and @@count@@ more branches: @@path@@"
+      "inMultipleBranches": {
+        "one": "Search in @@count@@ branch",
+        "other": "Search in @@count@@ branches"
+      },
+      "inMultipleBranchesWithPath": {
+        "one": "Search in @@count@@ branch including @@branches@@: @@path@@",
+        "other": "Search in @@count@@ branches including @@branches@@: @@path@@"
+      }
     },
     "results": {
-      "summary": "@@count@@ results • @@took@@ ms • @@mode@@",
+      "summary": {
+        "one": "@@count@@ result • @@took@@ ms • @@mode@@",
+        "other": "@@count@@ results • @@took@@ ms • @@mode@@"
+      },
       "indexMode": "Index Mode",
       "apiMode": "API Mode",
       "noResults": "No results",
@@ -60,7 +69,7 @@
         "branchMissing": {
           "title": "Index branch does not exist. API mode search will be used",
           "description1": "Branch @@branch@@ not found",
-          "description2": "Configure Actions in the target repository to generate index branch"
+          "description2": "Configure Actions in the target repository to generate the index branch"
         },
         "manifestNotFound": {
           "title": "Manifest missing. API mode search will be used",
@@ -83,13 +92,13 @@
         },
         "unsupportedCompression": {
           "title": "Unsupported compression format. API mode search will be used",
-          "description1": "Index file uses unsupported compression format",
-          "description2": "Regenerate index file using standard gzip compression format"
+          "description1": "Index file uses an unsupported compression format",
+          "description2": "Regenerate the index file using standard gzip compression"
         },
         "default": {
           "title": "Failed to load index. API mode search will be used",
           "description1": "@@message@@",
-          "description2": "Check if index file exists and is correctly formatted"
+          "description2": "Check if the index file exists and is correctly formatted"
         }
       }
     },
@@ -99,28 +108,28 @@
   },
   "error": {
     "network": {
-      "timeout": "Request timeout, please check your network connection",
-      "connection": "Network connection failed, please try again later"
+      "timeout": "Request timed out. Please check your network connection",
+      "connection": "Network connection failed. Please try again later"
     },
     "api": {
-      "forbidden": "API access restricted, please check access permissions",
+      "forbidden": "API access denied. Please check your permissions",
       "notFound": "Requested resource not found",
-      "serverError": "Server error, please try again later",
+      "serverError": "Server error. Please try again later",
       "default": "Request failed"
     },
     "file": {
-      "download": "File download failed, please try again",
+      "download": "File download failed. Please try again",
       "downloadFailed": "Failed to download file: @@message@@",
       "folderDownloadFailed": "Failed to download folder: @@message@@",
-      "downloadInProgress": "A download task is already in progress, please wait for it to complete",
+      "downloadInProgress": "A download is already in progress. Please wait for it to complete",
       "downloadLinkUnavailable": "Unable to get file download link",
-      "compress": "File compression failed, file may be too large",
-      "parse": "File parsing failed, format may not be supported",
+      "compress": "File compression failed. The file may be too large",
+      "parse": "File parsing failed. The format may not be supported",
       "default": "File operation failed"
     },
-    "component": "Page component error, please refresh the page",
-    "validation": "Input data is invalid, please check and try again",
-    "default": "Operation failed, please try again later",
+    "component": "Page component error. Please refresh the page",
+    "validation": "Invalid input. Please check and try again",
+    "default": "Operation failed. Please try again later",
     "unknown": "Unknown error",
     "preview": {
       "unsupportedFileType": "This file type is not supported for preview",
@@ -133,10 +142,13 @@
       "imageError": "Image load failed: @@message@@"
     },
     "boundary": {
-      "retryExceeded": "Error persists after multiple retries, please refresh the page or contact support",
-      "unknownError": "An unknown error occurred, please try again later",
+      "retryExceeded": "Error persists after multiple retries. Please refresh the page or contact support",
+      "unknownError": "An unknown error occurred. Please try again later",
       "details": "Error Details",
-      "retryCount": "Retried @@count@@ times",
+      "retryCount": {
+        "one": "Retried @@count@@ time",
+        "other": "Retried @@count@@ times"
+      },
       "title": {
         "page": "Page Load Error",
         "feature": "Feature Module Error",
@@ -154,7 +166,7 @@
       "loading": "Loading image",
       "loadFailed": "Image load failed",
       "loaded": "Image loaded: @@name@@",
-      "loadError": "Image load failed",
+      "loadError": "Image load error",
       "previous": "Previous",
       "next": "Next",
       "close": "Close",
@@ -171,7 +183,7 @@
     },
     "branch": {
       "label": "Current Branch",
-      "loading": "Loading...",
+      "loading": "Loading…",
       "switch": "Switch branch",
       "listLabel": "Branch list"
     },
@@ -204,7 +216,9 @@
       "copy": {
         "button": "Copy code",
         "copied": "Copied",
-        "aria": "Copy code"
+        "aria": "Copy code",
+        "tableButton": "Copy table",
+        "tableAria": "Copy table"
       }
     },
     "scrollToTop": {
@@ -236,8 +250,20 @@
       "copyAll": "Copy all content",
       "copied": "Copied",
       "meta": {
-        "totalLines": "Total @@count@@ lines"
+        "totalLines": {
+          "one": "@@count@@ line total",
+          "other": "@@count@@ lines total"
+        }
       }
+    },
+    "seo": {
+      "rootDirectory": "Root",
+      "repository": "repository",
+      "file": "file",
+      "directoryDescription": "Browse contents of @@path@@",
+      "fileDescription": "View details of @@path@@",
+      "fileTypeSuffix": " (@@fileType@@ format)",
+      "repoSuffix": " - @@owner@@/@@repo@@ on GitHub"
     }
   }
 }

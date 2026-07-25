@@ -137,7 +137,7 @@ function splitHighlightedHtml(html: string, lineCount: number): string[] {
   return result.slice(0, lineCount);
 }
 
-export function highlightLines(lines: string[], language: string | null): string[] {
+function highlightLines(lines: string[], language: string | null): string[] {
   if (language === null || language === "") {
     return encodeLines(lines);
   }

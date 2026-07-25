@@ -1,5 +1,5 @@
 import { GitHubTokenManager } from "../TokenManager";
-import { ErrorManager } from "@/utils/error/core/ErrorManager";
+import { ErrorManager } from "@/utils/error";
 import type { GitHubError } from "@/types/errors";
 import { getForceServerProxy } from "../config/ProxyForceManager";
 

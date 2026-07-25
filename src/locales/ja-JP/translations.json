@@ -48,12 +48,12 @@
     "error": "検索に失敗しました：@@message@@",
     "index": {
       "refresh": "インデックス状態を更新",
-      "detecting": "インデックス資産を検出中…",
+      "detecting": "インデックスアセットを検出中…",
       "disabled": "インデックスモードが無効です。APIモード検索を使用します。ENABLED_SEARCH_INDEX を設定してインデックスモードを有効にしてください。",
-      "ready": "インデックス最終更新：@@time@@。サポートされているブランチ数：@@count@@。",
+      "ready": "インデックス最終更新：@@time@@。対応ブランチ数：@@count@@。",
       "notReady": {
         "title": "利用可能なインデックスが検出されませんでした",
-        "description1": "docfind の索引資産を生成してサイトに公開してください",
+        "description1": "docfind のインデックスアセットを生成してサイトに公開してください",
         "description2": "manifest.json と docfind.js/docfind_bg.wasm の配置を確認してください"
       },
       "errors": {
@@ -65,21 +65,21 @@
         "manifestNotFound": {
           "title": "マニフェストが見つかりません。APIモード検索を使用します",
           "description1": "manifest.json が見つかりません",
-          "description2": "ビルドで索引資産が生成・公開されているか確認してください"
+          "description2": "ビルドでインデックスアセットが生成・公開されているか確認してください"
         },
         "manifestInvalid": {
           "title": "マニフェスト形式エラー。APIモード検索を使用します",
-          "description1": "索引資産を再生成してください"
+          "description1": "インデックスアセットを再生成してください"
         },
         "fileNotFound": {
-          "title": "索引資産が見つかりません。APIモード検索を使用します",
+          "title": "インデックスアセットが見つかりません。APIモード検索を使用します",
           "description1": "docfind.js または docfind_bg.wasm が見つかりません",
-          "description2": "索引資産を再生成してください"
+          "description2": "インデックスアセットを再生成してください"
         },
         "documentInvalid": {
-          "title": "索引結果が不正です。APIモード検索を使用します",
+          "title": "インデックス結果が不正です。APIモード検索を使用します",
           "description1": "インデックス内容が破損しているか、形式が正しくありません",
-          "description2": "索引資産を再生成してください"
+          "description2": "インデックスアセットを再生成してください"
         },
         "unsupportedCompression": {
           "title": "非対応の圧縮形式です。APIモード検索を使用します",
@@ -89,7 +89,7 @@
         "default": {
           "title": "インデックスの読み込みに失敗しました。APIモード検索を使用します",
           "description1": "@@message@@",
-          "description2": "インデックスファイルが存在し、正しく形式化されているか確認してください"
+          "description2": "インデックスファイルが存在し、形式が正しいか確認してください"
         }
       }
     },
@@ -103,7 +103,7 @@
       "connection": "ネットワーク接続に失敗しました。後でもう一度お試しください"
     },
     "api": {
-      "forbidden": "APIアクセスが制限されています。アクセス権限を確認してください",
+      "forbidden": "APIアクセスが拒否されました。アクセス権限を確認してください",
       "notFound": "要求されたリソースが見つかりません",
       "serverError": "サーバーエラーが発生しました。後でもう一度お試しください",
       "default": "リクエストに失敗しました"
@@ -112,7 +112,7 @@
       "download": "ファイルのダウンロードに失敗しました。もう一度お試しください",
       "downloadFailed": "ファイルのダウンロードに失敗しました：@@message@@",
       "folderDownloadFailed": "フォルダのダウンロードに失敗しました：@@message@@",
-      "downloadInProgress": "ダウンロードタスクが既に進行中です。完了するまでお待ちください",
+      "downloadInProgress": "ダウンロードが既に進行中です。完了するまでお待ちください",
       "downloadLinkUnavailable": "ファイルのダウンロードリンクを取得できません",
       "compress": "ファイルの圧縮に失敗しました。ファイルサイズが大きすぎる可能性があります",
       "parse": "ファイルの解析に失敗しました。形式がサポートされていない可能性があります",
@@ -154,7 +154,7 @@
       "loading": "画像を読み込み中",
       "loadFailed": "画像の読み込みに失敗しました",
       "loaded": "画像を読み込みました：@@name@@",
-      "loadError": "画像の読み込みに失敗しました",
+      "loadError": "画像の読み込みエラー",
       "previous": "前へ",
       "next": "次へ",
       "close": "閉じる",
@@ -171,7 +171,7 @@
     },
     "branch": {
       "label": "現在のブランチ",
-      "loading": "読み込み中...",
+      "loading": "読み込み中…",
       "switch": "ブランチを切り替え",
       "listLabel": "ブランチリスト"
     },
@@ -204,7 +204,9 @@
       "copy": {
         "button": "コードをコピー",
         "copied": "コピーしました",
-        "aria": "コードをコピー"
+        "aria": "コードをコピー",
+        "tableButton": "表をコピー",
+        "tableAria": "表をコピー"
       }
     },
     "scrollToTop": {
@@ -238,6 +240,15 @@
       "meta": {
         "totalLines": "合計 @@count@@ 行"
       }
+    },
+    "seo": {
+      "rootDirectory": "ルート",
+      "repository": "リポジトリ",
+      "file": "ファイル",
+      "directoryDescription": "@@path@@ ディレクトリの内容を表示",
+      "fileDescription": "@@path@@ の詳細を表示",
+      "fileTypeSuffix": "（@@fileType@@ 形式）",
+      "repoSuffix": " - @@owner@@/@@repo@@ GitHub リポジトリ"
     }
   }
 }

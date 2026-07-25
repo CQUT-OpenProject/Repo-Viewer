@@ -250,10 +250,6 @@ export class ConfigLoader {
       resolveEnvWithMapping(env, "LOGGER_REPORT_WARNINGS", "false"),
     );
 
-    const enableRecorder = EnvParser.parseBoolean(
-      resolveEnvWithMapping(env, "LOGGER_ENABLE_RECORDER", developerMode ? "true" : "false"),
-    );
-
     const reportUrl = resolveEnvWithMapping(env, "LOGGER_REPORT_URL", "");
     const baseLevelValue = resolveEnvWithMapping(env, "LOGGER_BASE_LEVEL", "").toLowerCase();
     const baseLevel: DeveloperLoggingConfig["baseLevel"] = [
@@ -269,7 +265,6 @@ export class ConfigLoader {
       enableConsole,
       enableErrorReporting,
       includeWarnInReporting,
-      enableRecorder,
     };
 
     if (reportUrl.length > 0) {

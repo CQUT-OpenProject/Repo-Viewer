@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-`src/` contains the application code. UI lives in `src/components/`, reusable logic in `src/hooks/`, GitHub data access in `src/services/github/`, shared helpers in `src/utils/`, and app-wide state in `src/contexts/` and `src/providers/`. Theme tokens and component styling live under `src/theme/`. Static assets and generated search index files are served from `public/`. Serverless handlers are in `api/`, while build-time generators such as `generateInitialContent.ts` and `generateDocfindIndex.ts` live in `scripts/`. Project docs and screenshots are kept in `docs/`.
+`src/` contains the application code. UI lives in `src/components/`, reusable logic in `src/hooks/`, GitHub data access in `src/services/github/`, shared helpers in `src/utils/`, and app-wide state in `src/contexts/` and `src/providers/`. Theme tokens and component styling live under `src/theme/`. Static assets and generated search index files are served from `public/`. Serverless handlers are in `api/`, while build-time generators such as `generateInitialContent.ts` and `generateDocfindIndex.ts` live in `scripts/`.
 
 ## Build, Test, and Development Commands
 
@@ -19,7 +19,7 @@ Copy `.env.example` to `.env` before local work.
 
 ## Coding Style & Naming Conventions
 
-Follow `.editorconfig`: UTF-8, LF, spaces, and 2-space indentation. Keep JS/TS/TSX lines near the 100-character limit. Prefer TypeScript, functional React components, and small focused modules. Use `PascalCase` for components (`FilePreviewPage.tsx`), `camelCase` for hooks and utilities (`useRepoSearch.ts`, `hashUtils.ts`), and descriptive folder names grouped by feature. Keep comments brief and only where intent is not obvious.
+Follow `.editorconfig`: UTF-8, LF, spaces, and 2-space indentation. Keep JS/TS/TSX lines near the 100-character limit. Prefer TypeScript, functional React components, and small focused modules. Use `PascalCase` for components (`FilePreview.tsx`), `camelCase` for hooks and utilities (`useRepoSearch.ts`, `hashUtils.ts`), and descriptive folder names grouped by feature. Keep comments brief and only where intent is not obvious.
 
 ## Testing Guidelines
 

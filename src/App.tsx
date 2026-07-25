@@ -4,11 +4,10 @@ import { LazyMotion, domAnimation } from "framer-motion";
 import { AppContextProvider } from "@/contexts/unified";
 import MainContent from "@/components/layout/MainContent";
 import ToolbarButtons from "@/components/layout/ToolbarButtons";
-import { SITE_TITLE } from "@/constants";
+import { getSiteConfig } from "@/config";
 import { GitHub } from "@/services/github";
 import { logger } from "@/utils/logging/logger";
 import { useScrollVisibility } from "@/hooks/useScrollVisibility";
-import NativeSEO from "@/components/seo/NativeSEO";
 import Footer from "@/components/layout/Footer";
 import { FaviconManager } from "@/components/ui/DynamicIcon";
 import { PageErrorBoundary, FeatureErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -23,6 +22,7 @@ const App = () => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const titleRef = useRef<HTMLDivElement | null>(null);
+  const siteTitle = getSiteConfig().title;
 
   // 使用自定义 Hook 监听滚动位置
   const showBreadcrumbInToolbar = useScrollVisibility(100);
@@ -93,10 +93,7 @@ const App = () => {
 
   return (
     <>
-      {/* 动态favicon管理器 */}
       <FaviconManager />
-      {/* 基础SEO设置 */}
-      <NativeSEO />
 
       <style>
         {`
@@ -169,7 +166,7 @@ const App = () => {
                       }}
                       onClick={handleTitleClick}
                     >
-                      {SITE_TITLE}
+                      {siteTitle}
                     </Typography>
 
                     {/* 面包屑导航（顶部栏）的容器 */}

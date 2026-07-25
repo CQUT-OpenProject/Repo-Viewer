@@ -11,6 +11,7 @@
  */
 
 import type { Theme } from "@mui/material";
+import { formatFileSize } from "@/utils/format/formatters";
 import {
   extractPDFThemeColors,
   generatePDFLoadingHTML,
@@ -125,16 +126,6 @@ function bindCancelHandler(
 }
 
 /**
- * 格式化字节数为可读的 MB 格式
- *
- * @param bytes - 字节数
- * @returns 格式化后的字符串（如 "2.45 MB"）
- */
-function formatBytes(bytes: number): string {
-  return `${(bytes / 1048576).toFixed(2)} MB`;
-}
-
-/**
  * 更新下载进度显示
  *
  * @param newTab - PDF 预览窗口
@@ -160,10 +151,10 @@ function updateProgress(
     progressEl.textContent =
       total > 0 && pct !== null
         ? translations.downloadedWithProgress
-            .replace("@@loaded@@", formatBytes(loaded))
-            .replace("@@total@@", formatBytes(total))
+            .replace("@@loaded@@", formatFileSize(loaded))
+            .replace("@@total@@", formatFileSize(total))
             .replace("@@percent@@", pct.toString())
-        : translations.downloaded.replace("@@loaded@@", formatBytes(loaded));
+        : translations.downloaded.replace("@@loaded@@", formatFileSize(loaded));
   }
 
   // 更新进度条

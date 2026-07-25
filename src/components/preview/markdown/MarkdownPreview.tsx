@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, type AnimationEvent } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
+import { remarkAlert } from "remark-github-blockquote-alert";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import { Box, Paper, CircularProgress, useTheme, IconButton, Tooltip } from "@mui/material";
@@ -17,6 +18,7 @@ import type { ImageLoadingState } from "./utils/imageUtils";
 import { checkLatexCount, createLatexCodeHandler } from "./utils/latexUtils";
 import { MarkdownImage } from "./components/MarkdownImage";
 import { MarkdownLink } from "./components/MarkdownLink";
+import { MarkdownTable } from "./components/MarkdownTable";
 import { logger } from "@/utils/logging/logger";
 import { MarkdownPreviewSkeleton } from "@/components/ui/skeletons";
 
@@ -290,7 +292,7 @@ const MarkdownPreview = ({
             onAnimationEnd={handleFadeInAnimationEnd}
           >
             <ReactMarkdown
-              remarkPlugins={[remarkGfm, remarkMath]}
+              remarkPlugins={[remarkGfm, remarkAlert, remarkMath]}
               rehypePlugins={[rehypeRaw, [rehypeKatex, katexOptions]]}
               components={{
                 a: ({ href, children, style: linkStyle, ...props }) => {
@@ -327,6 +329,7 @@ const MarkdownPreview = ({
                   );
                 },
                 code: latexCodeHandler,
+                table: (props) => <MarkdownTable {...props} />,
               }}
             >
               {readmeContent}

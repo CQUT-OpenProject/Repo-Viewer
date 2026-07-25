@@ -1,4 +1,7 @@
 export const createAbortError = (message = "Request aborted"): Error => {
+  if (typeof DOMException === "function") {
+    return new DOMException(message, "AbortError");
+  }
   const error = new Error(message);
   error.name = "AbortError";
   return error;

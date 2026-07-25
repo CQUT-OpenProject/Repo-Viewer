@@ -3,7 +3,7 @@
  *
  * 使用 Git Trees API 进行多分支文件搜索。
  *
- * @module search/local
+ * @module search/treesSearch
  */
 
 import type { GitHubContent } from "@/types";

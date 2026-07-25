@@ -16,7 +16,6 @@ import {
   saveItemToLocalStorage,
 } from "./CachePersistence";
 import { LRUCache } from "./LRUCache";
-import { getMinK } from "@/utils/data-structures/MinHeap";
 
 /**
  * 高级缓存类
@@ -220,10 +219,9 @@ export class AdvancedCache<K extends string, V> {
       items.push({ key, score });
     });
 
-    // 使用最小堆获取评分最低的 k 个元素
-    const leastUsed = getMinK(items, count, (a, b) => a.score - b.score);
+    items.sort((a, b) => a.score - b.score);
+    const leastUsed = items.slice(0, Math.max(0, count));
 
-    // 删除这些项目
     for (const { key } of leastUsed) {
       await this.delete(key);
     }

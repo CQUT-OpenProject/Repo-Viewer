@@ -122,12 +122,6 @@ export const RESPONSIVE_G3_PRESETS = {
     desktop: { radius: 20, smoothness: 0.8 },
     mobile: { radius: 16, smoothness: 0.8 },
   } as ResponsiveG3Config,
-
-  // 卡片 - 响应式
-  card: {
-    desktop: { radius: 20, smoothness: 0.5 },
-    mobile: { radius: 16, smoothness: 0.5 },
-  } as ResponsiveG3Config,
 } as const;
 
 /**
@@ -157,6 +151,4 @@ export const responsiveG3Styles = {
     getResponsiveG3BorderRadius(RESPONSIVE_G3_PRESETS.fileListContainer, isSmallScreen),
   readmeContainer: (isSmallScreen: boolean) =>
     getResponsiveG3BorderRadius(RESPONSIVE_G3_PRESETS.readmeContainer, isSmallScreen),
-  card: (isSmallScreen: boolean) =>
-    getResponsiveG3BorderRadius(RESPONSIVE_G3_PRESETS.card, isSmallScreen),
 };

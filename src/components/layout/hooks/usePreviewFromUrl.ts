@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import type { GitHubContent } from "@/types";
 import { getPreviewFromUrl } from "@/utils/routing/urlManager";
 import { logger } from "@/utils/logging/logger";
@@ -13,9 +13,7 @@ interface UsePreviewFromUrlOptions {
 }
 
 /**
- * URL 预览加载 Hook
- *
- * 从 URL 参数中读取预览文件名并自动打开预览
+ * 从 URL 预览参数自动打开文件预览。
  */
 export function usePreviewFromUrl({
   contents,
@@ -25,56 +23,32 @@ export function usePreviewFromUrl({
   previewingImageItem,
   onSelectFile,
 }: UsePreviewFromUrlOptions): void {
-  const currentPreviewItemRef = useRef<GitHubContent | null>(null);
-
   useEffect(() => {
     const loadPreviewFromUrl = async (): Promise<void> => {
-      if (loading) {
+      if (loading || error !== null || contents.length === 0) {
         return;
       }
 
-      if (error !== null) {
+      const previewFileName = getPreviewFromUrl().trim();
+      if (previewFileName.length === 0) {
         return;
       }
 
-      if (contents.length === 0) {
-        return;
-      }
-
-      const previewFileName = getPreviewFromUrl();
-
-      if (previewFileName.trim().length === 0) {
-        return;
-      }
-
-      const normalizedPreviewFileName = previewFileName.trim();
-
-      logger.debug(`从URL获取预览文件名: ${normalizedPreviewFileName}`);
-
-      const directMatch = contents.find((item) => item.name === normalizedPreviewFileName);
-      const pathTailMatch = contents.find((item) =>
-        item.path.endsWith(`/${normalizedPreviewFileName}`),
-      );
-      const fileItem = directMatch ?? pathTailMatch;
+      const fileItem =
+        contents.find((item) => item.name === previewFileName) ??
+        contents.find((item) => item.path.endsWith(`/${previewFileName}`));
 
       if (fileItem === undefined) {
-        logger.warn(`无法找到预览文件: ${normalizedPreviewFileName}`);
+        logger.warn(`无法找到预览文件: ${previewFileName}`);
         return;
       }
-
-      logger.debug(`找到匹配的文件: ${fileItem.path}`);
-
-      currentPreviewItemRef.current = fileItem;
 
       const hasActivePreview =
         (previewingItem !== null && previewingItem.path === fileItem.path) ||
         (previewingImageItem !== null && previewingImageItem.path === fileItem.path);
 
       if (!hasActivePreview) {
-        logger.debug(`预览文件未打开，正在加载: ${fileItem.path}`);
         await onSelectFile(fileItem);
-      } else {
-        logger.debug(`预览文件已经打开: ${fileItem.path}`);
       }
     };
 

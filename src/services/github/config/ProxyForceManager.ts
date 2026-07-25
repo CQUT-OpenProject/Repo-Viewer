@@ -14,7 +14,7 @@ export function getForceServerProxy(): boolean {
 /**
  * 重新计算并刷新强制代理配置
  */
-export function refreshConfig(): void {
+function refreshConfig(): void {
   _forceServerProxy = calculateForceServerProxy();
 }
 

@@ -1,26 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import type { UseImagePreviewReturn, ImagePreviewProps } from "../types";
 
-/**
- * 图片预览功能的自定义Hook
- * 管理图片预览的状态和交互逻辑
- */
 export const useImagePreview = ({
   isFullScreen = false,
-  thumbnailMode = false,
   lazyLoad = true,
   onClose,
-}: Pick<
-  ImagePreviewProps,
-  "isFullScreen" | "thumbnailMode" | "lazyLoad" | "onClose"
->): UseImagePreviewReturn => {
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<boolean>(false);
-  const [rotation, setRotation] = useState<number>(0);
-  const [fullScreenMode, setFullScreenMode] = useState<boolean>(isFullScreen);
-  const [showPreview, setShowPreview] = useState<boolean>(!thumbnailMode);
-  const [scale, setScale] = useState<number>(1);
-  const [shouldLoad, setShouldLoad] = useState<boolean>(() => {
+}: Pick<ImagePreviewProps, "isFullScreen" | "lazyLoad" | "onClose">): UseImagePreviewReturn => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [rotation, setRotation] = useState(0);
+  const [fullScreenMode, setFullScreenMode] = useState(isFullScreen);
+  const [scale, setScale] = useState(1);
+  const [shouldLoad, setShouldLoad] = useState(() => {
     if (!lazyLoad) {
       return true;
     }
@@ -30,44 +21,27 @@ export const useImagePreview = ({
   const imgRef = useRef<HTMLImageElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // 设置IntersectionObserver监听图片元素
   useEffect(() => {
-    if (!lazyLoad) {
+    if (!lazyLoad || typeof IntersectionObserver === "undefined") {
       return;
     }
 
-    if (typeof IntersectionObserver === "undefined") {
-      return;
-    }
-
-    // 创建观察器实例
     const observer = new IntersectionObserver(
       (entries) => {
-        const firstEntry = entries[0];
-        const isIntersecting = firstEntry?.isIntersecting ?? false;
-
+        const isIntersecting = entries[0]?.isIntersecting ?? false;
         if (isIntersecting) {
           setShouldLoad(true);
-          // 一旦图片开始加载，就停止观察
           const image = imgRef.current;
-
           if (image !== null) {
             observer.unobserve(image);
           }
         }
       },
-      {
-        root: null,
-        rootMargin: "100px",
-        threshold: 0.1,
-      },
+      { root: null, rootMargin: "100px", threshold: 0.1 },
     );
 
     observerRef.current = observer;
-
-    // 开始观察
     const image = imgRef.current;
-
     if (image !== null) {
       observer.observe(image);
     }
@@ -86,86 +60,54 @@ export const useImagePreview = ({
     setScale(1);
   };
 
-  const handleRotateLeft = () => {
-    setRotation((prev) => prev - 90);
-  };
-
-  const handleRotateRight = () => {
-    setRotation((prev) => prev + 90);
-  };
-
-  const toggleFullScreen = () => {
-    setFullScreenMode((prev) => !prev);
-  };
-
-  const handleOpenPreview = () => {
-    setShowPreview(true);
-  };
-
-  const handleClosePreview = () => {
-    if (thumbnailMode) {
-      setShowPreview(false);
-    }
-
-    if (fullScreenMode) {
-      setFullScreenMode(false);
-    }
-
-    if (typeof onClose === "function") {
-      onClose();
-    }
-  };
-
-  const handleImageLoad = () => {
-    setLoading(false);
-  };
-
-  const handleImageError = () => {
-    setLoading(false);
-    setError(true);
-  };
-
-  const handleTransformed = (newScale: number) => {
-    setScale(newScale);
-  };
-
-  // 重置加载状态（用于图片切换）
-  const resetLoadingState = () => {
-    // 总是先设置为加载中，具体的缓存检测由调用方处理
-    setLoading(true);
-    setError(false);
-    setRotation(0);
-    setScale(1);
-  };
-
-  // 重置状态但不触发加载（用于缓存图片）
-  const resetStateForCachedImage = () => {
-    setLoading(false);
-    setError(false);
-    setRotation(0);
-    setScale(1);
-  };
-
   return {
     loading,
     error,
     rotation,
     fullScreenMode,
-    showPreview,
     scale,
     shouldLoad,
     imgRef,
     handleReset,
-    handleRotateLeft,
-    handleRotateRight,
-    toggleFullScreen,
-    handleOpenPreview,
-    handleClosePreview,
-    handleImageLoad,
-    handleImageError,
-    handleTransformed,
+    handleRotateLeft: () => {
+      setRotation((prev) => prev - 90);
+    },
+    handleRotateRight: () => {
+      setRotation((prev) => prev + 90);
+    },
+    toggleFullScreen: () => {
+      setFullScreenMode((prev) => !prev);
+    },
+    handleClosePreview: () => {
+      if (fullScreenMode) {
+        setFullScreenMode(false);
+      }
+      if (typeof onClose === "function") {
+        onClose();
+      }
+    },
+    handleImageLoad: () => {
+      setLoading(false);
+    },
+    handleImageError: () => {
+      setLoading(false);
+      setError(true);
+    },
+    handleTransformed: (newScale: number) => {
+      setScale(newScale);
+    },
     setError,
-    resetLoadingState,
-    resetStateForCachedImage,
+    resetLoadingState: () => {
+      setLoading(true);
+      setError(false);
+      setRotation(0);
+      setScale(1);
+    },
+    resetStateForCachedImage: () => {
+      setLoading(false);
+      setError(false);
+      setRotation(0);
+      setScale(1);
+    },
   };
 };

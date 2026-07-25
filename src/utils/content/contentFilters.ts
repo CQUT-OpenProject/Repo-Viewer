@@ -33,7 +33,7 @@ export interface HomepageFilterConfig {
  * @param config - 首页过滤配置
  * @returns 过滤后的新数组
  */
-export function filterHomepageContents(
+function filterHomepageContents(
   contents: GitHubContent[],
   config: HomepageFilterConfig,
 ): GitHubContent[] {

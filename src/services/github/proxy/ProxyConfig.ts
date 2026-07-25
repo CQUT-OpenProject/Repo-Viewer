@@ -1,11 +1,8 @@
-import { getAccessConfig, getProxyConfig } from "@/config";
+import { getProxyConfig, isTokenMode } from "@/config";
 
-// 获取配置
-const accessConfig = getAccessConfig();
 const proxyConfig = getProxyConfig();
 
-// 模式设置
-export const USE_TOKEN_MODE = accessConfig.useTokenMode;
+export const USE_TOKEN_MODE = isTokenMode();
 
 /**
  * 代理服务URL列表

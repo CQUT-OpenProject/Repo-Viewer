@@ -6,7 +6,7 @@ import { logger } from "@/utils/logging/logger";
  * @param message - 错误消息
  * @returns void
  */
-export const handleKatexError = (message: string): void => {
+const handleKatexError = (message: string): void => {
   logger.warn("[KaTeX] 公式渲染错误:", message);
 };
 

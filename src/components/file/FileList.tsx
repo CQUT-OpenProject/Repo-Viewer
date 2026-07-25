@@ -9,7 +9,7 @@ import { calculateLayoutMetrics, getListPadding, getRowMetrics } from "./utils/f
 import type { VirtualListItemData, FileListLayoutMetrics } from "./utils/types";
 import type { GitHubContent } from "@/types";
 import { responsiveG3Styles } from "@/theme/g3Curves";
-import { useOptimizedScroll } from "@/hooks/useScroll";
+import { useOptimizedScroll } from "@/hooks/useOptimizedScroll";
 
 /**
  * 文件列表组件属性接口

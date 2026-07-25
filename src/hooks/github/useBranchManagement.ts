@@ -116,12 +116,8 @@ export function useBranchManagement(): BranchManagementState {
 
   // 监听 popstate 事件中的分支变化
   useEffect(() => {
-    const handlePopState = (event: PopStateEvent): void => {
-      const state = event.state as { path?: string; preview?: string; branch?: string } | null;
-
-      const stateBranch = typeof state?.branch === "string" ? state.branch : "";
-      const urlBranch = getBranchFromUrl().trim();
-      const branchCandidate = stateBranch.trim().length > 0 ? stateBranch.trim() : urlBranch;
+    const handlePopState = (): void => {
+      const branchCandidate = getBranchFromUrl().trim();
 
       if (branchCandidate.length > 0) {
         if (branchCandidate !== currentBranchRef.current) {

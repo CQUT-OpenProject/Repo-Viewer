@@ -124,7 +124,7 @@ describe("api/github handler security hardening", () => {
   });
 
   it("fetches repo files with composed raw URL and auth header", async () => {
-    process.env.GITHUB_PAT1 = "secret-token";
+    process.env["GITHUB_PAT1"] = "secret-token";
     const handler = await loadHandler();
     const { res, state } = createMockRes();
 
@@ -196,7 +196,7 @@ describe("api/github handler security hardening", () => {
   });
 
   it("fetches allowlisted GitHub assets without Authorization", async () => {
-    process.env.GITHUB_PAT1 = "secret-token";
+    process.env["GITHUB_PAT1"] = "secret-token";
     const handler = await loadHandler();
     const { res, state } = createMockRes();
 

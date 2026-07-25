@@ -224,7 +224,7 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
     };
 
     const runFallbackHighlight = async (): Promise<void> => {
-      const { highlightContent } = await import("@/utils/content/prismHighlighter");
+      const { highlightContent } = await import("@/utils/content/prismHighlightCore");
       if (cancelled) {
         return;
       }

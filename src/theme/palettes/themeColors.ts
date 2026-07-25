@@ -38,7 +38,7 @@ export interface ThemeColorConfig {
 
 export const THEME_COLORS: ThemeColorConfig[] = [
   {
-    name: "默认",
+    name: "default",
     light: {
       primary: {
         main: "#C2185B",
@@ -69,7 +69,7 @@ export const THEME_COLORS: ThemeColorConfig[] = [
     },
   },
   {
-    name: "蓝色",
+    name: "blue",
     light: {
       primary: {
         main: "#0B57D0",
@@ -100,7 +100,7 @@ export const THEME_COLORS: ThemeColorConfig[] = [
     },
   },
   {
-    name: "绿色",
+    name: "green",
     light: {
       primary: {
         main: "#146C2E",
@@ -131,7 +131,7 @@ export const THEME_COLORS: ThemeColorConfig[] = [
     },
   },
   {
-    name: "紫色",
+    name: "purple",
     light: {
       primary: {
         main: "#7B1FA2",
@@ -162,7 +162,7 @@ export const THEME_COLORS: ThemeColorConfig[] = [
     },
   },
   {
-    name: "橙色",
+    name: "orange",
     light: {
       primary: {
         main: "#F25C00",
@@ -193,7 +193,7 @@ export const THEME_COLORS: ThemeColorConfig[] = [
     },
   },
   {
-    name: "红色",
+    name: "red",
     light: {
       primary: {
         main: "#B31412",
@@ -224,7 +224,7 @@ export const THEME_COLORS: ThemeColorConfig[] = [
     },
   },
   {
-    name: "青色",
+    name: "cyan",
     light: {
       primary: {
         main: "#018786",

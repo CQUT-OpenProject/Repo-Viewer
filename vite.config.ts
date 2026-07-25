@@ -306,7 +306,12 @@ const createRuntimeConfigPlugin = (
                 "react-vendor": ["react", "react-dom"],
                 "mui-core": ["@mui/material", "@emotion/react", "@emotion/styled"],
                 "mui-icons": ["@mui/icons-material"],
-                "markdown-core": ["react-markdown", "remark-gfm", "rehype-raw"],
+                "markdown-core": [
+                  "react-markdown",
+                  "remark-gfm",
+                  "remark-github-blockquote-alert",
+                  "rehype-raw",
+                ],
                 "markdown-math": ["katex", "rehype-katex", "remark-math"],
                 "animation-vendor": ["framer-motion"],
                 "interaction-vendor": ["react-zoom-pan-pinch"],

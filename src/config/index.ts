@@ -14,4 +14,3 @@ export {
   getGithubPATs,
 } from "./utils/config-accessors";
 export { configManager } from "./core/ConfigManager";
-export { configManager as default } from "./core/ConfigManager";

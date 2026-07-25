@@ -25,7 +25,7 @@ const splitBranchSegments = (branch: string): string[] => {
   return normalized.split("/").filter((segment) => segment.length > 0);
 };
 
-export function buildRepoFileContentApiUrl(filePath: string, branch?: string): string {
+function buildRepoFileContentApiUrl(filePath: string, branch?: string): string {
   const params = new URLSearchParams();
   params.set("action", "getFileContent");
   params.set("path", sanitizeFilePath(filePath));

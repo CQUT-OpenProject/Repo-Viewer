@@ -10,7 +10,8 @@ import { logger } from "@/utils/logging/logger";
 
 import { filterAndNormalizeGitHubContents } from "../../schemas/dataTransformers";
 import { storeDirectoryContents, storeFileContent } from "./cacheState";
-import { normalizeDirectoryPath, normalizeFilePath, escapeRegExp } from "./pathUtils";
+import { normalizeDirectoryPath, normalizeFilePath } from "./pathUtils";
+import { escapeRegExp } from "@/utils/string/escapeRegExp";
 
 /**
  * 首屏注水状态管理
