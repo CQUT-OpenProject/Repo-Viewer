@@ -30,14 +30,4 @@ export function normalizeFilePath(path: string): string {
   return path.replace(/^\/+/u, "");
 }
 
-/**
- * 正则表达式安全转义。
- *
- * @param value - 待转义字符串
- * @returns 可安全用于正则表达式的字符串
- *
- * @remarks 避免路径中的特殊字符破坏匹配表达式。
- */
-export function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
-}
+export { escapeRegExp } from "@/utils/string/escapeRegExp";

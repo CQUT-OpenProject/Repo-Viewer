@@ -7,7 +7,7 @@
  * @module hooks/useDownload
  */
 
-import { useReducer, useRef } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import { saveAs } from "file-saver";
 import type { DownloadState, DownloadAction, GitHubContent } from "@/types";
 import { GitHub } from "@/services/github";
@@ -22,6 +22,7 @@ import {
 } from "@/utils/download/folderZipPipeline";
 import { ProxyUrlTransformer } from "@/services/github/proxy";
 import { useI18n } from "@/contexts/I18nContext";
+import { setDownloadCancelHandler } from "./downloadCancelBridge";
 
 /** 下载状态初始值 */
 const initialDownloadState: DownloadState = {
@@ -126,11 +127,9 @@ export const useDownload = (
       return;
     }
 
-    // 设置取消标志
     isCancelledRef.current = true;
     dispatch({ type: "CANCEL_DOWNLOAD" });
 
-    // 中止所有网络请求
     if (abortControllerRef.current !== null) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
@@ -138,12 +137,18 @@ export const useDownload = (
 
     logger.info("下载已取消");
 
-    // 重置下载状态
     setTimeout(() => {
       isCancelledRef.current = false;
       dispatch({ type: "RESET_DOWNLOAD_STATE" });
-    }, 500); // 短暂延迟以便UI可以响应
+    }, 500);
   };
+
+  useEffect(() => {
+    setDownloadCancelHandler(cancelDownload);
+    return () => {
+      setDownloadCancelHandler(null);
+    };
+  });
 
   // 下载文件
   const downloadFile = async (item: GitHubContent) => {

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { logger } from "@/utils/logging/logger";
-import { shouldUseServerAPI } from "../config/ProxyForceManager";
+import { getForceServerProxy } from "../config/ProxyForceManager";
 import { getAuthHeaders } from "./Auth";
 import {
   GITHUB_API_BASE,
@@ -147,7 +147,7 @@ async function fetchBranchesDirect(): Promise<string[]> {
  */
 export async function getBranches(): Promise<string[]> {
   try {
-    const branches = shouldUseServerAPI()
+    const branches = getForceServerProxy()
       ? await fetchBranchesViaServer()
       : await fetchBranchesDirect();
 

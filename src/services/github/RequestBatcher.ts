@@ -318,30 +318,6 @@ export class RequestBatcher {
   }
 
   /**
-   * 获取批处理器统计信息
-   *
-   * @returns 包含待处理请求数、批处理请求数、缓存大小和时间轮统计的对象
-   */
-  public getStats(): {
-    pendingRequests: number;
-    batchedRequests: number;
-    fingerprintCache: number;
-    timeWheelStats: {
-      totalEntries: number;
-      slotsUsed: number;
-      averageEntriesPerSlot: number;
-      currentSlot: number;
-    };
-  } {
-    return {
-      pendingRequests: this.pendingRequests.size,
-      batchedRequests: this.batchedRequests.size,
-      fingerprintCache: this.fingerprintWheel.size,
-      timeWheelStats: this.fingerprintWheel.getStats(),
-    };
-  }
-
-  /**
    * 清除所有缓存
    *
    * 清除请求指纹缓存，强制下次请求重新获取数据。

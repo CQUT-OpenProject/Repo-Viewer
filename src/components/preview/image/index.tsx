@@ -167,7 +167,6 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
         onClose={handleClosePreview}
         backgroundColor={theme.palette.mode === "dark" ? "#1a1a1a" : "#f5f5f5"}
         disablePadding={true}
-        data-oid=":0opztf"
       >
         <ImagePreviewContent {...previewContentProps} />
       </FullScreenPreview>

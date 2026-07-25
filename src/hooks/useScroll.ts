@@ -11,7 +11,7 @@ interface ScrollDataPoint {
 /**
  * 滚动速度计算选项
  */
-export interface ScrollSpeedOptions {
+interface ScrollSpeedOptions {
   /**
    * 采样点数量，用于计算平均速度
    * @default 5
@@ -23,12 +23,6 @@ export interface ScrollSpeedOptions {
    * @default 150
    */
   scrollEndDelay?: number;
-
-  /**
-   * 快速滚动阈值（像素/毫秒）
-   * @default 0.3
-   */
-  fastScrollThreshold?: number;
 }
 
 /**
@@ -50,11 +44,9 @@ export interface ScrollSpeedOptions {
 export function useOptimizedScroll(options: ScrollSpeedOptions = {}): {
   isScrolling: boolean;
   scrollSpeed: number;
-  isFastScrolling: boolean;
   handleScroll: (scrollOffset: number) => void;
-  reset: () => void;
 } {
-  const { maxSamples = 5, scrollEndDelay = 150, fastScrollThreshold = 0.3 } = options;
+  const { maxSamples = 5, scrollEndDelay = 150 } = options;
   const speedEpsilon = 0.001;
 
   // 滚动状态
@@ -92,7 +84,6 @@ export function useOptimizedScroll(options: ScrollSpeedOptions = {}): {
    *
    * 使用移动平均算法，基于最近的 maxSamples 个数据点计算平均速度。
    *
-   * @param offset - 当前滚动偏移量
    * @returns 标准化的滚动速度（像素/毫秒）
    */
   const calculateSpeed = (): number => {
@@ -161,33 +152,6 @@ export function useOptimizedScroll(options: ScrollSpeedOptions = {}): {
     }, scrollEndDelay);
   };
 
-  /**
-   * 检查是否为快速滚动
-   */
-  const isFastScrolling = scrollSpeed > fastScrollThreshold;
-
-  /**
-   * 重置滚动状态
-   */
-  const reset = () => {
-    const data = scrollDataRef.current;
-    setIsScrolling(false);
-    setScrollSpeed(0);
-    data.isScrolling = false;
-    data.speed = 0;
-    data.positions = [];
-
-    if (data.timer !== null) {
-      clearTimeout(data.timer);
-      data.timer = null;
-    }
-
-    if (data.rafId !== null) {
-      cancelAnimationFrame(data.rafId);
-      data.rafId = null;
-    }
-  };
-
   useEffect(() => {
     const data = scrollDataRef.current;
     return () => {
@@ -205,11 +169,7 @@ export function useOptimizedScroll(options: ScrollSpeedOptions = {}): {
     isScrolling,
     /** 当前滚动速度（像素/毫秒） */
     scrollSpeed,
-    /** 是否为快速滚动 */
-    isFastScrolling,
     /** 滚动事件处理函数 */
     handleScroll,
-    /** 重置滚动状态 */
-    reset,
   };
 }

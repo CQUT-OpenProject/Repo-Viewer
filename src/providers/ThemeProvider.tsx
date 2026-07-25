@@ -28,9 +28,9 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   return (
     <I18nProvider>
-      <ColorModeContext.Provider value={colorMode} data-oid="x_82-n7">
-        <MuiThemeProvider theme={theme} data-oid="onb75g6">
-          <CssBaseline data-oid="t4l0o9n" />
+      <ColorModeContext.Provider value={colorMode}>
+        <MuiThemeProvider theme={theme}>
+          <CssBaseline />
           {children}
         </MuiThemeProvider>
       </ColorModeContext.Provider>

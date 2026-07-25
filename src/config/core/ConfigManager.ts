@@ -167,14 +167,6 @@ export class ConfigManager {
    * @param env - 可选的环境变量源
    * @returns PAT环境变量对象
    */
-  getPATsForViteDefine(
-    env?: Record<string, string | boolean | null | undefined>,
-  ): Record<string, string> {
-    const processEnv = this.loader.getProcessEnv();
-    const envSource = env ?? processEnv ?? {};
-    return this.tokenLoader.getPATsForViteDefine(envSource);
-  }
-
   /**
    * 获取配置调试信息
    *

@@ -147,9 +147,6 @@ export class ConfigLoader {
           "DOWNLOAD_PROXY_URL_BACKUP2",
           CONFIG_DEFAULTS.DOWNLOAD_PROXY_URL_BACKUP2,
         ),
-        healthCheckTimeout: 5000,
-        validationTimeout: 10000,
-        healthCheckInterval: 30000,
         recoveryTime: 300000,
       },
       access: {

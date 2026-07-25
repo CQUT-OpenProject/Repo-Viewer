@@ -3,7 +3,7 @@ import type { GitHubContent, PreviewState, DownloadState } from "@/types";
 import type { RepoSearchState } from "@/hooks/github/useRepoSearch";
 
 /**
- * 导航方向类型
+ * 导航方向类型（用于刷新锁定与调用方语义，不再作为可读状态暴露）
  */
 export type NavigationDirection = "forward" | "backward" | "none";
 
@@ -18,14 +18,12 @@ export interface ContentContextValue {
   loadingReadme: boolean;
   readmeLoaded: boolean;
   error: string | null;
-  navigationDirection: NavigationDirection;
   repoOwner: string;
   repoName: string;
   currentBranch: string;
   defaultBranch: string;
   branches: string[];
   branchLoading: boolean;
-  branchError: string | null;
   setCurrentBranch: (branch: string) => void;
   refreshBranches: () => Promise<void>;
   setCurrentPath: (path: string, direction?: NavigationDirection) => void;
@@ -37,21 +35,13 @@ export interface ContentContextValue {
 }
 
 /**
- * 预览上下文状态类型
- */
-export type PreviewContextState = PreviewState & {
-  previewingPdfItem: GitHubContent | null;
-};
-
-/**
  * 预览上下文值接口
  */
 export interface PreviewContextValue {
-  previewState: PreviewContextState;
+  previewState: PreviewState;
   currentPreviewItemRef: RefObject<GitHubContent | null>;
   selectFile: (item: GitHubContent) => Promise<void> | void;
   closePreview: () => void;
-  toggleImageFullscreen: () => void;
   handleImageError: (error: string) => void;
 }
 

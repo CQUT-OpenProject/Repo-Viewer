@@ -34,7 +34,6 @@ const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
         alignItems: "center",
         gap: 2,
       }}
-      data-oid="sma03t:"
     >
       {/* 缩略图容器 */}
       <Box
@@ -57,7 +56,6 @@ const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
           },
         }}
         onClick={onOpenPreview}
-        data-oid="4vk_mgq"
       >
         <img
           ref={imgRef}
@@ -71,17 +69,11 @@ const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
           }}
           onLoad={onLoad}
           onError={onError}
-          data-oid="..bfs6c"
         />
       </Box>
 
       {/* 查看大图按钮 */}
-      <Button
-        variant="contained"
-        onClick={onOpenPreview}
-        aria-label={t("ui.image.openPreview")}
-        data-oid="otw7voa"
-      >
+      <Button variant="contained" onClick={onOpenPreview} aria-label={t("ui.image.openPreview")}>
         {t("ui.image.openPreview")}
       </Button>
     </Box>

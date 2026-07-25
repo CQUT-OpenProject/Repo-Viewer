@@ -113,7 +113,6 @@ const PreviewOverlay: React.FC<PreviewOverlayProps> = ({
                   onClose();
                 }
               }}
-              data-oid="md-preview-fs"
             >
               <LazyMarkdownPreview
                 readmeContent={previewContent}
@@ -123,7 +122,6 @@ const PreviewOverlay: React.FC<PreviewOverlayProps> = ({
                 onClose={onClose}
                 lazyLoad={false}
                 currentBranch={currentBranch}
-                data-oid="md-file-preview"
               />
             </Box>
           </m.div>
@@ -142,7 +140,6 @@ const PreviewOverlay: React.FC<PreviewOverlayProps> = ({
           hasNext={hasNextImage}
           onPrevious={onPreviousImage}
           onNext={onNextImage}
-          data-oid="yfv5ld-"
         />
       )}
     </>

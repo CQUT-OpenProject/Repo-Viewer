@@ -36,31 +36,6 @@ export class TokenLoader {
   }
 
   /**
-   * 获取用于Vite define的PAT对象
-   *
-   * 构建用于Vite构建时注入的环境变量对象。
-   *
-   * @param env - 环境变量源
-   * @returns PAT环境变量对象
-   */
-  public getPATsForViteDefine(env: EnvSource): Record<string, string> {
-    const patEnvVars: Record<string, string> = {};
-
-    // 遍历所有前缀，检查不带数字和带数字的版本
-    CONFIG_DEFAULTS.PAT_PREFIXES.forEach((prefix) => {
-      // 检查不带数字的版本
-      this.addPATToDefineIfValid(patEnvVars, env, prefix);
-
-      // 检查带数字的版本（1到MAX_PAT_NUMBER）
-      for (let i = 1; i <= CONFIG_DEFAULTS.MAX_PAT_NUMBER; i++) {
-        this.addPATToDefineIfValid(patEnvVars, env, prefix + String(i));
-      }
-    });
-
-    return patEnvVars;
-  }
-
-  /**
    * 获取字符串类型的环境变量
    */
   public getEnvString(env: EnvSource, key: string): string | undefined {
@@ -79,20 +54,6 @@ export class TokenLoader {
     const token = this.getEnvString(env, key);
     if (token !== undefined && EnvParser.validateToken(token)) {
       tokens.add(token.trim());
-    }
-  }
-
-  /**
-   * 添加有效的 PAT 到 Vite define 对象
-   */
-  private addPATToDefineIfValid(
-    patEnvVars: Record<string, string>,
-    env: EnvSource,
-    key: string,
-  ): void {
-    const token = this.getEnvString(env, key);
-    if (token !== undefined && EnvParser.validateToken(token)) {
-      patEnvVars[`process.env.${key}`] = JSON.stringify(token);
     }
   }
 }

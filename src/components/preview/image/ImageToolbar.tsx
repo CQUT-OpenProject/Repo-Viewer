@@ -74,7 +74,6 @@ const ImageToolbar: React.FC<ImageToolbarProps> = ({
           borderColor: alpha(theme.palette.divider, 0.1),
         }),
       }}
-      data-oid="2ux6qrx"
     >
       <Box
         sx={{
@@ -87,7 +86,6 @@ const ImageToolbar: React.FC<ImageToolbarProps> = ({
           flexWrap: isSmallScreen ? "wrap" : "nowrap",
           paddingRight: isSmallScreen ? "88px" : 0, // 为小屏幕的关闭按钮留出空间
         }}
-        data-oid="wlz6pbm"
       >
         {/* 缩小按钮 */}
         <IconButton
@@ -108,9 +106,8 @@ const ImageToolbar: React.FC<ImageToolbarProps> = ({
             height: isSmallScreen ? "40px" : "48px",
             width: isSmallScreen ? "40px" : "48px",
           }}
-          data-oid=":4kbc4k"
         >
-          <ZoomOutIcon fontSize={isSmallScreen ? "small" : "medium"} data-oid="3-:jjhw" />
+          <ZoomOutIcon fontSize={isSmallScreen ? "small" : "medium"} />
         </IconButton>
 
         {/* 缩放比例显示和重置按钮 */}
@@ -134,7 +131,6 @@ const ImageToolbar: React.FC<ImageToolbarProps> = ({
             height: isSmallScreen ? "40px" : "48px",
             justifyContent: "center",
           }}
-          data-oid="mx.rtt4"
         >
           <Typography
             variant={isSmallScreen ? "caption" : "body2"}
@@ -143,7 +139,6 @@ const ImageToolbar: React.FC<ImageToolbarProps> = ({
               minWidth: isSmallScreen ? "36px" : "44px",
               textAlign: "center",
             }}
-            data-oid="vn9ul2y"
           >
             {Math.round(scale * 100)}%
           </Typography>
@@ -168,9 +163,8 @@ const ImageToolbar: React.FC<ImageToolbarProps> = ({
             height: isSmallScreen ? "40px" : "48px",
             width: isSmallScreen ? "40px" : "48px",
           }}
-          data-oid="rpj_u5-"
         >
-          <ZoomInIcon fontSize={isSmallScreen ? "small" : "medium"} data-oid="78o_sgq" />
+          <ZoomInIcon fontSize={isSmallScreen ? "small" : "medium"} />
         </IconButton>
 
         {/* 左旋转按钮 */}
@@ -190,9 +184,8 @@ const ImageToolbar: React.FC<ImageToolbarProps> = ({
             height: isSmallScreen ? "40px" : "48px",
             width: isSmallScreen ? "40px" : "48px",
           }}
-          data-oid="eorlbul"
         >
-          <RotateLeftIcon fontSize={isSmallScreen ? "small" : "medium"} data-oid="mg660l-" />
+          <RotateLeftIcon fontSize={isSmallScreen ? "small" : "medium"} />
         </IconButton>
 
         {/* 右旋转按钮 */}
@@ -212,9 +205,8 @@ const ImageToolbar: React.FC<ImageToolbarProps> = ({
             height: isSmallScreen ? "40px" : "48px",
             width: isSmallScreen ? "40px" : "48px",
           }}
-          data-oid="e.aaidi"
         >
-          <RotateRightIcon fontSize={isSmallScreen ? "small" : "medium"} data-oid="9xuw2t_" />
+          <RotateRightIcon fontSize={isSmallScreen ? "small" : "medium"} />
         </IconButton>
 
         {/* 全屏按钮（仅在非全屏模式下显示） */}
@@ -235,9 +227,8 @@ const ImageToolbar: React.FC<ImageToolbarProps> = ({
               height: isSmallScreen ? "40px" : "48px",
               width: isSmallScreen ? "40px" : "48px",
             }}
-            data-oid="cul6zri"
           >
-            <FullscreenIcon fontSize={isSmallScreen ? "small" : "medium"} data-oid="7ykiypv" />
+            <FullscreenIcon fontSize={isSmallScreen ? "small" : "medium"} />
           </IconButton>
         )}
       </Box>
@@ -268,7 +259,6 @@ const ImageToolbar: React.FC<ImageToolbarProps> = ({
           zIndex: theme.zIndex.modal + 50,
           padding: isSmallScreen ? "8px 12px" : "8px 16px",
         }}
-        data-oid="rqnqmvq"
       >
         {t("ui.image.close")}
       </Button>

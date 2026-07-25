@@ -29,8 +29,6 @@ interface MarkdownCodeBlockProps {
   content: string;
   /** 代码元素属性 */
   codeProps?: CodeElementProps;
-  /** 数据OID */
-  dataOid?: string | undefined;
 }
 
 /**
@@ -43,7 +41,6 @@ export const MarkdownCodeBlock: React.FC<MarkdownCodeBlockProps> = ({
   language,
   content,
   codeProps,
-  dataOid,
 }) => {
   const theme = useTheme();
   const { t } = useI18n();
@@ -83,7 +80,6 @@ export const MarkdownCodeBlock: React.FC<MarkdownCodeBlockProps> = ({
   return (
     <Box
       sx={{ position: "relative", width: "100%" }}
-      data-oid={dataOid !== undefined ? `${dataOid}-container` : undefined}
       onMouseEnter={
         isDesktop
           ? () => {
@@ -118,7 +114,6 @@ export const MarkdownCodeBlock: React.FC<MarkdownCodeBlockProps> = ({
         role="region"
         aria-label={language !== undefined ? `${language} code block` : "Code block"}
         data-language={language ?? undefined}
-        data-oid={dataOid}
       >
         <code className={className} ref={codeRef} {...codeAttributes}>
           {content}
@@ -168,7 +163,6 @@ export const MarkdownCodeBlock: React.FC<MarkdownCodeBlockProps> = ({
             },
             zIndex: 2,
           }}
-          data-oid={dataOid !== undefined ? `${dataOid}-copy` : undefined}
         >
           {copied ? (
             <CheckRoundedIcon sx={{ fontSize: 16 }} />

@@ -6,7 +6,6 @@ import type {
   ComponentError,
 } from "@/types/errors";
 import { ErrorLevel, ErrorCategory } from "@/types/errors";
-import { createScopedLogger } from "../../logging/logger";
 import { getDeveloperConfig } from "@/config";
 import { ErrorFactory } from "./ErrorFactory";
 import { ErrorLogger } from "./ErrorLogger";
@@ -15,25 +14,19 @@ import { ErrorHistory } from "./ErrorHistory";
 /**
  * 错误管理器类
  *
- * 统一管理应用中的错误，提供错误创建、捕获、记录和上报功能。
- * 支持多种错误类型，包括API错误、网络错误、组件错误和文件操作错误。
+ * 统一管理应用中的错误，提供错误创建、捕获和记录功能。
  */
 class ErrorManagerClass {
   private sessionId: string = this.generateSessionId();
   private factory: ErrorFactory;
   private errorLogger: ErrorLogger;
   private history: ErrorHistory;
-  private readonly managerLogger = createScopedLogger("ErrorManager");
 
   private config: ErrorHandlerConfig = {
     enableConsoleLogging: (() => {
       const developerConfig = getDeveloperConfig();
       return developerConfig.mode || developerConfig.consoleLogging;
     })(),
-    enableErrorReporting: false, // 生产环境可开启
-    maxErrorsPerSession: 50,
-    retryAttempts: 3,
-    retryDelay: 1000,
   };
 
   constructor() {
@@ -50,7 +43,7 @@ class ErrorManagerClass {
   /**
    * 捕获并处理错误
    *
-   * 将普通Error转换为AppError，记录到历史并可选地上报。
+   * 将普通Error转换为AppError，记录到历史。
    *
    * @param error - Error对象或AppError对象
    * @param context - 额外的错误上下文信息
@@ -82,11 +75,6 @@ class ErrorManagerClass {
 
     // 记录错误
     this.errorLogger.logError(appError);
-
-    // 上报错误（如果启用）
-    if (this.config.enableErrorReporting) {
-      void this.reportError(appError);
-    }
 
     return appError;
   }
@@ -133,29 +121,6 @@ class ErrorManagerClass {
       "category" in error &&
       "level" in error
     );
-  }
-
-  // 上报错误（占位实现）
-  private async reportError(error: AppError): Promise<void> {
-    // 这里可以集成第三方错误上报服务
-    // 比如 Sentry, LogRocket, Bugsnag 等
-    try {
-      // 示例：发送到错误收集服务
-      // await fetch('/api/errors', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(error)
-      // });
-
-      if (getDeveloperConfig().mode) {
-        this.managerLogger.info("错误上报 (开发模式):", error);
-      }
-
-      // 添加 await 以满足 async 函数要求
-      await Promise.resolve();
-    } catch (reportingError) {
-      this.managerLogger.warn("错误上报失败:", reportingError);
-    }
   }
 }
 

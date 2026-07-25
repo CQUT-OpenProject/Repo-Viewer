@@ -20,10 +20,6 @@ export interface CacheConfig {
   enablePersistence: boolean;
   useIndexedDB: boolean; // 优先使用IndexedDB而不是localStorage
   storageKey: string;
-
-  // 预加载配置
-  enablePrefetch: boolean;
-  prefetchDelay: number; // 预加载延迟（毫秒）
 }
 
 /**

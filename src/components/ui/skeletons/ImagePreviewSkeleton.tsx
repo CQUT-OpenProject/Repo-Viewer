@@ -25,8 +25,6 @@ interface ImagePreviewSkeletonProps {
   targetHeight?: number;
   /** 长宽比 */
   aspectRatio?: number;
-  /** 数据OID */
-  "data-oid"?: string;
 }
 
 /**
@@ -41,7 +39,6 @@ export const ImagePreviewSkeleton: React.FC<ImagePreviewSkeletonProps> = ({
   targetWidth,
   targetHeight,
   aspectRatio,
-  ...rest
 }) => {
   const theme = useTheme();
   const skeletonStyles = getSkeletonStyles(theme);
@@ -75,8 +72,6 @@ export const ImagePreviewSkeleton: React.FC<ImagePreviewSkeletonProps> = ({
         zIndex: 10,
         ...getContainerTransitionStyles(isExiting),
       }}
-      data-oid="8od.96t"
-      {...rest}
     >
       {/* 图片区域 */}
       <Box
@@ -87,7 +82,6 @@ export const ImagePreviewSkeleton: React.FC<ImagePreviewSkeletonProps> = ({
           alignItems: "center",
           position: "relative",
         }}
-        data-oid="494nx3n"
       >
         <Skeleton
           variant="rectangular"
@@ -101,7 +95,6 @@ export const ImagePreviewSkeleton: React.FC<ImagePreviewSkeletonProps> = ({
             maxHeight: "100%",
             aspectRatio: normalizedAspectRatio?.toString(),
           }}
-          data-oid="g91oyf4"
         />
       </Box>
     </Box>

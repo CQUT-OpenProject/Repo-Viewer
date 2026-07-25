@@ -83,7 +83,6 @@ export const MarkdownLink: React.FC<MarkdownLinkProps> = ({
           cursor: "default",
           ...style,
         }}
-        data-oid="wswk6df"
       >
         {children}
       </span>
@@ -109,7 +108,6 @@ export const MarkdownLink: React.FC<MarkdownLinkProps> = ({
       onMouseLeave={(e) => {
         e.currentTarget.style.textDecoration = "none";
       }}
-      data-oid="wswk6df"
     >
       {children}
     </a>

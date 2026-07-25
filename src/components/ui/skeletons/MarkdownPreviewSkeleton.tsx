@@ -27,7 +27,6 @@ export const MarkdownPreviewSkeleton: React.FC<{
         height: "100%",
         ...getContainerTransitionStyles(isExiting),
       }}
-      data-oid="8zc.-op"
     >
       <Paper
         elevation={0}
@@ -42,7 +41,6 @@ export const MarkdownPreviewSkeleton: React.FC<{
           border: "1px solid",
           borderColor: "divider",
         }}
-        data-oid="hmly:se"
       >
         {/* 标题 */}
         <Skeleton
@@ -55,7 +53,6 @@ export const MarkdownPreviewSkeleton: React.FC<{
             borderRadius: g3BorderRadius(G3_PRESETS.breadcrumbItem),
             ...skeletonStyles,
           }}
-          data-oid="umqge2l"
         />
 
         {/* 副标题 */}
@@ -69,7 +66,6 @@ export const MarkdownPreviewSkeleton: React.FC<{
             borderRadius: g3BorderRadius(G3_PRESETS.breadcrumbItem),
             ...skeletonStyles,
           }}
-          data-oid="dpvya_k"
         />
 
         {/* 段落 */}
@@ -83,7 +79,6 @@ export const MarkdownPreviewSkeleton: React.FC<{
             borderRadius: g3BorderRadius(G3_PRESETS.breadcrumbItem),
             ...skeletonStyles,
           }}
-          data-oid="kcl3c2g"
         />
 
         <Skeleton
@@ -96,7 +91,6 @@ export const MarkdownPreviewSkeleton: React.FC<{
             borderRadius: g3BorderRadius(G3_PRESETS.breadcrumbItem),
             ...skeletonStyles,
           }}
-          data-oid="ofcg4gg"
         />
 
         <Skeleton
@@ -109,7 +103,6 @@ export const MarkdownPreviewSkeleton: React.FC<{
             borderRadius: g3BorderRadius(G3_PRESETS.breadcrumbItem),
             ...skeletonStyles,
           }}
-          data-oid="lr2nssc"
         />
 
         {/* 代码块 */}
@@ -123,7 +116,6 @@ export const MarkdownPreviewSkeleton: React.FC<{
             borderRadius: g3BorderRadius(G3_PRESETS.card),
             ...skeletonStyles,
           }}
-          data-oid="-e4b85x"
         />
 
         {/* 更多段落 */}
@@ -137,7 +129,6 @@ export const MarkdownPreviewSkeleton: React.FC<{
             borderRadius: g3BorderRadius(G3_PRESETS.breadcrumbItem),
             ...skeletonStyles,
           }}
-          data-oid="qx9pw9p"
         />
 
         <Skeleton
@@ -150,7 +141,6 @@ export const MarkdownPreviewSkeleton: React.FC<{
             borderRadius: g3BorderRadius(G3_PRESETS.breadcrumbItem),
             ...skeletonStyles,
           }}
-          data-oid="fqv1uav"
         />
 
         <Skeleton
@@ -163,7 +153,6 @@ export const MarkdownPreviewSkeleton: React.FC<{
             borderRadius: g3BorderRadius(G3_PRESETS.breadcrumbItem),
             ...skeletonStyles,
           }}
-          data-oid="k11:d_g"
         />
       </Paper>
     </Box>

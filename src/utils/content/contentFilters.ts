@@ -21,21 +21,6 @@ export interface HomepageFilterConfig {
 }
 
 /**
- * 对内容进行排序
- *
- * 排序规则：
- * 1. 目录优先于文件
- * 2. 同类型按拼音字母顺序排序（中文转拼音）
- * 3. 支持数字的自然排序
- *
- * @param contents - 待排序的内容数组
- * @returns 排序后的新数组
- */
-export function sortContents(contents: GitHubContent[]): GitHubContent[] {
-  return sortContentsByPinyin(contents);
-}
-
-/**
  * 根据配置过滤首页内容
  *
  * 过滤规则：
@@ -107,8 +92,7 @@ export function processContents(
   isHomepage: boolean,
   filterConfig: HomepageFilterConfig,
 ): GitHubContent[] {
-  // 先排序
-  let processedContents = sortContents(contents);
+  let processedContents = sortContentsByPinyin(contents);
 
   // 如果是首页且启用了过滤，则应用过滤规则
   if (isHomepage && filterConfig.enabled) {

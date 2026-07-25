@@ -6,13 +6,10 @@
 
 export {
   searchIndex,
-  getSearchIndexManifest,
-  isSearchIndexEnabled,
   ensureSearchIndexReady,
   getIndexedBranches,
   prefetchSearchIndexForBranch,
   invalidateSearchIndexCache,
-  refreshSearchIndex,
   SearchIndexError,
   SearchIndexErrorCode,
   createSearchIndexError,

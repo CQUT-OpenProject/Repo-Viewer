@@ -43,7 +43,6 @@ const FullScreenPreview: FC<FullScreenPreviewProps> = ({
           onClose();
         }
       }}
-      data-oid="jlcyx:d"
     >
       <Box
         sx={{
@@ -57,7 +56,6 @@ const FullScreenPreview: FC<FullScreenPreviewProps> = ({
           overflow: "visible",
           padding: disablePadding ? 0 : 2,
         }}
-        data-oid=".o2q08e"
       >
         {children}
       </Box>

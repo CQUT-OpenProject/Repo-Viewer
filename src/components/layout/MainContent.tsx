@@ -268,7 +268,6 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
       isSmallScreen={isSmallScreen}
       breadcrumbsContainerRef={breadcrumbsContainerRef as React.RefObject<HTMLDivElement>}
       compact={false}
-      data-oid="c02a2p5"
     />
   );
 
@@ -281,7 +280,6 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
       isSmallScreen={isSmallScreen}
       breadcrumbsContainerRef={breadcrumbsContainerRef as React.RefObject<HTMLDivElement>}
       compact={true}
-      data-oid="c02a2p5-compact"
     />
   );
 
@@ -293,7 +291,6 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
         py: 4,
         width: "100%",
       }}
-      data-oid="7powvvf"
     >
       {/* 动态SEO组件 */}
       <DynamicSEO
@@ -303,7 +300,6 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
         fileType={seoInfo.fileType}
         repoOwner={repoOwner}
         repoName={repoName}
-        data-oid="8ov3blv"
       />
 
       {/* 面包屑导航 */}
@@ -356,14 +352,9 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
           onNextImage={handleNextImage}
         />
       ) : loading ? (
-        <FileListSkeleton isSmallScreen={isSmallScreen} itemCount={8} data-oid="-mkjng2" />
+        <FileListSkeleton isSmallScreen={isSmallScreen} itemCount={8} />
       ) : error !== null ? (
-        <ErrorDisplay
-          errorMessage={error}
-          onRetry={handleRetry}
-          isSmallScreen={isSmallScreen}
-          data-oid="j0jgapo"
-        />
+        <ErrorDisplay errorMessage={error} onRetry={handleRetry} isSmallScreen={isSmallScreen} />
       ) : contents.length === 0 ? (
         <EmptyState type="empty-directory" onAction={handleRetry} isSmallScreen={isSmallScreen} />
       ) : (
@@ -381,7 +372,6 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
             currentPath={currentPath}
             hasReadmePreview={hasReadmeFile}
             isPreviewActive={isPreviewActive}
-            data-oid="_qfxtvv"
           />
 
           {/* README 自动预览区域（仅在未全屏预览时显示） */}

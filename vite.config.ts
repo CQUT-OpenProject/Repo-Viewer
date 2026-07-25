@@ -1,12 +1,14 @@
 import { defineConfig, loadEnv } from "vite-plus";
 import autoprefixer from "autoprefixer";
 import tailwindcss from "@tailwindcss/postcss";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
 import * as path from "path";
 import * as http from "http";
 import { fileURLToPath } from "url";
 import { readFileSync } from "fs";
 import { spawn } from "child_process";
+import { ENV_MAPPING } from "./src/config/constants/index.ts";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -23,37 +25,6 @@ const colors = {
   gray: "\x1b[90m",
   white: "\x1b[37m",
 };
-
-const ENV_MAPPING = {
-  SITE_TITLE: "VITE_SITE_TITLE",
-  SITE_DESCRIPTION: "VITE_SITE_DESCRIPTION",
-  SITE_KEYWORDS: "VITE_SITE_KEYWORDS",
-  SITE_OG_IMAGE: "VITE_SITE_OG_IMAGE",
-  GITHUB_REPO_OWNER: "VITE_GITHUB_REPO_OWNER",
-  GITHUB_REPO_NAME: "VITE_GITHUB_REPO_NAME",
-  GITHUB_REPO_BRANCH: "VITE_GITHUB_REPO_BRANCH",
-  HOMEPAGE_FILTER_ENABLED: "VITE_HOMEPAGE_FILTER_ENABLED",
-  HOMEPAGE_ALLOWED_FOLDERS: "VITE_HOMEPAGE_ALLOWED_FOLDERS",
-  HOMEPAGE_ALLOWED_FILETYPES: "VITE_HOMEPAGE_ALLOWED_FILETYPES",
-  HIDE_MAIN_FOLDER_DOWNLOAD: "VITE_HIDE_MAIN_FOLDER_DOWNLOAD",
-  HIDE_DOWNLOAD_FOLDERS: "VITE_HIDE_DOWNLOAD_FOLDERS",
-  FOOTER_LEFT_TEXT: "VITE_FOOTER_LEFT_TEXT",
-  ENABLED_SEARCH_INDEX: "VITE_ENABLED_SEARCH_INDEX",
-  SEARCH_INDEX_BRANCHES: "VITE_SEARCH_INDEX_BRANCHES",
-  SEARCH_INDEX_GENERATION_MODE: "VITE_SEARCH_INDEX_GENERATION_MODE",
-  DOWNLOAD_PROXY_URL: "VITE_DOWNLOAD_PROXY_URL",
-  DOWNLOAD_PROXY_URL_BACKUP1: "VITE_DOWNLOAD_PROXY_URL_BACKUP1",
-  DOWNLOAD_PROXY_URL_BACKUP2: "VITE_DOWNLOAD_PROXY_URL_BACKUP2",
-  USE_TOKEN_MODE: "VITE_USE_TOKEN_MODE",
-  DEVELOPER_MODE: "VITE_DEVELOPER_MODE",
-  CONSOLE_LOGGING: "VITE_CONSOLE_LOGGING",
-  LOGGER_ENABLE_CONSOLE: "VITE_LOGGER_ENABLE_CONSOLE",
-  LOGGER_ENABLE_ERROR_REPORTING: "VITE_LOGGER_ENABLE_ERROR_REPORTING",
-  LOGGER_ENABLE_RECORDER: "VITE_LOGGER_ENABLE_RECORDER",
-  LOGGER_REPORT_URL: "VITE_LOGGER_REPORT_URL",
-  LOGGER_REPORT_WARNINGS: "VITE_LOGGER_REPORT_WARNINGS",
-  LOGGER_BASE_LEVEL: "VITE_LOGGER_BASE_LEVEL",
-} as const;
 
 const MAX_PAT_NUMBER = 10;
 
@@ -340,8 +311,8 @@ const createRuntimeConfigPlugin = (
                 "animation-vendor": ["framer-motion"],
                 "interaction-vendor": ["react-zoom-pan-pinch"],
                 "http-vendor": ["axios"],
-                "file-vendor": ["jszip", "file-saver"],
-                "react-utils": ["react-helmet-async", "notistack"],
+                "file-vendor": ["file-saver"],
+                "react-utils": ["notistack"],
                 virtualization: ["react-virtualized-auto-sizer", "react-window"],
                 validation: ["zod"],
               };
@@ -488,8 +459,6 @@ const DEVELOPER_MODE = (env.VITE_DEVELOPER_MODE || env.DEVELOPER_MODE) === "true
 const APP_BASE_URL = normalizeBaseUrl(env.VITE_BASE_PATH ?? process.env.VITE_BASE_PATH);
 const logger = createLogger(DEVELOPER_MODE);
 const requestLogger = createRequestLoggerMiddleware(logger);
-const reactCompilerBabelPlugin = ["babel-plugin-react-compiler"] as const;
-
 export default defineConfig({
   base: APP_BASE_URL,
   lint: {
@@ -579,11 +548,8 @@ export default defineConfig({
     "*": "vp check --fix",
   },
   plugins: [
-    react({
-      babel: {
-        plugins: [reactCompilerBabelPlugin],
-      },
-    }),
+    react(),
+    babel({ presets: [reactCompilerPreset()] }),
     createBuildArtifactsPlugin(logger),
     createRuntimeConfigPlugin(requestLogger),
     createVercelApiHandlerPlugin(logger),
@@ -618,7 +584,6 @@ export default defineConfig({
       "remark-gfm",
       "remark-math",
       "rehype-katex",
-      "jszip",
       "prismjs",
     ],
     exclude: ["katex"],

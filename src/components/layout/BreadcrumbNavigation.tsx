@@ -16,7 +16,7 @@ import {
 import { useI18n } from "@/contexts/I18nContext";
 import type { FC, ReactNode, RefObject } from "react";
 import type { NavigationDirection } from "@/contexts/unified";
-import { createG3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
+import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 
 /**
  * 面包屑导航组件属性接口
@@ -97,7 +97,6 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
               },
             }),
       }}
-      data-oid=".e0qa-0"
     >
       <HomeIcon
         sx={{
@@ -107,7 +106,6 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
           left: "50%",
           transform: "translate(-50%, -50%)",
         }}
-        data-oid="xxu.9dy"
       />
     </Box>
   );
@@ -124,11 +122,10 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
         zIndex: 1,
         width: compact ? "100%" : "auto",
       }}
-      data-oid="zmb:p06"
     >
       <Breadcrumbs
         aria-label="breadcrumb"
-        separator={<ChevronRightIcon fontSize="small" color="action" data-oid="kbdj3p7" />}
+        separator={<ChevronRightIcon fontSize="small" color="action" />}
         maxItems={breadcrumbsMaxItems > 0 ? breadcrumbsMaxItems : 100}
         itemsBeforeCollapse={isSmallScreen ? 1 : 2}
         itemsAfterCollapse={isSmallScreen ? 1 : 2}
@@ -136,7 +133,7 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
           px: compact ? { xs: 0.75, sm: 1 } : { xs: 1, sm: 1.2 },
           py: compact ? { xs: 0.5, sm: 0.6 } : { xs: 0.75, sm: 1 },
           bgcolor: compact ? "transparent" : "background.paper",
-          borderRadius: createG3BorderRadius(G3_PRESETS.breadcrumb),
+          borderRadius: g3BorderRadius(G3_PRESETS.breadcrumb),
           boxShadow: compact ? "none" : "0px 2px 6px rgba(0, 0, 0, 0.05)",
           "& .MuiBreadcrumbs-ol": {
             alignItems: "center",
@@ -160,7 +157,7 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
           "& .MuiBreadcrumbs-collapsed": {
             color: theme.palette.primary.main,
             backgroundColor: alpha(theme.palette.primary.main, 0.07),
-            borderRadius: createG3BorderRadius(G3_PRESETS.breadcrumbItem),
+            borderRadius: g3BorderRadius(G3_PRESETS.breadcrumbItem),
             px: { xs: 0.5, sm: 1 },
             py: 0.2,
             mx: { xs: 0.25, sm: 0.5 },
@@ -185,7 +182,6 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
           flexGrow: 1,
           mr: { xs: 0.75, sm: 1.5 },
         }}
-        data-oid="v5dla3."
       >
         {breadcrumbSegments.map((segment, index) => {
           const isLast = index === breadcrumbSegments.length - 1;
@@ -203,7 +199,7 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
                     ? { xs: 0.25, sm: 1.75 }
                     : { xs: 0.5, sm: 1.75 }
                   : { xs: 1.25, sm: 1.75 },
-                borderRadius: createG3BorderRadius(G3_PRESETS.breadcrumbItem),
+                borderRadius: g3BorderRadius(G3_PRESETS.breadcrumbItem),
                 bgcolor: alpha(theme.palette.primary.main, 0.06),
                 fontWeight: 500,
                 height: compact ? { xs: "24px", sm: "28px" } : { xs: "28px", sm: "36px" },
@@ -221,16 +217,11 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
                   display: "block",
                 },
               }}
-              data-oid="77aldx7"
             >
               {isHome ? (
                 renderHomeContent(true)
               ) : (
-                <Box
-                  component="span"
-                  sx={{ overflow: "hidden", textOverflow: "ellipsis" }}
-                  data-oid="hd814k3"
-                >
+                <Box component="span" sx={{ overflow: "hidden", textOverflow: "ellipsis" }}>
                   {segment.name}
                 </Box>
               )}
@@ -255,7 +246,7 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
                     : { xs: 0.5, sm: 1.75 }
                   : { xs: 1.25, sm: 1.75 },
                 py: compact ? { xs: 0.25, sm: 0.4 } : { xs: 0.5, sm: 0.75 },
-                borderRadius: createG3BorderRadius(G3_PRESETS.breadcrumbItem),
+                borderRadius: g3BorderRadius(G3_PRESETS.breadcrumbItem),
                 bgcolor: isHome ? alpha(theme.palette.primary.main, 0.08) : "transparent",
                 minWidth: isHome ? { xs: compact ? "24px" : "28px", sm: "auto" } : "auto",
                 justifyContent: isHome ? "center" : "flex-start",
@@ -285,7 +276,6 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
                   ? t("ui.breadcrumb.toHome.aria")
                   : t("ui.breadcrumb.toSegment.aria", { name: segment.name })
               }
-              data-oid="xsbii_h"
             >
               {isHome ? (
                 renderHomeContent(false)
@@ -298,7 +288,6 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
                     whiteSpace: "nowrap",
                     display: "block",
                   }}
-                  data-oid="nss20f_"
                 >
                   {segment.name}
                 </Box>
@@ -317,9 +306,8 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
                 ? t("ui.breadcrumb.back.tooltip.canGoUp")
                 : t("ui.breadcrumb.back.tooltip.atRoot")
             }
-            data-oid="ujxfsq2"
           >
-            <span data-oid="0rhl8w6">
+            <span>
               <IconButton
                 onClick={handleGoUp}
                 disabled={!canGoUp}
@@ -374,7 +362,6 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
                     : {},
                   transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                 }}
-                data-oid="s6h78f1"
               >
                 <ArrowBackIcon
                   fontSize={isSmallScreen ? "small" : "medium"}
@@ -402,7 +389,6 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
               boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.05)",
               opacity: 0.45,
             }}
-            data-oid="breadcrumb-back-placeholder"
           />
         ))}
     </Box>

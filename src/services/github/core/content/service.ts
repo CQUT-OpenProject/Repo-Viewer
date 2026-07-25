@@ -5,12 +5,11 @@ import { logger } from "@/utils/logging/logger";
 import { createAbortError, isAbortError } from "@/utils/network/abort";
 
 import { RequestBatcher } from "../../RequestBatcher";
-import { getForceServerProxy, shouldUseServerAPI } from "../../config/ProxyForceManager";
+import { getForceServerProxy } from "../../config/ProxyForceManager";
 import { safeValidateGitHubContentsResponse } from "../../schemas/apiSchemas";
 import {
   filterAndNormalizeGitHubContents,
   transformGitHubContentsResponse,
-  validateGitHubContentsArray,
 } from "../../schemas/dataTransformers";
 import { getAuthHeaders } from "../Auth";
 import { getApiUrl, getCurrentBranch } from "../Config";
@@ -31,7 +30,7 @@ import {
   hydrateInitialContent as hydratePayload,
   INITIAL_CONTENT_EXCLUDE_FILES,
 } from "./hydrationStore";
-import { buildRepoFileContentApiUrl, buildServerApiUrlForGitHubResource } from "./serverApiUrls";
+import { buildServerApiUrlForGitHubResource } from "./serverApiUrls";
 
 /**
  * 内容服务入口
@@ -95,7 +94,7 @@ export async function getContents(
   try {
     let rawData: unknown;
 
-    if (shouldUseServerAPI()) {
+    if (getForceServerProxy()) {
       const query = new URLSearchParams();
       query.set("action", "getContents");
       query.set("path", path);
@@ -151,11 +150,6 @@ export async function getContents(
       excludeHidden: true,
       excludeFiles: [...INITIAL_CONTENT_EXCLUDE_FILES],
     });
-
-    const contentValidation = validateGitHubContentsArray(contents);
-    if (!contentValidation.isValid) {
-      logger.warn(`内容数据验证存在问题: ${path}`, contentValidation.invalidItems);
-    }
 
     await storeDirectoryContents(cacheKey, path, branch, contents);
     options?.onSource?.("network");
@@ -246,40 +240,7 @@ export async function getFileContent(fileUrl: string, signal?: AbortSignal): Pro
 }
 
 /**
- * 构建仓库文件的服务端代理地址。
- *
- * @param filePath - 仓库内文件路径
- * @param branch - 可选分支，未传时使用当前分支
- * @returns 服务端代理 URL
- */
-export function getServerRepoFileProxyUrl(filePath: string, branch?: string): string {
-  return buildRepoFileContentApiUrl(filePath, branch);
-}
-
-/**
- * 根据资源 URL 构建服务端代理地址。
- *
- * @param fileUrl - 原始资源地址
- * @param branch - 可选分支，用于解析当前仓库 raw 链接
- * @returns 服务端代理 URL
- */
-export function getServerResourceProxyUrl(fileUrl: string, branch?: string): string {
-  return buildServerApiUrlForGitHubResource(fileUrl, branch);
-}
-
-/**
- * 获取批处理器实例。
- *
- * @returns 共享的请求批处理器
- */
-export function getBatcher(): RequestBatcher {
-  return batcher;
-}
-
-/**
  * 清空批处理器缓存，便于调试或强制刷新请求。
- *
- * @returns void
  */
 export function clearBatcherCache(): void {
   batcher.clearCache();

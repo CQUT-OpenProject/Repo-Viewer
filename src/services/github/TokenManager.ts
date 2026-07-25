@@ -200,27 +200,6 @@ export class GitHubTokenManager {
   }
 
   /**
-   * 设置本地Token
-   *
-   * 在localStorage中存储或删除GitHub PAT，并重新加载所有token。
-   *
-   * @param token - Token字符串，空字符串表示删除
-   * @returns void
-   */
-  public setLocalToken(token: string): void {
-    if (typeof localStorage !== "undefined") {
-      if (token === "" || token.trim().length === 0) {
-        localStorage.removeItem("GITHUB_PAT");
-        logger.info("已移除本地GitHub token");
-      } else {
-        localStorage.setItem("GITHUB_PAT", token.trim());
-        logger.info("已设置本地GitHub token");
-      }
-      this.loadTokensFromEnv();
-    }
-  }
-
-  /**
    * 智能选择最佳 Token
    *
    * 基于以下因素选择最佳 token：

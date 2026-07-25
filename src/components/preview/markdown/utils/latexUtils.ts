@@ -73,7 +73,6 @@ export const createLatexCodeHandler = (): ((
         {
           className: "math math-display",
           style: { overflowX: "auto", padding: "0.5em 0" },
-          "data-oid": "g0ievsv",
         },
         normalizedContent,
       );
@@ -85,7 +84,6 @@ export const createLatexCodeHandler = (): ((
         language,
         content: normalizedContent,
         codeProps: rest,
-        dataOid: "b48y9g3",
       });
     }
 
@@ -94,7 +92,6 @@ export const createLatexCodeHandler = (): ((
       {
         className: codeClassName,
         ...rest,
-        "data-oid": "nzwnmt7",
       },
       children,
     );

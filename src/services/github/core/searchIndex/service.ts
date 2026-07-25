@@ -1,26 +1,17 @@
 /**
  * 搜索索引服务模块
  *
- * 提供GitHub仓库搜索索引的统一管理接口，包括：
- * - 获取搜索索引清单
- * - 检查搜索索引是否启用
- * - 确保搜索索引准备就绪
- * - 获取已索引的分支列表
- * - 预取特定分支的搜索索引
- * - 清除搜索索引缓存
- * - 刷新搜索索引
+ * 提供GitHub仓库搜索索引的统一管理接口。
  *
  * @module services/github/core/searchIndex/service
  */
 
 import { getSearchIndexConfig } from "@/config";
 
-import type { SearchIndexManifest } from "../../schemas/searchIndexSchemas";
 import {
   fetchManifest,
   invalidateSearchIndexCache as clearSearchIndexCache,
   prefetchSearchIndexForBranch as prefetchBranch,
-  refreshSearchIndexManifest,
 } from "./fetchers";
 import {
   createSearchIndexError,
@@ -32,30 +23,6 @@ import { searchIndex, type SearchIndexResultItem, type SearchIndexSearchOptions 
 
 export { searchIndex, SearchIndexError, SearchIndexErrorCode, createSearchIndexError };
 export type { SearchIndexErrorDetails, SearchIndexResultItem, SearchIndexSearchOptions };
-
-/**
- * 获取搜索索引清单
- *
- * 从远程获取仓库的搜索索引清单文件，包含所有已索引分支的元数据。
- *
- * @param signal - 可选的AbortSignal，用于取消请求
- * @returns 搜索索引清单对象
- * @throws 当请求失败时抛出错误
- */
-export async function getSearchIndexManifest(signal?: AbortSignal): Promise<SearchIndexManifest> {
-  return fetchManifest(signal);
-}
-
-/**
- * 检查搜索索引功能是否已启用
- *
- * 根据配置判断搜索索引功能是否可用。
- *
- * @returns 如果搜索索引已启用则返回true，否则返回false
- */
-export function isSearchIndexEnabled(): boolean {
-  return getSearchIndexConfig().enabled;
-}
 
 /**
  * 确保搜索索引准备就绪
@@ -111,16 +78,4 @@ export async function prefetchSearchIndexForBranch(
  */
 export function invalidateSearchIndexCache(): void {
   clearSearchIndexCache();
-}
-
-/**
- * 刷新搜索索引
- *
- * 强制重新获取最新的搜索索引清单，忽略本地缓存。
- *
- * @param signal - 可选的AbortSignal，用于取消请求
- * @returns 最新的搜索索引清单对象
- */
-export async function refreshSearchIndex(signal?: AbortSignal): Promise<SearchIndexManifest> {
-  return refreshSearchIndexManifest(signal);
 }

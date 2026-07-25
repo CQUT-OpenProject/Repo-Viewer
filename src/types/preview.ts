@@ -19,7 +19,6 @@ export interface PreviewState {
   // 图像预览
   imagePreviewUrl: string | null;
   previewingImageItem: GitHubContent | null;
-  isImageFullscreen: boolean;
   loadingImagePreview: boolean;
   imageError: string | null;
 }
@@ -37,5 +36,4 @@ export type PreviewAction =
   // 图像预览操作
   | { type: "SET_IMAGE_PREVIEW"; url: string | null; item: GitHubContent | null }
   | { type: "SET_IMAGE_LOADING"; loading: boolean }
-  | { type: "SET_IMAGE_ERROR"; error: string | null }
-  | { type: "SET_IMAGE_FULLSCREEN"; fullscreen: boolean };
+  | { type: "SET_IMAGE_ERROR"; error: string | null };

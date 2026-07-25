@@ -17,7 +17,7 @@ import {
   Download as DownloadIcon,
   Cancel as CancelIcon,
 } from "@mui/icons-material";
-import { createG3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
+import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 import { logger } from "@/utils/logging/logger";
 import { fileExtensionIcons } from "@/utils/files/fileHelpers";
 import type { GitHubContent } from "@/types";
@@ -213,7 +213,7 @@ const FileListItem: React.FC<FileListItemProps> = ({
                   bgcolor: "background.paper",
                   color: "text.primary",
                   boxShadow: 3,
-                  borderRadius: createG3BorderRadius(G3_PRESETS.tooltip),
+                  borderRadius: g3BorderRadius(G3_PRESETS.tooltip),
                   p: 1.5,
                   border: "1px solid",
                   borderColor: "divider",
@@ -222,7 +222,6 @@ const FileListItem: React.FC<FileListItemProps> = ({
                 },
               },
             }}
-            data-oid="53unr1g"
           >
             <Box
               component="span"
@@ -247,7 +246,6 @@ const FileListItem: React.FC<FileListItemProps> = ({
               }}
               onMouseEnter={handleDownloadMouseEnter}
               onMouseLeave={handleDownloadMouseLeave}
-              data-oid="p5-7:mp"
             >
               <IconButton
                 className={isItemDownloading ? "cancel-button" : "download-button"}
@@ -274,10 +272,9 @@ const FileListItem: React.FC<FileListItemProps> = ({
                   padding: { xs: 1, sm: 1.5 },
                   color: isItemDownloading ? "error.main" : "inherit",
                 }}
-                data-oid="bwl9ig-"
               >
                 {isItemDownloading ? (
-                  <Box sx={{ position: "relative", display: "inline-flex" }} data-oid="02vmy6b">
+                  <Box sx={{ position: "relative", display: "inline-flex" }}>
                     <CircularProgress
                       size={20}
                       variant={
@@ -287,7 +284,6 @@ const FileListItem: React.FC<FileListItemProps> = ({
                       }
                       value={folderDownloadProgress}
                       color="error"
-                      data-oid="0oqwaa-"
                     />
 
                     {/* 第二次及以后悬停时显示取消图标 */}
@@ -309,7 +305,6 @@ const FileListItem: React.FC<FileListItemProps> = ({
                         borderRadius: "50%",
                         pointerEvents: displayIsHoveringDownload ? "auto" : "none",
                       }}
-                      data-oid="g-4-y6c"
                     >
                       <CancelIcon
                         fontSize="small"
@@ -319,19 +314,17 @@ const FileListItem: React.FC<FileListItemProps> = ({
                           transform: displayIsHoveringDownload ? "scale(1)" : "scale(0.8)",
                           transition: "transform 0.2s ease-in-out",
                         }}
-                        data-oid="6_m3uc-"
                       />
                     </Box>
                   </Box>
                 ) : (
-                  <DownloadIcon fontSize="small" data-oid="9-.24f5" />
+                  <DownloadIcon fontSize="small" />
                 )}
               </IconButton>
             </Box>
           </Tooltip>
         ) : null
       }
-      data-oid=".a2fg5_"
     >
       <ListItemButton
         onClick={handleFileItemClick}
@@ -340,7 +333,7 @@ const FileListItem: React.FC<FileListItemProps> = ({
         disableTouchRipple={disableTouchRipple}
         {...(isVisible ? {} : { tabIndex: -1 })}
         sx={{
-          borderRadius: createG3BorderRadius(G3_PRESETS.fileListItem),
+          borderRadius: g3BorderRadius(G3_PRESETS.fileListItem),
           transition:
             "transform 0.1s ease-in-out, background-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out",
           // 高亮状态样式（应用悬停效果）
@@ -365,7 +358,6 @@ const FileListItem: React.FC<FileListItemProps> = ({
           willChange: "transform, background-color",
           transform: "translateZ(0)",
         }}
-        data-oid="y0qdjig"
       >
         <Box
           sx={{
@@ -375,7 +367,6 @@ const FileListItem: React.FC<FileListItemProps> = ({
             minWidth: 0,
             py: { xs: 0.25, sm: 0.5 },
           }}
-          data-oid=".58zkds"
         >
           <ListItemIcon
             sx={{
@@ -383,9 +374,8 @@ const FileListItem: React.FC<FileListItemProps> = ({
               mt: "2px",
               mr: { xs: 1, sm: 1.5 },
             }}
-            data-oid=":ewe_8t"
           >
-            <IconComponent sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }} data-oid="ekhgl12" />
+            <IconComponent sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }} />
           </ListItemIcon>
           <Typography
             variant="body2"
@@ -400,7 +390,6 @@ const FileListItem: React.FC<FileListItemProps> = ({
               whiteSpace: "nowrap",
               display: "block",
             }}
-            data-oid="al5kw84"
           >
             {item.name}
           </Typography>

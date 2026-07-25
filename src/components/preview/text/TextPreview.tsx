@@ -503,7 +503,7 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
   }, [containerRef, prismTheme, theme.palette.text.primary]);
 
   return (
-    <Box sx={{ position: "relative", width: "100%", height: "100%" }} data-oid="text-preview">
+    <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
       <GlobalStyles
         styles={{
           ".text-preview__code-table": {
@@ -638,7 +638,6 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
                 },
               ),
             }}
-            data-oid="text-preview-close"
           >
             <CloseIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
           </IconButton>
@@ -655,7 +654,6 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
           overflow: "hidden",
           boxShadow: theme.shadows[1],
         }}
-        data-oid="text-preview-paper"
       >
         <Box
           sx={{
@@ -671,7 +669,6 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
             borderBottom: `1px solid ${borderColor}`,
             backdropFilter: "blur(10px)",
           }}
-          data-oid="text-preview-header"
         >
           <Box
             sx={{
@@ -692,7 +689,6 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
                 fontSize: { xs: "0.95rem", sm: "1rem" },
                 lineHeight: { xs: 1.4, sm: 1.5 },
               }}
-              data-oid="text-preview-filename"
             >
               {previewingItem?.name ?? t("ui.text.title")}
             </Typography>
@@ -704,7 +700,6 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
                 fontSize: { xs: "0.7rem", sm: "0.75rem" },
                 lineHeight: { xs: 1.3, sm: 1.4 },
               }}
-              data-oid="text-preview-meta"
             >
               {previewingItem?.path ?? ""} · {t("ui.text.meta.totalLines", { count: lineCount })} ·{" "}
               {formattedSize}
@@ -737,7 +732,6 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
                       : alpha(theme.palette.action.hover, 0.4),
                   },
                 }}
-                data-oid="text-preview-wrap"
               >
                 {wrapText ? (
                   <TextRotationNoneIcon sx={{ fontSize: controlIconSize }} />
@@ -770,7 +764,6 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
                     },
                   ),
                 }}
-                data-oid="text-preview-copy"
               >
                 {copied ? (
                   <CheckRoundedIcon sx={{ fontSize: controlIconSize }} />
@@ -792,7 +785,6 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
             overflow: "hidden",
             backgroundColor: prismTheme.background,
           }}
-          data-oid="text-preview-content"
         >
           {/* 行级虚拟化：仅渲染可见行，避免超大文件 DOM 爆炸 */}
           <VirtualList
@@ -839,7 +831,6 @@ const TextPreview: React.FC<TextPreviewProps> = ({
           height: "100%",
           minHeight: "220px",
         }}
-        data-oid="text-preview-loading"
       >
         <CircularProgress size={28} />
       </Box>

@@ -27,7 +27,6 @@ vi.mock("@/utils/logging/logger", () => ({
 
 vi.mock("../../config/ProxyForceManager", () => ({
   getForceServerProxy: vi.fn(() => false),
-  shouldUseServerAPI: vi.fn(() => false),
 }));
 
 vi.mock("../Auth", () => ({
@@ -35,7 +34,6 @@ vi.mock("../Auth", () => ({
 }));
 
 vi.mock("../Config", () => ({
-  USE_TOKEN_MODE: false,
   getApiUrl: vi.fn((path: string, branch: string) => `https://api.example.com/${branch}/${path}`),
   getCurrentBranch: vi.fn(() => "main"),
 }));
@@ -47,7 +45,6 @@ vi.mock("../../schemas/apiSchemas", () => ({
 vi.mock("../../schemas/dataTransformers", () => ({
   filterAndNormalizeGitHubContents: vi.fn((data: unknown) => data),
   transformGitHubContentsResponse: vi.fn((data: unknown) => data),
-  validateGitHubContentsArray: vi.fn(() => ({ isValid: true, invalidItems: [] })),
 }));
 
 vi.mock("../../proxy/ProxyService", () => ({
@@ -84,7 +81,7 @@ if (typeof window === "undefined") {
   vi.stubGlobal("window", globalThis);
 }
 
-import { getForceServerProxy, shouldUseServerAPI } from "../../config/ProxyForceManager";
+import { getForceServerProxy } from "../../config/ProxyForceManager";
 const { clearBatcherCache, getContents, getFileContent } = await import("./service");
 
 describe("content service abort handling", () => {
@@ -93,7 +90,6 @@ describe("content service abort handling", () => {
     vi.unstubAllGlobals();
     vi.stubGlobal("window", globalThis);
     clearBatcherCache();
-    vi.mocked(shouldUseServerAPI).mockReturnValue(false);
     vi.mocked(getForceServerProxy).mockReturnValue(false);
     getCurrentProxyServiceMock.mockReturnValue("https://proxy.example.com");
     applyProxyToUrlMock.mockImplementation(
@@ -130,7 +126,7 @@ describe("content service abort handling", () => {
   });
 
   it("propagates abort to server proxy axios requests", async () => {
-    vi.mocked(shouldUseServerAPI).mockReturnValue(true);
+    vi.mocked(getForceServerProxy).mockReturnValue(true);
     const controller = new AbortController();
     let resolveAxiosStarted: (() => void) | null = null;
     const axiosStarted = new Promise<void>((resolve) => {

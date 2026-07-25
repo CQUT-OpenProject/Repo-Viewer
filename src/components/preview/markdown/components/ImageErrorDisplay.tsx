@@ -37,14 +37,9 @@ export const ImageErrorDisplay: React.FC<ImageErrorDisplayProps> = ({ imgSrc, on
         minHeight: "100px",
         backgroundColor: alpha(theme.palette.error.main, 0.05),
       }}
-      data-oid="jygfg5b"
     >
-      <ErrorOutlineIcon
-        color="error"
-        style={{ fontSize: 40, marginBottom: 8 }}
-        data-oid="g5glf05"
-      />
-      <Typography variant="body2" color="error" gutterBottom data-oid="wwi58v_">
+      <ErrorOutlineIcon color="error" style={{ fontSize: 40, marginBottom: 8 }} />
+      <Typography variant="body2" color="error" gutterBottom>
         图片加载失败
       </Typography>
       <Typography
@@ -56,17 +51,15 @@ export const ImageErrorDisplay: React.FC<ImageErrorDisplayProps> = ({ imgSrc, on
           textAlign: "center",
           marginBottom: 8,
         }}
-        data-oid="dcz6qln"
       >
         {displaySrc}
       </Typography>
       <Button
-        startIcon={<RefreshIcon data-oid="d5-tho9" />}
+        startIcon={<RefreshIcon />}
         size="small"
         variant="outlined"
         color="primary"
         onClick={onRetry}
-        data-oid="e12fctp"
       >
         重试加载
       </Button>

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import { useSEO } from "@/contexts/SEOContext/useSEO";
-import SEO from "./SEO";
+import { useMetadata } from "@/contexts/MetadataContext/context";
+import NativeSEO from "./NativeSEO";
 
 /**
  * 动态SEO组件属性接口
@@ -27,7 +27,7 @@ const DynamicSEO: React.FC<DynamicSEOProps> = ({
   repoOwner,
   repoName,
 }) => {
-  const { updateSEO, resetSEO } = useSEO();
+  const { updateMetadata, resetMetadata } = useMetadata();
 
   useEffect(() => {
     const normalizeString = (value?: string): string =>
@@ -42,7 +42,7 @@ const DynamicSEO: React.FC<DynamicSEOProps> = ({
 
     // 如果没有足够的信息，则使用默认SEO设置
     if (normalizedFilePath.length === 0 && normalizedTitle.length === 0) {
-      resetSEO();
+      resetMetadata();
       return;
     }
 
@@ -76,14 +76,14 @@ const DynamicSEO: React.FC<DynamicSEOProps> = ({
     }
 
     // 更新SEO数据
-    updateSEO({
+    updateMetadata({
       title: finalTitle,
       description: seoDescription,
     });
 
     // 组件卸载时重置SEO数据
     return () => {
-      resetSEO();
+      resetMetadata();
     };
   }, [
     filePath,
@@ -93,11 +93,11 @@ const DynamicSEO: React.FC<DynamicSEOProps> = ({
     isDirectory,
     repoOwner,
     repoName,
-    updateSEO,
-    resetSEO,
+    updateMetadata,
+    resetMetadata,
   ]);
 
-  return <SEO data-oid="yjh--07" />;
+  return <NativeSEO />;
 };
 
 export default DynamicSEO;

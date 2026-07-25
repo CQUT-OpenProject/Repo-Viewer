@@ -12,19 +12,15 @@ import type { GitHubContent } from "@/types";
 /**
  * 路径管理 Hook 的返回类型
  *
- * 提供当前路径、导航方向和状态管理功能。
+ * 提供当前路径和状态管理功能。
  */
 export interface PathManagementState {
   /** 当前路径 */
   currentPath: string;
-  /** 导航方向（前进/后退/刷新） */
-  navigationDirection: NavigationDirection;
   /** 设置当前路径 */
   setCurrentPath: (path: string, direction?: NavigationDirection) => void;
   /** 设置刷新状态 */
   setRefreshState: (isRefreshing: boolean, targetPath?: string) => void;
-  /** 设置导航方向 */
-  setNavigationDirection: (direction: NavigationDirection) => void;
 }
 
 /**
@@ -39,8 +35,6 @@ export interface BranchManagementState {
   branches: string[];
   /** 分支加载状态 */
   branchLoading: boolean;
-  /** 分支错误信息 */
-  branchError: string | null;
   /** 设置当前分支 */
   setCurrentBranch: (branch: string) => void;
   /** 刷新分支列表 */

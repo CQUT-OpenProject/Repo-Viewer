@@ -54,7 +54,6 @@ export function usePathManagement(branch: string): PathManagementState {
   }, []);
 
   const [currentPath, setCurrentPathState] = useState<string>(() => getSavedPath());
-  const [navigationDirection, setNavigationDirection] = useState<NavigationDirection>("none");
 
   const isInitialLoad = useRef<boolean>(true);
   const currentPathRef = useRef<string>(currentPath);
@@ -78,7 +77,6 @@ export function usePathManagement(branch: string): PathManagementState {
         }
       }
 
-      setNavigationDirection(direction);
       setCurrentPathState(path);
     },
     [],
@@ -169,9 +167,7 @@ export function usePathManagement(branch: string): PathManagementState {
 
   return {
     currentPath,
-    navigationDirection,
     setCurrentPath,
     setRefreshState,
-    setNavigationDirection,
   };
 }

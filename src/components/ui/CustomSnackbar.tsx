@@ -3,7 +3,7 @@ import { Alert, AlertTitle, Box, IconButton, LinearProgress, alpha } from "@mui/
 import CloseIcon from "@mui/icons-material/Close";
 import { useSnackbar } from "notistack";
 import type { CustomContentProps } from "notistack";
-import { eventEmitter } from "@/utils/events/eventEmitter";
+import { cancelActiveDownload } from "@/hooks/downloadCancelBridge";
 import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 import { useI18n } from "@/contexts/I18nContext";
 
@@ -26,7 +26,7 @@ const CustomSnackbar = forwardRef<HTMLDivElement, CustomSnackbarProps>(
 
     const handleDismiss = (): void => {
       if (isDownloadRelated()) {
-        eventEmitter.dispatch("cancel_download", { downloadId: String(id) });
+        cancelActiveDownload();
       }
       closeSnackbar(id);
     };
@@ -102,18 +102,14 @@ const CustomSnackbar = forwardRef<HTMLDivElement, CustomSnackbarProps>(
               color="inherit"
               onClick={handleDismiss}
               aria-label={t("ui.notification.close")}
-              data-oid="b8064jp"
             >
-              <CloseIcon fontSize="small" data-oid="x-n8pii" />
+              <CloseIcon fontSize="small" />
             </IconButton>
           ) : null
         }
-        data-oid=".slx-sd"
       >
-        <AlertTitle sx={{ fontWeight: 500 }} data-oid="hfm3m:r">
-          {title}
-        </AlertTitle>
-        <Box sx={{ width: "100%" }} data-oid="r4:ptg2">
+        <AlertTitle sx={{ fontWeight: 500 }}>{title}</AlertTitle>
+        <Box sx={{ width: "100%" }}>
           {message}
           {progress !== undefined && progress >= 0 && (
             <LinearProgress
@@ -128,7 +124,6 @@ const CustomSnackbar = forwardRef<HTMLDivElement, CustomSnackbarProps>(
                   backgroundColor: (theme) => theme.palette.common.white,
                 },
               }}
-              data-oid="1g6mk45"
             />
           )}
         </Box>

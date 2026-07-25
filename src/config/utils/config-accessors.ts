@@ -66,43 +66,16 @@ export const getDeveloperConfig = (): Config["developer"] => getConfig().develop
 export const getRuntimeConfig = (): Config["runtime"] => getConfig().runtime;
 
 /**
- * 获取Token配置
- *
- * @returns Token相关配置
- */
-export const getTokensConfig = (): Config["tokens"] => getConfig().tokens;
-
-/**
  * 检查是否为开发者模式
- *
- * @returns 如果启用开发者模式返回true
  */
 export const isDeveloperMode = (): boolean => getConfig().developer.mode;
 
 /**
  * 检查是否为Token模式
- *
- * @returns 如果启用Token模式返回true
  */
 export const isTokenMode = (): boolean => getConfig().access.useTokenMode;
 
 /**
- * 检查是否启用搜索索引模式
- *
- * @returns 如果启用搜索索引返回true
- */
-export const isSearchIndexEnabled = (): boolean => getSearchIndexConfig().enabled;
-
-/**
- * 检查是否为开发环境
- *
- * @returns 如果是开发环境返回true
- */
-export const isDevEnvironment = (): boolean => getConfig().runtime.isDev;
-
-/**
  * 获取GitHub Personal Access Tokens
- *
- * @returns GitHub PAT数组
  */
 export const getGithubPATs = (): string[] => getConfig().tokens.githubPATs;

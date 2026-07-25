@@ -94,7 +94,6 @@ const FilePreviewPage: React.FC<FilePreviewPageProps> = ({
         pb: { xs: 4, md: 6 },
         gap: { xs: 2, md: 2.5 },
       }}
-      data-oid="preview-page-root"
     >
       <Box
         sx={{
@@ -104,7 +103,6 @@ const FilePreviewPage: React.FC<FilePreviewPageProps> = ({
           flexDirection: "column",
           gap: 0,
         }}
-        data-oid="preview-page-content"
       >
         <Box
           sx={{
@@ -134,7 +132,6 @@ const FilePreviewPage: React.FC<FilePreviewPageProps> = ({
             gap: { xs: 2.5, md: 3 },
             minHeight: hasImagePreview ? "auto" : "320px",
           }}
-          data-oid="preview-page-view"
         >
           {hasMarkdownPreview ? (
             <LazyMarkdownPreview
@@ -145,7 +142,6 @@ const FilePreviewPage: React.FC<FilePreviewPageProps> = ({
               lazyLoad={false}
               currentBranch={currentBranch}
               onClose={onClose}
-              data-oid="preview-page-markdown"
             />
           ) : null}
 
@@ -156,7 +152,6 @@ const FilePreviewPage: React.FC<FilePreviewPageProps> = ({
               isSmallScreen={isSmallScreen}
               previewingItem={previewState.previewingItem}
               onClose={onClose}
-              data-oid="preview-page-text"
             />
           ) : null}
 
@@ -178,7 +173,6 @@ const FilePreviewPage: React.FC<FilePreviewPageProps> = ({
                 hasNext={hasNextImage}
                 onPrevious={hasPreviousImage ? onPreviousImage : undefined}
                 onNext={hasNextImage ? onNextImage : undefined}
-                data-oid="preview-page-image"
               />
             </Box>
           ) : null}

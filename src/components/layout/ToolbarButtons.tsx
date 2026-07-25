@@ -187,22 +187,20 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
           position: shouldHideButtons ? { xs: "absolute", sm: "relative" } : "relative",
           right: shouldHideButtons ? { xs: 0, sm: "auto" } : "auto",
         }}
-        data-oid="7:zr_jb"
       >
-        <Tooltip title={t("ui.toolbar.searchFiles")} data-oid="toolbar-search">
+        <Tooltip title={t("ui.toolbar.searchFiles")}>
           <span>
             <IconButton
               color="inherit"
               onClick={openSearchDrawer}
               aria-label={t("ui.toolbar.searchFiles")}
-              data-oid="toolbar-search-button"
             >
               <SearchIcon />
             </IconButton>
           </span>
         </Tooltip>
 
-        <Tooltip title={t("ui.toolbar.viewOnGitHub")} data-oid="f.rvw_c">
+        <Tooltip title={t("ui.toolbar.viewOnGitHub")}>
           <IconButton
             color="inherit"
             onClick={onGitHubClick}
@@ -212,9 +210,8 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
                 color: theme.palette.primary.light,
               },
             }}
-            data-oid="jdbz_el"
           >
-            <GitHubIcon data-oid="nw02ywc" />
+            <GitHubIcon />
           </IconButton>
         </Tooltip>
 
@@ -223,7 +220,6 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
           title={
             theme.palette.mode === "dark" ? t("ui.toolbar.lightMode") : t("ui.toolbar.darkMode")
           }
-          data-oid="skn4izp"
         >
           <IconButton
             onClick={() => {
@@ -241,13 +237,8 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
                     : theme.palette.primary.light,
               },
             }}
-            data-oid="90u9cza"
           >
-            {theme.palette.mode === "dark" ? (
-              <LightModeIcon data-oid="-y49csw" />
-            ) : (
-              <DarkModeIcon data-oid="mo0ub3d" />
-            )}
+            {theme.palette.mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
         </Tooltip>
       </Box>

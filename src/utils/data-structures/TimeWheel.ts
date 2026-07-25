@@ -257,27 +257,6 @@ export class TimeWheel<T> {
 
     return (this.currentSlotIndex + offset) % this.totalSlots;
   }
-
-  /**
-   * 获取统计信息
-   *
-   * @returns 统计信息对象
-   */
-  getStats(): {
-    totalEntries: number;
-    slotsUsed: number;
-    averageEntriesPerSlot: number;
-    currentSlot: number;
-  } {
-    const slotsUsed = this.slots.filter((slot) => slot.size > 0).length;
-
-    return {
-      totalEntries: this.size,
-      slotsUsed,
-      averageEntriesPerSlot: slotsUsed > 0 ? this.size / slotsUsed : 0,
-      currentSlot: this.currentSlotIndex,
-    };
-  }
 }
 
 /**

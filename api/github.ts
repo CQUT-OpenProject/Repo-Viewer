@@ -175,13 +175,6 @@ class GitHubTokenManager {
   public getTokenCount(): number {
     return this.tokens.length;
   }
-
-  public getTokenStatus(): { hasTokens: boolean; count: number } {
-    return {
-      hasTokens: this.hasTokens(),
-      count: this.getTokenCount(),
-    };
-  }
 }
 
 // 创建token管理器实例
@@ -401,15 +394,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
           repoName,
           repoBranch,
         },
-      });
-      return;
-    }
-
-    // 获取令牌状态 - 新增API
-    if (actionParam === "getTokenStatus") {
-      res.status(200).json({
-        status: "success",
-        data: tokenManager.getTokenStatus(),
       });
       return;
     }
@@ -807,55 +791,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         );
         res.status(status).json({
           error: "Failed to fetch GitHub asset",
-        });
-        return;
-      }
-    }
-
-    // 搜索仓库
-    if (actionParam === "search") {
-      const { q, sort, order } = req.query;
-
-      // 规范化查询参数
-      const qParam = Array.isArray(q) ? (q.length > 0 ? q[0] : "") : (q ?? "");
-      if (qParam === undefined || qParam.trim() === "") {
-        res.status(400).json({ error: "Missing search parameter" });
-        return;
-      }
-
-      const { repoOwner, repoName } = getRepoEnvConfig();
-
-      if (repoOwner.length === 0 || repoName.length === 0) {
-        res.status(500).json({
-          error: "Repository configuration missing",
-          message: "Missing GITHUB_REPO_OWNER or GITHUB_REPO_NAME environment variable",
-        });
-        return;
-      }
-
-      const repoQualifier = `repo:${repoOwner}/${repoName}`;
-      const searchQuery = qParam.includes(repoQualifier) ? qParam : `${repoQualifier} ${qParam}`;
-
-      try {
-        const response = await handleRequestWithRetry(() =>
-          axios.get<unknown>(`${GITHUB_API_BASE}/search/code`, {
-            headers: getAuthHeaders(),
-            params: {
-              q: searchQuery,
-              sort: (Array.isArray(sort) ? sort[0] : sort) ?? "best-match",
-              order: (Array.isArray(order) ? order[0] : order) ?? "desc",
-            },
-          }),
-        );
-
-        res.status(200).json(response.data);
-        return;
-      } catch (error) {
-        const axiosError = error as AxiosErrorResponse;
-        apiLogger.error("GitHub search API request failed:", axiosError.message ?? "Unknown error");
-        res.status(axiosError.response?.status ?? 500).json({
-          error: "Search failed",
-          message: axiosError.message ?? "Unknown error",
         });
         return;
       }

@@ -8,7 +8,7 @@ import { SITE_TITLE } from "@/constants";
 import { GitHub } from "@/services/github";
 import { logger } from "@/utils/logging/logger";
 import { useScrollVisibility } from "@/hooks/useScrollVisibility";
-import SEO from "@/components/seo/SEO";
+import NativeSEO from "@/components/seo/NativeSEO";
 import Footer from "@/components/layout/Footer";
 import { FaviconManager } from "@/components/ui/DynamicIcon";
 import { PageErrorBoundary, FeatureErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -87,8 +87,7 @@ const App = () => {
       logger.warn(
         "未检测到GitHub Token，API搜索功能可能受限。请考虑配置Token以获取更好的搜索体验。",
       );
-      logger.info("您可以使用以下代码在开发环境中设置临时token:");
-      logger.info('GitHubService.setLocalToken("your_github_token_here")');
+      logger.info("Configure GitHub tokens via env (GITHUB_PAT / VITE_GITHUB_PAT).");
     }
   }, []);
 
@@ -97,9 +96,9 @@ const App = () => {
       {/* 动态favicon管理器 */}
       <FaviconManager />
       {/* 基础SEO设置 */}
-      <SEO data-oid="542h-3i" />
+      <NativeSEO />
 
-      <style data-oid="b003vxu">
+      <style>
         {`
             .notistack-SnackbarContainer {
               bottom: 24px !important;
@@ -120,14 +119,13 @@ const App = () => {
       </style>
       <PageErrorBoundary>
         <LazyMotion features={domAnimation}>
-          <AppContextProvider data-oid="a29dni6">
+          <AppContextProvider>
             <Box
               sx={{
                 display: "flex",
                 flexDirection: "column",
                 minHeight: "100vh",
               }}
-              data-oid="x1__:v_"
             >
               <AppBar
                 position="fixed"
@@ -137,9 +135,8 @@ const App = () => {
                   borderColor: "divider",
                   zIndex: theme.zIndex.appBar,
                 }}
-                data-oid="wo6wy.h"
               >
-                <Toolbar data-oid="3t2uspn">
+                <Toolbar>
                   <Box
                     sx={{
                       flexGrow: 1,
@@ -147,7 +144,6 @@ const App = () => {
                       alignItems: "center",
                       gap: 2,
                     }}
-                    data-oid="ldirzxg"
                   >
                     <Typography
                       ref={titleRef}
@@ -172,7 +168,6 @@ const App = () => {
                         flexShrink: 0,
                       }}
                       onClick={handleTitleClick}
-                      data-oid="isr-jsd"
                     >
                       {SITE_TITLE}
                     </Typography>
@@ -201,7 +196,6 @@ const App = () => {
                   <ToolbarButtons
                     showBreadcrumbInToolbar={showBreadcrumbInToolbar}
                     isSmallScreen={isSmallScreen}
-                    data-oid="enprsdk"
                   />
                 </Toolbar>
               </AppBar>
@@ -210,11 +204,11 @@ const App = () => {
               <Toolbar />
 
               <FeatureErrorBoundary featureName="MainContent">
-                <MainContent showBreadcrumbInToolbar={showBreadcrumbInToolbar} data-oid="jgn58er" />
+                <MainContent showBreadcrumbInToolbar={showBreadcrumbInToolbar} />
               </FeatureErrorBoundary>
 
               {/* 添加页脚组件 */}
-              <Footer data-oid="ntwtx22" />
+              <Footer />
             </Box>
           </AppContextProvider>
         </LazyMotion>

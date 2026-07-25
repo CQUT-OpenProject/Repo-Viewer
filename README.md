@@ -1,16 +1,16 @@
-## Repo-Viewer
+# Repo-Viewer
 
 基于 Material Design 3设计风格的 GitHub仓库浏览应用
 
-[![React Doctor](https://www.react.doctor/share/badge?p=repo-viewer&s=85&w=82&f=36)](https://www.react.doctor/share?p=repo-viewer&s=85&w=82&f=36) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/CQUT-OpenProject/Repo-Viewer)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/CQUT-OpenProject/Repo-Viewer)
 
-![Preview Dark](docs/image/dark.png)
+![Preview Dark](.github/assets/dark.png)
 
 <table>
   <tr>
-    <td><img alt="" src="docs/image/phone_1.png"></td>
-    <td><img alt="" src="docs/image/phone_2.png"></td>
-    <td><img alt="" src="docs/image/phone_3.png"></td>
+    <td><img alt="" src=".github/assets/phone_1.png"></td>
+    <td><img alt="" src=".github/assets/phone_2.png"></td>
+    <td><img alt="" src=".github/assets/phone_3.png"></td>
   <tr>
 </table>
 
@@ -18,9 +18,7 @@
 
 此项目已进入稳定阶段，本人将不再花过多精力维护。若发现已知的问题，欢迎任何形式的贡献！无论是修复错误、改进功能，还是提升代码质量，我们都非常欢迎您的参与。
 
-> 此组织的所有成员均有管理员权限，若不想提交 Pull Request，直接推送代码是被允许的。
->
-> 但在提交贡献前，推荐阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 以了解建议的代码规范和提交流程。
+> 提交贡献前，推荐阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 以了解建议的代码规范和提交流程。
 
 ## 主要功能
 
@@ -28,7 +26,6 @@
 - 🔎 **文件搜索**：支持基于自建索引和 Github API 的快速文件搜索，可按分支、路径前缀和扩展名过滤.
 - 📄 **文件预览**：多种文件格式预览，目前支持 `Markdown`、 `PDF` 和 `图片`.
 - ⬇️ **文件下载**：可下载单个文件或整个文件夹.
-- 🌐 **SEO优化**：提高搜索引擎可见性.
 
 ## 部署指南
 
@@ -39,15 +36,15 @@
 ### 使用Vercel部署
 
 1. **在GitHub上创建个人访问令牌（PAT）**:
-   - 访问 [GitHub设置 → 开发者设置 → 个人访问令牌](https://github.com/settings/tokens)
-   - 创建一个或多个具有 `repo` 权限的令牌
+   - 访问 [GitHub设置 → 开发者设置 → 个人访问令牌](https://github.com/settings/personal-access-tokens)
+   - 创建一个或多个具有 `Content` 权限的令牌
    - 保存这些令牌，你将在下一步中使用它们
 
 2. **在Vercel上导入你的仓库**:
    - 登录 [Vercel](https://vercel.com)
    - 点击 `Import Project`
    - 选择 `Import Git Repository` 并连接你的GitHub账号
-   - 选择Repo-Viewer仓库
+   - 选择本项目
 
 3. **配置环境变量**:
    - 在部署设置页面，找到 `Environment Variables` 部分
@@ -69,17 +66,4 @@ Repo-Viewer 使用 docfind 生成静态索引并随站点发布。构建时运�
 
 ## 许可证
 
-> 本项目使用 **AGPL-3.0** 许可证。完整条款见 [[LICENSE](LICENSE)]
-
-- ✅ 可以自由使用、修改和分发
-- ⚠️ 必须开源修改后的代码并保留原作者版权信息
-- ⚠️ 修改后的版本必须使用相同的 AGPL-3.0 许可证
-- ⚠️ 网络部署也需要开源
-
-## 贡献者
-
-[![Contributors](https://contrib.rocks/image?repo=CQUT-OpenProject/Repo-Viewer)](https://github.com/CQUT-OpenProject/Repo-Viewer/graphs/contributors)
-
-## Stars
-
-![Star History](https://api.star-history.com/svg?repos=CQUT-OpenProject/Repo-Viewer&type=Date)
+本项目基于 [AGPL-3.0](/LICENSE) 许可开源

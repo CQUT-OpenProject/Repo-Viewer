@@ -59,9 +59,5 @@ export const MetadataProvider: React.FC<MetadataProviderProps> = ({ children }) 
     [description, keywords, ogImage, resetMetadata, title, updateMetadata],
   );
 
-  return (
-    <MetadataContext.Provider value={contextValue} data-oid="2::o-n6">
-      {children}
-    </MetadataContext.Provider>
-  );
+  return <MetadataContext.Provider value={contextValue}>{children}</MetadataContext.Provider>;
 };

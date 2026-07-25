@@ -1,7 +1,7 @@
 import { GitHubTokenManager } from "../TokenManager";
 import { ErrorManager } from "@/utils/error/core/ErrorManager";
 import type { GitHubError } from "@/types/errors";
-import { shouldUseServerAPI } from "../config/ProxyForceManager";
+import { getForceServerProxy } from "../config/ProxyForceManager";
 
 // GitHub认证管理器
 const tokenManager = new GitHubTokenManager();
@@ -25,18 +25,6 @@ export function hasToken(): boolean {
 }
 
 /**
- * 设置本地开发环境Token
- *
- * 在localStorage中存储GitHub PAT，主要用于开发环境测试。
- *
- * @param token - GitHub Personal Access Token
- * @returns void
- */
-export function setLocalToken(token: string): void {
-  tokenManager.setLocalToken(token);
-}
-
-/**
  * 获取GitHub API请求头
  *
  * 根据当前环境和配置返回适当的请求头。
@@ -45,7 +33,7 @@ export function setLocalToken(token: string): void {
  * @returns HTTP请求头对象
  */
 export function getAuthHeaders(): HeadersInit {
-  if (shouldUseServerAPI()) {
+  if (getForceServerProxy()) {
     // 使用服务端API时，不需要在前端添加认证头
     return {
       Accept: "application/vnd.github.v3+json",
@@ -64,33 +52,6 @@ export function getAuthHeaders(): HeadersInit {
   }
 
   return headers;
-}
-
-/**
- * 更新 Token 的 Rate Limit 状态
- *
- * 从成功的 API 响应中提取 rate limit 信息并更新 token 状态。
- *
- * @param response - API 响应对象
- * @returns void
- */
-export function updateTokenRateLimitFromResponse(response: Response): void {
-  const currentToken = tokenManager.getCurrentToken();
-  if (currentToken === "") {
-    return;
-  }
-
-  const remainingHeader = response.headers.get("x-ratelimit-remaining");
-  const resetHeader = response.headers.get("x-ratelimit-reset");
-
-  if (remainingHeader !== null && resetHeader !== null) {
-    const remaining = parseInt(remainingHeader, 10);
-    const reset = parseInt(resetHeader, 10);
-
-    if (!isNaN(remaining) && !isNaN(reset)) {
-      tokenManager.updateTokenRateLimit(currentToken, remaining, reset);
-    }
-  }
 }
 
 /**

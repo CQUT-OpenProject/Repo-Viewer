@@ -16,14 +16,12 @@
     "file-saver": "^2.0.5",
     "framer-motion": "^12.34.2",
     "github-markdown-css": "^5.9.0",
-    "jszip": "^3.10.1",
     "katex": "^0.16.28",
     "notistack": "^3.0.2",
     "pinyin-pro": "^3.28.0",
     "prismjs": "^1.30.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-helmet-async": "^2.0.5",
     "react-markdown": "^10.1.0",
     "react-virtualized-auto-sizer": "^2.0.3",
     "react-window": "^2.2.7",
@@ -35,7 +33,10 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@rolldown/plugin-babel": "^0.2.3",
     "@tailwindcss/postcss": "^4.2.0",
+    "@types/babel__core": "^7.20.5",
     "@types/file-saver": "^2.0.7",
     "@types/node": "^24.10.13",
     "@types/react": "^19.2.14",
@@ -43,22 +44,21 @@
     "@types/react-virtualized-auto-sizer": "^1.0.8",
     "@types/react-window": "^1.8.8",
     "@vercel/node": "^5.6.6",
-    "@vitejs/plugin-react": "^5.1.1",
+    "@vitejs/plugin-react": "^6.0.4",
     "autoprefixer": "^10.4.24",
     "babel-plugin-react-compiler": "^1.0.0",
-    "esbuild": "^0.27.3",
+    "esbuild": "^0.28.1",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.2.0",
     "typescript": "^5.9.3",
-    "vite-plus": "^0.1.22"
+    "vite-plus": "0.2.6"
   },
   "overrides": {
-    "react-helmet-async": {
-      "react": "^19.0.0",
-      "react-dom": "^19.0.0"
-    },
-    "vite": "npm:@voidzero-dev/vite-plus-core@0.1.22",
-    "vitest": "npm:@voidzero-dev/vite-plus-test@0.1.22"
+    "esbuild": "^0.28.1",
+    "js-yaml": "^4.3.0",
+    "smol-toml": "^1.6.1",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.6",
+    "vitest": "4.1.10"
   },
   "engines": {
     "node": "24.x"

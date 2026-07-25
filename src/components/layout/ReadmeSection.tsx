@@ -214,7 +214,6 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
               display: "flex",
               flexDirection: "column",
             }}
-            data-oid="0zc9q5:"
           >
             <Typography
               variant="h5"
@@ -225,11 +224,10 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
                 alignItems: "center",
                 color: "text.primary",
               }}
-              data-oid="iawc_6m"
             />
 
             {shouldShowReadmeSkeleton ? (
-              <MarkdownPreviewSkeleton isSmallScreen={isSmallScreen} data-oid="readme-skeleton" />
+              <MarkdownPreviewSkeleton isSmallScreen={isSmallScreen} />
             ) : hasReadmeContent ? (
               <LazyMarkdownPreview
                 readmeContent={readmeContent}
@@ -240,7 +238,6 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
                 previewingItem={readmeFileItem}
                 onInternalLinkClick={handleInternalLinkClick}
                 onRenderComplete={handleReadmeRenderComplete}
-                data-oid="6nohd:r"
               />
             ) : readmeLoaded ? (
               <Typography
@@ -254,7 +251,6 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
                   border: "1px solid",
                   borderColor: "divider",
                 }}
-                data-oid="readme-empty"
               >
                 {t("ui.readme.empty")}
               </Typography>

@@ -147,8 +147,4 @@ export interface ErrorContext {
 // 错误处理配置
 export interface ErrorHandlerConfig {
   enableConsoleLogging: boolean;
-  enableErrorReporting: boolean;
-  maxErrorsPerSession: number;
-  retryAttempts: number;
-  retryDelay: number;
 }

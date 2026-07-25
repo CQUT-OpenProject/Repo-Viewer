@@ -70,9 +70,8 @@ const Footer: React.FC = () => {
         backgroundColor: theme.palette.mode === "light" ? "#FFFBFE" : "#1C1B1F",
         transition: "background-color 0.3s, border-color 0.3s",
       }}
-      data-oid="bljwygu"
     >
-      <Container maxWidth="lg" data-oid="bw3i.iq">
+      <Container maxWidth="lg">
         <Box
           sx={{
             display: { xs: "flex", sm: "grid" },
@@ -81,7 +80,6 @@ const Footer: React.FC = () => {
             gap: { xs: 1, sm: 0 },
             alignItems: "center",
           }}
-          data-oid="uk5kgqo"
         >
           {/* 分支切换器 - 移动端在最上方 */}
           <Box
@@ -93,7 +91,6 @@ const Footer: React.FC = () => {
               transform: { xs: "scale(0.9)", sm: "scale(1)" },
               transformOrigin: "center",
             }}
-            data-oid="wukw05h"
           >
             <BranchSwitcher showLabel={true} />
           </Box>
@@ -109,7 +106,6 @@ const Footer: React.FC = () => {
               gap: { xs: showFooterLeftElement ? 0.75 : 0, sm: 0 },
               visibility: { xs: "visible", sm: showFooterLeftElement ? "visible" : "hidden" },
             }}
-            data-oid="3z6-ik7"
           >
             {/* 自定义左侧信息 */}
             {showFooterLeftElement && footerLeftConfig.type === "link" ? (
@@ -199,7 +195,6 @@ const Footer: React.FC = () => {
               fontSize: "0.75rem",
               order: 3,
             }}
-            data-oid="78vii.:"
           >
             {t("ui.footer.presentedBy")}{" "}
             <Link
@@ -215,7 +210,6 @@ const Footer: React.FC = () => {
                   textDecoration: "none",
                 },
               }}
-              data-oid=".fmrdb9"
             >
               RepoViewer
             </Link>

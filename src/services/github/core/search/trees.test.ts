@@ -12,7 +12,7 @@ vi.mock("axios", () => ({
 }));
 
 vi.mock("../../config/ProxyForceManager", () => ({
-  shouldUseServerAPI: vi.fn(() => true),
+  getForceServerProxy: vi.fn(() => true),
 }));
 
 vi.mock("../Auth", () => ({

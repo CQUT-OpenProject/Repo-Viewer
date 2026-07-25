@@ -31,7 +31,6 @@ const initialPreviewState: PreviewState = {
   previewType: null,
   imagePreviewUrl: null,
   previewingImageItem: null,
-  isImageFullscreen: false,
   loadingImagePreview: false,
   imageError: null,
 };
@@ -91,12 +90,6 @@ function previewReducer(state: PreviewState, action: PreviewAction): PreviewStat
         imageError: action.error,
       };
 
-    case "SET_IMAGE_FULLSCREEN":
-      return {
-        ...state,
-        isImageFullscreen: action.fullscreen,
-      };
-
     default:
       return state;
   }
@@ -121,7 +114,6 @@ export const useFilePreview = (
   setUseTokenMode: (value: boolean) => void;
   selectFile: (item: GitHubContent) => Promise<void>;
   closePreview: () => void;
-  toggleImageFullscreen: () => void;
   handleImageError: (error: string) => void;
   currentPreviewItemRef: RefObject<GitHubContent | null>;
 } => {
@@ -372,11 +364,6 @@ export const useFilePreview = (
     hasActivePreviewRef.current = false;
   };
 
-  // 图像全屏切换
-  const toggleImageFullscreen = () => {
-    dispatch({ type: "SET_IMAGE_FULLSCREEN", fullscreen: !previewState.isImageFullscreen });
-  };
-
   // 图像错误处理
   const handleImageError = (error: string) => {
     dispatch({ type: "SET_IMAGE_ERROR", error });
@@ -480,7 +467,6 @@ export const useFilePreview = (
     setUseTokenMode,
     selectFile,
     closePreview,
-    toggleImageFullscreen,
     handleImageError,
     currentPreviewItemRef,
   };

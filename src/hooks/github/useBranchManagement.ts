@@ -29,7 +29,6 @@ export function useBranchManagement(): BranchManagementState {
   });
 
   const [branchLoading, setBranchLoading] = useState<boolean>(false);
-  const [branchError, setBranchError] = useState<string | null>(null);
 
   const currentBranchRef = useRef<string>(currentBranch);
   currentBranchRef.current = currentBranch;
@@ -65,13 +64,10 @@ export function useBranchManagement(): BranchManagementState {
 
   const loadBranches = React.useCallback(async () => {
     setBranchLoading(true);
-    setBranchError(null);
     try {
       const fetchedBranches = await GitHub.Branch.getBranches();
       mergeBranchList(fetchedBranches);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "未知错误";
-      setBranchError(`获取分支列表失败: ${message}`);
       logger.error("获取分支列表失败:", error);
     } finally {
       setBranchLoading(false);
@@ -96,7 +92,6 @@ export function useBranchManagement(): BranchManagementState {
       currentBranchRef.current = target;
       setCurrentBranchState(target);
       mergeBranchList([target]);
-      setBranchError(null);
 
       return target;
     },
@@ -150,7 +145,6 @@ export function useBranchManagement(): BranchManagementState {
     currentBranch,
     branches,
     branchLoading,
-    branchError,
     setCurrentBranch,
     refreshBranches: loadBranches,
   };

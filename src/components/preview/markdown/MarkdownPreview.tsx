@@ -227,7 +227,7 @@ const MarkdownPreview = ({
   };
 
   if (loadingReadme) {
-    return <MarkdownPreviewSkeleton isSmallScreen={isSmallScreen} data-oid="8h5-fe5" />;
+    return <MarkdownPreviewSkeleton isSmallScreen={isSmallScreen} />;
   }
 
   if (!hasReadmeContent) {
@@ -235,11 +235,7 @@ const MarkdownPreview = ({
   }
 
   return (
-    <Box
-      sx={{ position: "relative", width: "100%", height: "100%" }}
-      ref={markdownRef}
-      data-oid="-q9nqss"
-    >
+    <Box sx={{ position: "relative", width: "100%", height: "100%" }} ref={markdownRef}>
       {/* 添加全局样式组件 */}
       {markdownGlobalStyles}
 
@@ -272,7 +268,6 @@ const MarkdownPreview = ({
                 },
               ),
             }}
-            data-oid="md-close-btn"
           >
             <CloseIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
           </IconButton>
@@ -284,7 +279,6 @@ const MarkdownPreview = ({
         elevation={0}
         className={isThemeChanging ? "theme-transition-katex" : ""}
         sx={createMarkdownStyles(theme, latexCount, isSmallScreen)}
-        data-oid=":p7j.31"
       >
         {shouldRender && !isThemeChanging && (
           <Box
@@ -334,7 +328,6 @@ const MarkdownPreview = ({
                 },
                 code: latexCodeHandler,
               }}
-              data-oid="53g570v"
             >
               {readmeContent}
             </ReactMarkdown>
@@ -351,9 +344,8 @@ const MarkdownPreview = ({
               justifyContent: "center",
               opacity: 0.7,
             }}
-            data-oid="kzd4vzl"
           >
-            <CircularProgress size={30} data-oid="x-yfp_w" />
+            <CircularProgress size={30} />
           </Box>
         )}
       </Paper>

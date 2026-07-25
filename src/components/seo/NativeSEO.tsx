@@ -56,28 +56,26 @@ const NativeSEO: React.FC<NativeSEOProps> = ({
   return (
     <>
       {/* React 19原生元标签支持 */}
-      <title data-oid="49bkxr2">{metaTitle}</title>
-      <meta name="description" content={metaDescription} data-oid="fj1dqmk" />
-      {metaKeywords.length > 0 ? (
-        <meta name="keywords" content={metaKeywords} data-oid="m:_df6k" />
-      ) : null}
+      <title>{metaTitle}</title>
+      <meta name="description" content={metaDescription} />
+      {metaKeywords.length > 0 ? <meta name="keywords" content={metaKeywords} /> : null}
 
       {/* 规范链接和索引控制 */}
-      <link rel="canonical" href={canonicalUrl} data-oid="2kjm6oq" />
-      {noindex && <meta name="robots" content="noindex, nofollow" data-oid="pvnw5h5" />}
+      <link rel="canonical" href={canonicalUrl} />
+      {noindex && <meta name="robots" content="noindex, nofollow" />}
 
       {/* Open Graph标签 - 用于社交媒体分享 */}
-      <meta property="og:title" content={metaTitle} data-oid="v3.fbm." />
-      <meta property="og:description" content={metaDescription} data-oid="73sama8" />
-      <meta property="og:image" content={fullOgImageUrl} data-oid="marbcjk" />
-      <meta property="og:url" content={canonicalUrl} data-oid="8u43ypl" />
-      <meta property="og:type" content="website" data-oid="vj3-ill" />
-      <meta property="og:site_name" content={metaTitle} data-oid="vax8:o5" />
+      <meta property="og:title" content={metaTitle} />
+      <meta property="og:description" content={metaDescription} />
+      <meta property="og:image" content={fullOgImageUrl} />
+      <meta property="og:url" content={canonicalUrl} />
+      <meta property="og:type" content="website" />
+      <meta property="og:site_name" content={metaTitle} />
 
       {/* 其他常用元标签 */}
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" data-oid="wr_5f5z" />
-      <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" data-oid="fxgfwa5" />
-      <meta name="language" content="Chinese" data-oid="axk0m1l" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
+      <meta name="language" content="Chinese" />
     </>
   );
 };

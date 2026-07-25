@@ -42,5 +42,3 @@ export const createMaterialYouTheme = (mode: PaletteMode): Theme => {
 };
 
 export { getCurrentThemeName } from "./utils";
-export * from "./g3Curves";
-export * from "./animations";

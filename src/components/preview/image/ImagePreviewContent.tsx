@@ -125,7 +125,6 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
       }}
       className={containerClassName.length > 0 ? containerClassName : "image-preview-container"}
       style={style}
-      data-oid="j_s1bp2"
     >
       {/* 屏幕阅读器状态提示区域 */}
       <Box
@@ -158,7 +157,6 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
             borderBottom: "1px solid",
             borderColor: "divider",
           }}
-          data-oid="5q_.d-t"
         >
           {displayFileName}
         </Typography>
@@ -174,7 +172,6 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
           overflow: "hidden",
           position: "relative",
         }}
-        data-oid="znlgest"
       >
         {/* 全局样式 */}
         <GlobalStyles
@@ -188,7 +185,6 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
               height: "100%",
             },
           }}
-          data-oid="v02yxzy"
         />
 
         {/* 加载骨架屏 */}
@@ -196,7 +192,6 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
           <ImagePreviewSkeleton
             isSmallScreen={isSmallScreen}
             aspectRatio={dominantAspectRatio}
-            data-oid="84nup28"
             {...(stageWidth !== null ? { targetWidth: stageWidth } : {})}
             {...(stageHeight !== null ? { targetHeight: stageHeight } : {})}
           />
@@ -218,9 +213,8 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
               bottom: 0,
               zIndex: 10,
             }}
-            data-oid="w:-3iqj"
           >
-            <Typography color="error" sx={{ mb: 2 }} data-oid="tex3zwr">
+            <Typography color="error" sx={{ mb: 2 }}>
               图像加载失败
             </Typography>
             <IconButton
@@ -237,7 +231,7 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                 },
               }}
             >
-              <ReplayIcon data-oid=":znocig" />
+              <ReplayIcon />
             </IconButton>
           </Box>
         )}
@@ -254,7 +248,6 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
           onTransformed={(ref) => {
             onTransformed(ref.state.scale);
           }}
-          data-oid="2kb8slc"
         >
           {({ zoomIn, zoomOut, resetTransform }) => (
             <>
@@ -281,7 +274,6 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                   onTouchEnd: handleTouchEnd,
                   onTouchCancel: handleTouchEnd,
                 }}
-                data-oid=":ze-2ev"
               >
                 {!hasError && !loading && (
                   <div
@@ -299,7 +291,6 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                         stageMaxHeight !== null ? `${stageMaxHeight.toString()}px` : "100%",
                       position: "relative",
                     }}
-                    data-oid="y6kwode"
                   >
                     <img
                       ref={handleImageRef}
@@ -318,7 +309,6 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                         onLoad();
                       }}
                       onError={onError}
-                      data-oid="nyva-.q"
                     />
                   </div>
                 )}
@@ -335,7 +325,6 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                       onLoad();
                     }}
                     onError={onError}
-                    data-oid="nyva-loading"
                   />
                 )}
               </TransformComponent>
@@ -364,7 +353,6 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                         transition: "opacity 0.2s ease",
                         pointerEvents: "none",
                       }}
-                      data-oid="drag-left-indicator"
                     >
                       <Box
                         sx={{
@@ -401,7 +389,6 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                         transition: "opacity 0.2s ease",
                         pointerEvents: "none",
                       }}
-                      data-oid="drag-right-indicator"
                     >
                       <Box
                         sx={{
@@ -443,7 +430,6 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                     cursor: activeNavSide === "left" ? "pointer" : "default",
                     pointerEvents: activeNavSide === "left" ? "auto" : "none",
                   }}
-                  data-oid="prev-nav-area"
                 >
                   <IconButton
                     onClick={onPrevious}
@@ -468,14 +454,12 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                           : "none",
                       pointerEvents: activeNavSide === "left" ? "auto" : "none",
                     }}
-                    data-oid="prev-nav-btn"
                   >
                     <ChevronLeftIcon
                       sx={{
                         fontSize: "2rem",
                         color: theme.palette.text.primary,
                       }}
-                      data-oid="prev-icon"
                     />
                   </IconButton>
                 </Box>
@@ -497,7 +481,6 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                     cursor: activeNavSide === "right" ? "pointer" : "default",
                     pointerEvents: activeNavSide === "right" ? "auto" : "none",
                   }}
-                  data-oid="next-nav-area"
                 >
                   <IconButton
                     onClick={onNext}
@@ -522,14 +505,12 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                           : "none",
                       pointerEvents: activeNavSide === "right" ? "auto" : "none",
                     }}
-                    data-oid="next-nav-btn"
                   >
                     <ChevronRightIcon
                       sx={{
                         fontSize: "2rem",
                         color: theme.palette.text.primary,
                       }}
-                      data-oid="next-icon"
                     />
                   </IconButton>
                 </Box>

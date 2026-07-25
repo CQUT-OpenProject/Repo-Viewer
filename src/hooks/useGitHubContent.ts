@@ -34,14 +34,12 @@ export const useGitHubContent = (): {
   error: string | null;
   setCurrentPath: (path: string, direction?: NavigationDirection) => void;
   refreshContents: () => void;
-  navigationDirection: NavigationDirection;
   repoOwner: string;
   repoName: string;
   currentBranch: string;
   defaultBranch: string;
   branches: string[];
   branchLoading: boolean;
-  branchError: string | null;
   setCurrentBranch: (branch: string) => void;
   refreshBranches: () => Promise<void>;
   search: RepoSearchState;
@@ -79,7 +77,6 @@ export const useGitHubContent = (): {
   const refreshContents = () => {
     pathState.setRefreshState(true, pathState.currentPath);
     contentState.refresh();
-    pathState.setNavigationDirection("none");
   };
 
   // 同步刷新状态
@@ -92,7 +89,6 @@ export const useGitHubContent = (): {
   return {
     // 路径相关
     currentPath: pathState.currentPath,
-    navigationDirection: pathState.navigationDirection,
     setCurrentPath: pathState.setCurrentPath,
 
     // 内容相关
@@ -110,7 +106,6 @@ export const useGitHubContent = (): {
     currentBranch: branchState.currentBranch,
     branches: branchState.branches,
     branchLoading: branchState.branchLoading,
-    branchError: branchState.branchError,
     setCurrentBranch: handleBranchChange,
     refreshBranches: branchState.refreshBranches,
     search: searchState,

@@ -283,15 +283,6 @@ export class AdvancedCache<K extends string, V> {
     return this.cache.size;
   }
 
-  /**
-   * 获取缓存统计信息
-   *
-   * @returns 缓存统计对象
-   */
-  getStats(): CacheStats {
-    return { ...this.stats };
-  }
-
   private updateHitRate(): void {
     const total = this.stats.hits + this.stats.misses;
     this.stats.hitRate = total > 0 ? this.stats.hits / total : 0;
@@ -364,28 +355,6 @@ export class AdvancedCache<K extends string, V> {
     if (expiredKeys.length > 0) {
       logger.debug(`定期清理：删除了${expiredKeys.length.toString()}个过期缓存项`);
     }
-  }
-
-  /**
-   * 预取缓存项
-   *
-   * 延迟加载指定键的数据到缓存中。
-   *
-   * @param keys - 要预取的键数组
-   * @returns void
-   */
-  prefetch(keys: K[]): void {
-    if (!this.config.enablePrefetch) {
-      return;
-    }
-
-    window.setTimeout(() => {
-      keys.forEach((key) => {
-        void this.get(key).catch((error: unknown) => {
-          logger.debug(`预加载失败: ${key}`, error);
-        });
-      });
-    }, this.config.prefetchDelay);
   }
 
   private async loadItemFromPersistence(key: string): Promise<CacheItemMeta | undefined> {

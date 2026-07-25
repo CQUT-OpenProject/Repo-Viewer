@@ -18,9 +18,6 @@ const DEFAULT_CACHE_CONFIG: CacheConfig = {
   enablePersistence: true,
   useIndexedDB: true,
   storageKey: "",
-
-  enablePrefetch: true,
-  prefetchDelay: 100,
 };
 
 /**

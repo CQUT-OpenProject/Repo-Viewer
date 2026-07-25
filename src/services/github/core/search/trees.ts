@@ -12,7 +12,7 @@ import { SmartCache } from "@/utils/cache/SmartCache";
 import { createAbortError, isAbortError } from "@/utils/network/abort";
 
 import { GITHUB_API_BASE, GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "../Config";
-import { shouldUseServerAPI } from "../../config/ProxyForceManager";
+import { getForceServerProxy } from "../../config/ProxyForceManager";
 import { getAuthHeaders } from "../Auth";
 
 /**
@@ -109,7 +109,7 @@ async function fetchBranchHeadShaDirectly(
 }
 
 async function resolveBranchHeadSha(branch: string, signal?: AbortSignal): Promise<string | null> {
-  if (shouldUseServerAPI()) {
+  if (getForceServerProxy()) {
     return fetchBranchHeadShaViaServerApi(branch, signal);
   }
 
@@ -219,7 +219,7 @@ export async function getBranchTree(
   }
 
   const request = (
-    shouldUseServerAPI()
+    getForceServerProxy()
       ? fetchTreeViaServerApi(normalizedBranch, signal)
       : fetchTreeDirectly(normalizedBranch, signal)
   )

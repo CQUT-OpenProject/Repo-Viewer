@@ -30,7 +30,7 @@ const DEFAULT_G3_CONFIG: Required<G3CurveConfig> = {
  * @param config - G3曲线配置
  * @returns CSS边框半径字符串
  */
-export function createG3BorderRadius(config: G3CurveConfig): string {
+export function g3BorderRadius(config: G3CurveConfig): string {
   const { radius, smoothness = DEFAULT_G3_CONFIG.smoothness } = config;
   const adjustedRadius = radius * (1.0 + smoothness * 0.6);
   return `${Math.round(adjustedRadius).toString()}px`;
@@ -144,7 +144,7 @@ export function getResponsiveG3BorderRadius(
   isSmallScreen: boolean,
 ): string {
   const config = isSmallScreen ? preset.mobile : preset.desktop;
-  return createG3BorderRadius(config);
+  return g3BorderRadius(config);
 }
 
 /**
@@ -160,15 +160,3 @@ export const responsiveG3Styles = {
   card: (isSmallScreen: boolean) =>
     getResponsiveG3BorderRadius(RESPONSIVE_G3_PRESETS.card, isSmallScreen),
 };
-
-/**
- * G3边框半径快捷函数
- *
- * 用于Emotion styled-components的简化API。
- *
- * @param config - G3曲线配置
- * @returns CSS边框半径字符串
- */
-export function g3BorderRadius(config: G3CurveConfig): string {
-  return createG3BorderRadius(config);
-}

@@ -2,6 +2,8 @@
  * 工具函数：格式化和解析扩展名输入
  */
 
+import { escapeRegExp } from "@/utils/string/escapeRegExp";
+
 export const formatExtensionInput = (extensions: string[]): string => extensions.join(", ");
 
 export const parseExtensionInput = (value: string): string[] => {
@@ -55,8 +57,6 @@ export const highlightKeyword = (
 
   return parts;
 };
-
-const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const HIGHLIGHT_REGEX_CACHE_LIMIT = 50;
 // 关键词高亮正则缓存，减少重复编译

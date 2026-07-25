@@ -1,20 +1,5 @@
 import { useState, useEffect } from "react";
-
-const debounce = <F extends (...args: unknown[]) => unknown>(
-  func: F,
-  waitFor: number,
-): ((...args: Parameters<F>) => void) => {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-
-  return (...args: Parameters<F>): void => {
-    if (timeout !== null) {
-      clearTimeout(timeout);
-    }
-    timeout = setTimeout(() => {
-      func(...args);
-    }, waitFor);
-  };
-};
+import { debounce } from "@/utils/async/debounce";
 
 /**
  * 自定义 Hook：监听滚动位置以控制元素可见性

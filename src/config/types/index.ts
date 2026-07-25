@@ -39,9 +39,6 @@ export interface Config {
     imageProxyUrl: string;
     imageProxyUrlBackup1: string;
     imageProxyUrlBackup2: string;
-    healthCheckTimeout: number;
-    validationTimeout: number;
-    healthCheckInterval: number;
     recoveryTime: number;
   };
   access: {
@@ -92,7 +89,4 @@ export interface ConfigDebugInfo {
   };
   envVarStatus: Record<string, boolean>;
   tokenSources: { key: string; hasValue: boolean; isValid: boolean }[];
-}
-export interface EnvMappingOptions {
-  isProdLike?: boolean;
 }

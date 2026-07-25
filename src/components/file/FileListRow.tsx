@@ -75,12 +75,7 @@ const RowComponent = ({
     : getDynamicItemVariants(scrollSpeed, isScrolling);
 
   return (
-    <div
-      style={adjustedStyle}
-      className="file-list-item-container"
-      {...ariaAttributes}
-      data-oid="_c:db-1"
-    >
+    <div style={adjustedStyle} className="file-list-item-container" {...ariaAttributes}>
       <m.div
         style={innerStyle}
         variants={currentVariants}
@@ -101,7 +96,6 @@ const RowComponent = ({
           currentPath={currentPath}
           contents={contents}
           isHighlighted={isHighlighted}
-          data-oid="k4zj3qr"
         />
       </m.div>
     </div>

@@ -41,14 +41,9 @@ export const FileListSkeleton: React.FC<FileListSkeletonProps> = ({
   );
 
   return (
-    <List sx={[listBaseStyles, getContainerTransitionStyles(isExiting)]} data-oid="jaa7p3i">
+    <List sx={[listBaseStyles, getContainerTransitionStyles(isExiting)]}>
       {Array.from({ length: itemCount }, (_, index) => (
-        <FileListItemSkeleton
-          key={index}
-          isSmallScreen={isSmallScreen}
-          visible={visible}
-          data-oid=".rgd-ue"
-        />
+        <FileListItemSkeleton key={index} isSmallScreen={isSmallScreen} visible={visible} />
       ))}
     </List>
   );
@@ -121,7 +116,6 @@ const FileListItemSkeleton: React.FC<FileListItemSkeletonProps> = ({
             top: "50%",
             transform: "translateY(-50%)",
           }}
-          data-oid="qqy7.f_"
         >
           <Skeleton
             variant="circular"
@@ -129,21 +123,18 @@ const FileListItemSkeleton: React.FC<FileListItemSkeletonProps> = ({
             height={isSmallScreen ? 28 : 32}
             animation="wave"
             sx={skeletonStyles}
-            data-oid="ah8p2-g"
           />
         </Box>
       }
-      data-oid=".a:nzp-"
     >
-      <Box sx={[itemContentBaseStyles]} data-oid="njw4ru1">
-        <Box sx={[itemContentInnerStyles]} data-oid="0be3k2w">
+      <Box sx={[itemContentBaseStyles]}>
+        <Box sx={[itemContentInnerStyles]}>
           <ListItemIcon
             sx={{
               minWidth: { xs: "32px", sm: "40px" },
               mt: "2px",
               mr: { xs: 1, sm: 1.5 },
             }}
-            data-oid="iun1ohx"
           >
             <Skeleton
               variant="circular"
@@ -151,7 +142,6 @@ const FileListItemSkeleton: React.FC<FileListItemSkeletonProps> = ({
               height={isSmallScreen ? 24 : 28}
               animation="wave"
               sx={skeletonStyles}
-              data-oid="1z9s-n9"
             />
           </ListItemIcon>
           <Skeleton
@@ -170,7 +160,6 @@ const FileListItemSkeleton: React.FC<FileListItemSkeletonProps> = ({
               },
               skeletonStyles,
             ]}
-            data-oid="zc21:k-"
           />
         </Box>
       </Box>

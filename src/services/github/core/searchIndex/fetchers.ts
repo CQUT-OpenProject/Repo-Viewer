@@ -222,13 +222,6 @@ export function invalidateSearchIndexCache(): void {
   clearCaches();
 }
 
-export async function refreshSearchIndexManifest(
-  signal?: AbortSignal,
-): Promise<SearchIndexManifest> {
-  clearCaches();
-  return fetchManifest(signal);
-}
-
 export async function prefetchSearchIndexForBranch(
   branch: string,
   signal?: AbortSignal,

@@ -113,7 +113,6 @@ export const MarkdownImage: React.FC<MarkdownImageProps> = ({
           event.currentTarget.src = newSrc;
         }
       }}
-      data-oid="1jtw89v"
     />
   );
 };

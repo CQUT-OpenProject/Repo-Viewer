@@ -12,6 +12,5 @@ export const markdownGlobalStyles = (
         transition: "none !important",
       },
     }}
-    data-oid="66:1nx7"
   />
 );

@@ -32,7 +32,6 @@ export const ResponsiveSnackbarProvider: React.FC<{
         warning: CustomSnackbar,
         info: CustomSnackbar,
       }}
-      data-oid="kcy4t9o"
     >
       {children}
     </SnackbarProvider>
