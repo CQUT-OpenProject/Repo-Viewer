@@ -26,10 +26,12 @@ function interpolateString(
   onMissingInterpolationFn: ((key: string, interpolation: string) => void) | null,
   locale: Locale,
 ): string {
+  const normalizedLocale = locale.replace(/_/g, "-");
+
   return phrase.replace(
     DEFAULT_INTERPOLATION_REGEX,
     function (expression: string, argument: string) {
-      const optionHasProperty = options.hasOwnProperty(argument);
+      const optionHasProperty = Object.prototype.hasOwnProperty.call(options, argument);
       const optionType = typeof options[argument];
       const argumentIsUndefined = optionType === "undefined";
       const argumentIsValid = optionType === "string" || optionType === "number";
@@ -41,9 +43,9 @@ function interpolateString(
           return value;
         }
 
-        // 如果是数字类型，使用本地化格式
-        if (optionType === "number" && options.hasOwnProperty("count")) {
-          value = (validValue as number).toLocaleString([locale, "en-US"]);
+        // 如果是 count 参数且为数字类型，使用本地化数字格式
+        if (optionType === "number" && argument === "count") {
+          value = (validValue as number).toLocaleString([normalizedLocale, "en-US"]);
         } else {
           value = typeof validValue === "string" ? validValue : String(validValue);
         }
@@ -65,7 +67,7 @@ function interpolateString(
  * @returns 复数形式的键，如 "item.one" 或 "item.other"
  */
 const getPlural = (count: number, key: string, locale: Locale): string => {
-  const parts = locale.split("-");
+  const parts = locale.split(/[-_]/);
   const lang = parts[0]?.toLowerCase() ?? "";
 
   // 中文、日文等通常不需要复数形式

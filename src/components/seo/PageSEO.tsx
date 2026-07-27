@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { getSiteConfig } from "@/config";
 import { useI18n } from "@/contexts/I18nContext";
 import { buildAbsoluteAppUrl } from "@/utils/routing/basePath";
+import { getLanguageCode } from "@/utils/i18n/locale";
 
 interface PageSEOProps {
   title?: string;
@@ -22,7 +23,7 @@ function normalizeString(value?: string): string {
 }
 
 function getHtmlLanguage(locale: string): string {
-  const lang = locale.split("-")[0]?.toLowerCase() ?? "en";
+  const lang = getLanguageCode(locale) || "en";
   if (lang === "zh") {
     return "Chinese";
   }

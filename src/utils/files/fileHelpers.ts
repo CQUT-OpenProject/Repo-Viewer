@@ -294,7 +294,7 @@ export const isPdfFile = (filename: string): boolean => {
  * @returns 如果是Markdown文件返回true
  */
 export const isMarkdownFile = (filename: string): boolean => {
-  return checkFileExtension(filename, ["md"]);
+  return checkFileExtension(filename, ["md", "markdown", "mdx"]);
 };
 
 /**
@@ -319,5 +319,10 @@ export const isTextFile = (filename: string): boolean => {
     return true;
   }
 
-  return lowerCaseName.startsWith(".") && TEXT_FILE_NAMES.has(lowerCaseName);
+  if (lowerCaseName.startsWith(".")) {
+    const unpointed = lowerCaseName.slice(1);
+    return unpointed.length > 0 && (TEXT_FILE_NAMES.has(unpointed) || !unpointed.includes("."));
+  }
+
+  return false;
 };

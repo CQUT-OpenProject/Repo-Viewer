@@ -239,7 +239,8 @@ const appendFileToZip = async (
     throw new Error("当前浏览器不支持流式读取下载内容");
   }
 
-  const zipEntry = new ZipDeflate(file.path, { level: compressionLevel });
+  const zipPath = file.path.replace(/\\/g, "/").replace(/^\/+/g, "");
+  const zipEntry = new ZipDeflate(zipPath, { level: compressionLevel });
   zip.add(zipEntry);
 
   const reader = response.body.getReader();

@@ -194,7 +194,7 @@ export class SmartCache<K, V> {
     scoredEntries.sort((a, b) => a.score - b.score);
 
     // 计算要删除的条目数量
-    const toRemove = Math.floor(this.cache.size * this.cleanupRatio);
+    const toRemove = Math.max(1, Math.floor(this.cache.size * this.cleanupRatio));
 
     // 删除得分最低的条目
     for (let i = 0; i < toRemove && i < scoredEntries.length; i++) {

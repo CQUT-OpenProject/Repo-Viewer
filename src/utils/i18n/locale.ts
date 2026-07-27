@@ -14,15 +14,21 @@ const RTL_LANG_CODES = [
 ];
 
 /**
+ * 从 locale 提取主语言代码（忽略地区）
+ */
+export function getLanguageCode(locale: string): string {
+  const parts = locale.split(/[-_]/);
+  return parts[0]?.toLowerCase() ?? "";
+}
+
+/**
  * 确定页面的文本方向
  *
  * @param localeCode - 语言代码，如 'zh-CN', 'en-US'
  * @returns 'rtl' 或 'ltr'
  */
 function getPageDir(localeCode: string): "rtl" | "ltr" {
-  const parts = localeCode.split("-");
-  const twoLettersLangCode = parts[0]?.toLowerCase() ?? "";
-  const isRTLLang = RTL_LANG_CODES.includes(twoLettersLangCode);
+  const isRTLLang = RTL_LANG_CODES.includes(getLanguageCode(localeCode));
   return isRTLLang ? "rtl" : "ltr";
 }
 
@@ -40,7 +46,7 @@ export function getLocAttributes(locale: string): {
 
   // 标准化语言代码为 BCP47 格式
   // 例如: 'zh-CN' -> 'zh-CN', 'en' -> 'en'
-  const normalizedLang = locale.toLowerCase().replace("_", "-");
+  const normalizedLang = locale.toLowerCase().replace(/_/g, "-");
 
   return {
     dir: pageDir,
@@ -54,9 +60,9 @@ export function getLocAttributes(locale: string): {
  * @param locale - 原始语言代码
  * @returns 标准化后的语言代码
  */
-function normalizeLocale(locale: string): Locale {
+export function normalizeLocale(locale: string): Locale {
   // 标准化格式：将下划线替换为连字符，转换为小写
-  const normalized = locale.toLowerCase().replace("_", "-");
+  const normalized = locale.toLowerCase().replace(/_/g, "-");
 
   // 支持的语言映射
   const localeMap: Record<string, Locale> = {

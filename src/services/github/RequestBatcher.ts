@@ -82,8 +82,14 @@ export class RequestBatcher {
     method = "GET",
     headers?: Record<string, string>,
   ): string {
-    const headerStr = headers !== undefined ? JSON.stringify(headers) : "";
-    return `${method}:${key}:${headerStr}`;
+    const headerStr =
+      headers !== undefined
+        ? Object.keys(headers)
+            .sort()
+            .map((k) => `${k.toLowerCase()}:${headers[k] ?? ""}`)
+            .join(";")
+        : "";
+    return `${method.toUpperCase()}:${key}:${headerStr}`;
   }
 
   /**

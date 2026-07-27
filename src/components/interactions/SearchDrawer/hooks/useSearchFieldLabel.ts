@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useI18n } from "@/contexts/I18nContext";
+import { getLanguageCode } from "@/utils/i18n/locale";
 
 interface UseSearchFieldLabelProps {
   branchFilter: string[];
@@ -11,7 +12,7 @@ interface UseSearchFieldLabelProps {
 }
 
 function getListSeparator(locale: string): string {
-  const lang = locale.split("-")[0]?.toLowerCase() ?? "";
+  const lang = getLanguageCode(locale);
   return lang === "zh" || lang === "ja" ? "、" : ", ";
 }
 

@@ -90,12 +90,21 @@ async function searchBranchWithTreesApi(
         ? itemPath.slice(itemPath.lastIndexOf("/") + 1)
         : itemPath;
 
-      if (!fileName.toLowerCase().includes(normalizedSearchTerm)) {
+      if (
+        !fileName.toLowerCase().includes(normalizedSearchTerm) &&
+        !itemPath.toLowerCase().includes(normalizedSearchTerm)
+      ) {
         continue;
       }
 
-      if (normalizedPrefix.length > 0 && !itemPath.toLowerCase().startsWith(normalizedPrefix)) {
-        continue;
+      if (normalizedPrefix.length > 0) {
+        const lowerItemPath = itemPath.toLowerCase();
+        const prefixWithSlash = normalizedPrefix.endsWith("/")
+          ? normalizedPrefix
+          : `${normalizedPrefix}/`;
+        if (lowerItemPath !== normalizedPrefix && !lowerItemPath.startsWith(prefixWithSlash)) {
+          continue;
+        }
       }
 
       if (normalizedFileTypeFilters.size > 0) {

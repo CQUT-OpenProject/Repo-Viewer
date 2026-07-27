@@ -242,4 +242,22 @@ describe("downloadFolderAsZip", () => {
 
     expect(fetchImpl).not.toHaveBeenCalled();
   });
+
+  it("normalizes entry paths by stripping leading slashes and converting backslashes", async () => {
+    const saveAsImpl = vi.fn();
+    const fetchImpl = vi.fn(async () => createStreamResponse(["content"]));
+
+    await downloadFolderAsZip({
+      files: [{ path: "/docs\\nested\\readme.txt", url: "https://example.com/readme.txt" }],
+      signal: new AbortController().signal,
+      archiveName: "normalized.zip",
+      fetchImpl,
+      saveAsImpl,
+      showSaveFilePickerImpl: null,
+    });
+
+    const [savedBlob] = saveAsImpl.mock.calls[0] as [Blob, string];
+    const unzipped = unzipSync(new Uint8Array(await savedBlob.arrayBuffer()));
+    expect(Object.keys(unzipped)).toEqual(["docs/nested/readme.txt"]);
+  });
 });

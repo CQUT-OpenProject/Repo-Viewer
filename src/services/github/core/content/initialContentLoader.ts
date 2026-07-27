@@ -114,8 +114,8 @@ export async function loadInitialContentPayload(
   }
 
   if (
-    manifest.repo.owner !== githubConfig.repoOwner ||
-    manifest.repo.name !== githubConfig.repoName
+    manifest.repo.owner.toLowerCase() !== githubConfig.repoOwner.toLowerCase() ||
+    manifest.repo.name.toLowerCase() !== githubConfig.repoName.toLowerCase()
   ) {
     logger.warn("[InitialContent] Manifest repo mismatch, skipping preload.");
     return null;
@@ -151,8 +151,8 @@ export async function loadInitialContentPayload(
 
     if (
       data.branch !== githubConfig.repoBranch ||
-      data.repo.owner !== githubConfig.repoOwner ||
-      data.repo.name !== githubConfig.repoName
+      data.repo.owner.toLowerCase() !== githubConfig.repoOwner.toLowerCase() ||
+      data.repo.name.toLowerCase() !== githubConfig.repoName.toLowerCase()
     ) {
       logger.warn("[InitialContent] Payload repo or branch mismatch, skipping preload.");
       return null;

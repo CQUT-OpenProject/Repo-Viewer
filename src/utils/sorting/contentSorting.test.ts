@@ -31,4 +31,9 @@ describe("contentSorting", () => {
     expect(getSortKey("中文文件")).toBe("zhongwenwenjian");
     expect(getContentFirstLetter(createContent("中文文件", "file"))).toBe("Z");
   });
+
+  it("handles accented Latin characters when extracting first letter", () => {
+    expect(getContentFirstLetter(createContent("Équipe.txt", "file"))).toBe("E");
+    expect(getContentFirstLetter(createContent("Álvaro.md", "file"))).toBe("A");
+  });
 });

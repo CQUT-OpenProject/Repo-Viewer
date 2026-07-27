@@ -39,9 +39,7 @@ export class TokenRotator {
       return token;
     }
 
-    this.failedTokens.clear();
-    this.currentIndex = 0;
-    return this.tokens[0] ?? "";
+    return "";
   }
 
   public markTokenFailed(token: string): void {

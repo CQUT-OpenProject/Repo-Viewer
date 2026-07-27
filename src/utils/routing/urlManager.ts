@@ -3,8 +3,18 @@ import { logger } from "../logging/logger";
 import { buildAppPath, stripBasePath } from "./basePath";
 
 function isValidPath(path: string): boolean {
-  const illegalChars = /[<>"|?*]/;
+  const illegalChars = /[<>"|*]/;
   return !illegalChars.test(path);
+}
+
+function encodePathSegments(path: string): string {
+  if (path.length === 0) {
+    return "";
+  }
+  return path
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
 }
 
 /**
@@ -92,7 +102,7 @@ interface UrlBuildResult {
 }
 
 function buildUrl(path: string, preview?: string, branch?: string): UrlBuildResult {
-  const encodedPath = path.length > 0 ? encodeURI(path) : "";
+  const encodedPath = encodePathSegments(path);
   let url = buildAppPath(encodedPath);
 
   const defaultBranch = GitHub.Branch.getDefaultBranchName().trim();
@@ -105,7 +115,7 @@ function buildUrl(path: string, preview?: string, branch?: string): UrlBuildResu
 
   if (preview !== undefined && preview.length > 0) {
     const fileName = preview.split("/").pop();
-    url += `#preview=${encodeURI(fileName ?? "")}`;
+    url += `#preview=${encodeURIComponent(fileName ?? "")}`;
   }
 
   return {

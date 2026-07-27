@@ -2,7 +2,7 @@
 
 基于 Material Design 3设计风格的 GitHub仓库浏览应用
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/CQUT-OpenProject/Repo-Viewer)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/UE-DND/Repo-Viewer)
 
 ![Preview Dark](.github/assets/dark.png)
 

@@ -248,4 +248,31 @@ describe("api/github handler security hardening", () => {
     expect(state.statusCode).toBe(302);
     expect(state.jsonBody).toEqual({ error: "Failed to fetch GitHub asset" });
   });
+
+  it("does not get stuck in infinite retry loop when all tokens return 401", async () => {
+    process.env["GITHUB_PAT1"] = "bad-token-1";
+    process.env["GITHUB_PAT2"] = "bad-token-2";
+    const handler = await loadHandler();
+    const { res, state } = createMockRes();
+
+    mockedAxiosGet.mockImplementation(() =>
+      Promise.reject({
+        response: { status: 401 },
+        message: "Unauthorized",
+      }),
+    );
+
+    await handler(
+      {
+        query: {
+          action: "getContents",
+          path: "",
+        },
+      },
+      res,
+    );
+
+    expect(state.statusCode).toBe(401);
+    expect(mockedAxiosGet.mock.calls.length).toBeLessThanOrEqual(2);
+  });
 });

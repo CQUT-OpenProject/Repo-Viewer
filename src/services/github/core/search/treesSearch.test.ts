@@ -67,4 +67,37 @@ describe("searchMultipleBranchesWithTreesApi", () => {
       searchMultipleBranchesWithTreesApi("component", ["main"], "", "tsx", controller.signal),
     ).rejects.toMatchObject({ name: "AbortError" });
   });
+
+  it("does not return files from sibling directories with matching path prefix", async () => {
+    mockedGetBranchTree.mockResolvedValue([
+      { path: "src/components/Button.tsx", type: "blob", sha: "1", url: "https://example.com/1" },
+      {
+        path: "src/components-v2/Button.tsx",
+        type: "blob",
+        sha: "2",
+        url: "https://example.com/2",
+      },
+    ]);
+
+    const results = await searchMultipleBranchesWithTreesApi("Button", ["main"], "src/components");
+
+    expect(results[0]?.results.map((item) => item.path)).toEqual(["src/components/Button.tsx"]);
+  });
+
+  it("supports search terms containing path segments", async () => {
+    mockedGetBranchTree.mockResolvedValue([
+      {
+        path: "src/components/button/index.tsx",
+        type: "blob",
+        sha: "1",
+        url: "https://example.com/1",
+      },
+    ]);
+
+    const results = await searchMultipleBranchesWithTreesApi("button/index", ["main"]);
+
+    expect(results[0]?.results.map((item) => item.path)).toEqual([
+      "src/components/button/index.tsx",
+    ]);
+  });
 });

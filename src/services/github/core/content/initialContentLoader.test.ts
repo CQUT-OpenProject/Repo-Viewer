@@ -140,4 +140,54 @@ describe("initialContentLoader", () => {
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+
+  it("allows case-insensitive repo owner and name matching", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url =
+        input instanceof URL ? input.toString() : typeof input === "string" ? input : input.url;
+
+      if (url === "/initial-content/manifest.json") {
+        return new Response(
+          JSON.stringify({
+            version: 1,
+            generatedAt: "2026-03-15T00:00:00.000Z",
+            repo: {
+              owner: "OCTO",
+              name: "REPO-VIEWER",
+            },
+            branches: {
+              main: {
+                payloadPath: "/initial-content/main.json",
+              },
+            },
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url === "/initial-content/main.json") {
+        return new Response(
+          JSON.stringify({
+            version: 1,
+            generatedAt: "2026-03-15T00:00:00.000Z",
+            branch: "main",
+            repo: {
+              owner: "OCTO",
+              name: "REPO-VIEWER",
+            },
+            directories: [{ path: "", contents: [] }],
+            files: [],
+          }),
+          { status: 200 },
+        );
+      }
+
+      return new Response(null, { status: 404 });
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const payload = await loadInitialContentPayload();
+    expect(payload).not.toBeNull();
+  });
 });

@@ -13,7 +13,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import type { ReactNode } from "react";
 import I18N from "@/utils/i18n/i18n";
 import type { Locale, ILocaleJSON } from "@/utils/i18n/types";
-import { getBrowserLocale, getLocAttributes } from "@/utils/i18n/locale";
+import { getBrowserLocale, getLocAttributes, normalizeLocale } from "@/utils/i18n/locale";
 import { I18nContext, type I18nContextValue } from "./context";
 import { logger } from "@/utils/logging/logger";
 
@@ -82,7 +82,7 @@ async function loadTranslations(locale: Locale): Promise<ILocaleJSON> {
  */
 export function I18nProvider({ children, initialLocale }: I18nProviderProps): React.ReactElement {
   const [locale] = useState<Locale>(() => {
-    return initialLocale ?? getBrowserLocale();
+    return initialLocale !== undefined ? normalizeLocale(initialLocale) : getBrowserLocale();
   });
 
   const [translations, setTranslations] = useState<ILocaleJSON>({});

@@ -44,6 +44,26 @@ describe("RequestBatcher", () => {
     expect(secondResult).toBe(firstResult);
   });
 
+  it("reuses fingerprint cache when headers are identical but have different property insertion order", async () => {
+    const batcher = new RequestBatcher();
+    const executeRequest = vi.fn(async () => ({ value: 1 }));
+
+    const firstResult = await batcher.enqueue("https://example.com/repos", executeRequest, {
+      method: "GET",
+      headers: { Accept: "application/json", Authorization: "token ABC" },
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    const secondResult = await batcher.enqueue("https://example.com/repos", executeRequest, {
+      method: "GET",
+      headers: { Authorization: "token ABC", Accept: "application/json" },
+    });
+
+    expect(executeRequest).toHaveBeenCalledTimes(1);
+    expect(secondResult).toEqual(firstResult);
+  });
+
   it("bypasses fingerprint cache when requested", async () => {
     const batcher = new RequestBatcher();
     const executeRequest = vi

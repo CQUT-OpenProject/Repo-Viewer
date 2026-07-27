@@ -159,8 +159,10 @@ export class RequestManager {
 
       const result = await fetcher(controller.signal);
 
-      // 请求成功，清理
-      this.pendingRequests.delete(key);
+      // 请求成功，清理（仅当控制器匹配时）
+      if (this.pendingRequests.get(key) === controller) {
+        this.pendingRequests.delete(key);
+      }
 
       if (verbose) {
         logger.debug(`请求成功: ${key}`);
@@ -168,8 +170,10 @@ export class RequestManager {
 
       return result;
     } catch (error) {
-      // 清理
-      this.pendingRequests.delete(key);
+      // 清理（仅当控制器匹配时）
+      if (this.pendingRequests.get(key) === controller) {
+        this.pendingRequests.delete(key);
+      }
 
       // 如果是取消错误，不记录日志
       if (isAbortError(error)) {
