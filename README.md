@@ -59,7 +59,13 @@ Repo-Viewer 使用 docfind 生成静态索引并随站点发布。构建时运�
 
 ## 数据收集
 
-Repo-Viewer 默认启用 Vercel Web Analytics 以更好地帮助您分析相关访问数据。
+Repo-Viewer 在 Vercel 部署时默认启用以下观测能力：
+
+- **Web Analytics**：页面访问与流量分析
+- **Speed Insights**：Core Web Vitals 性能指标
+- **前端错误事件**：生产环境下 `logger.error` 会以 `app_error` 自定义事件上报至 Vercel Analytics
+
+本地开发与非 Vercel 环境中，上述 SDK 会自动 no-op，不影响调试体验。控制台日志仍由 `DEVELOPER_MODE` / `CONSOLE_LOGGING` 控制。
 
 ## 为 Repo Viewer 贡献代码
 

@@ -1,4 +1,4 @@
-import type { Config, DeveloperLoggingConfig } from "../types";
+import type { Config } from "../types";
 import { CONFIG_DEFAULTS } from "../constants";
 import { EnvParser } from "../utils/env-parser";
 import { resolveEnvWithMapping } from "../utils/env-mapping";
@@ -12,39 +12,6 @@ export const parseProxyUrls = (raw: string): string[] =>
     .split(",")
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
-
-export const resolveDeveloperLoggingConfig = (
-  env: EnvStringRecord,
-  developerMode: boolean,
-  consoleLogging: boolean,
-): DeveloperLoggingConfig => {
-  const reportUrl = resolveEnvWithMapping(env, "LOGGER_REPORT_URL", "");
-
-  const levelValue = resolveEnvWithMapping(env, "LOGGER_LEVEL", "").toLowerCase();
-  const baseLevel: DeveloperLoggingConfig["baseLevel"] = [
-    "debug",
-    "info",
-    "warn",
-    "error",
-  ].includes(levelValue)
-    ? (levelValue as DeveloperLoggingConfig["baseLevel"])
-    : undefined;
-
-  const result: DeveloperLoggingConfig = {
-    enableConsole: developerMode || consoleLogging,
-    enableErrorReporting: reportUrl.length > 0,
-  };
-
-  if (reportUrl.length > 0) {
-    result.reportUrl = reportUrl;
-  }
-
-  if (baseLevel !== undefined) {
-    result.baseLevel = baseLevel;
-  }
-
-  return result;
-};
 
 const normalizeSearchIndexGenerationMode = (
   value: string,
@@ -75,7 +42,6 @@ export class ConfigLoader {
     const consoleLogging = EnvParser.parseBoolean(
       resolveEnvWithMapping(stringEnv, "CONSOLE_LOGGING", "false"),
     );
-    const loggingConfig = resolveDeveloperLoggingConfig(stringEnv, developerMode, consoleLogging);
 
     const repoOwner = resolveEnvWithMapping(
       stringEnv,
@@ -184,7 +150,6 @@ export class ConfigLoader {
       developer: {
         mode: developerMode,
         consoleLogging,
-        logging: loggingConfig,
       },
       runtime: {
         isDev: this.getBooleanFlag(env, "DEV"),

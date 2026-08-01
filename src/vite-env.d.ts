@@ -37,8 +37,6 @@ interface ImportMetaEnv {
   readonly USE_TOKEN_MODE?: string;
   readonly DEVELOPER_MODE?: string;
   readonly CONSOLE_LOGGING?: string;
-  readonly LOGGER_LEVEL?: string;
-  readonly LOGGER_REPORT_URL?: string;
 
   // VITE_前缀变量（自动生成）
   readonly VITE_SITE_TITLE?: string;
@@ -54,8 +52,6 @@ interface ImportMetaEnv {
   readonly VITE_USE_TOKEN_MODE?: string;
   readonly VITE_DEVELOPER_MODE?: string;
   readonly VITE_CONSOLE_LOGGING?: string;
-  readonly VITE_LOGGER_LEVEL?: string;
-  readonly VITE_LOGGER_REPORT_URL?: string;
   readonly VITE_BASE_PATH?: string;
 
   // GitHub仓库变量（双向同步）

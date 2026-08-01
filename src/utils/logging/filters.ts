@@ -15,10 +15,6 @@ const resolveBaseLevel = (config: Config["developer"]): number => {
   if (config.consoleLogging) {
     return LEVEL_PRIORITY.warn;
   }
-  const base = config.logging?.baseLevel;
-  if (base === "debug" || base === "info" || base === "warn" || base === "error") {
-    return LEVEL_PRIORITY[base];
-  }
   return LEVEL_PRIORITY.error;
 };
 
