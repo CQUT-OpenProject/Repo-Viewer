@@ -34,11 +34,11 @@ interface ImportMetaEnv {
   readonly HIDE_MAIN_FOLDER_DOWNLOAD?: string;
   readonly HIDE_DOWNLOAD_FOLDERS?: string;
   readonly DOWNLOAD_PROXY_URL?: string;
-  readonly DOWNLOAD_PROXY_URL_BACKUP1?: string;
-  readonly DOWNLOAD_PROXY_URL_BACKUP2?: string;
   readonly USE_TOKEN_MODE?: string;
   readonly DEVELOPER_MODE?: string;
   readonly CONSOLE_LOGGING?: string;
+  readonly LOGGER_LEVEL?: string;
+  readonly LOGGER_REPORT_URL?: string;
 
   // VITE_前缀变量（自动生成）
   readonly VITE_SITE_TITLE?: string;
@@ -51,11 +51,11 @@ interface ImportMetaEnv {
   readonly VITE_HIDE_MAIN_FOLDER_DOWNLOAD?: string;
   readonly VITE_HIDE_DOWNLOAD_FOLDERS?: string;
   readonly VITE_DOWNLOAD_PROXY_URL?: string;
-  readonly VITE_DOWNLOAD_PROXY_URL_BACKUP1?: string;
-  readonly VITE_DOWNLOAD_PROXY_URL_BACKUP2?: string;
   readonly VITE_USE_TOKEN_MODE?: string;
   readonly VITE_DEVELOPER_MODE?: string;
   readonly VITE_CONSOLE_LOGGING?: string;
+  readonly VITE_LOGGER_LEVEL?: string;
+  readonly VITE_LOGGER_REPORT_URL?: string;
   readonly VITE_BASE_PATH?: string;
 
   // GitHub仓库变量（双向同步）

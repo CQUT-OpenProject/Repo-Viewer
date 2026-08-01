@@ -36,9 +36,7 @@ export interface Config {
     };
   };
   proxy: {
-    imageProxyUrl: string;
-    imageProxyUrlBackup1: string;
-    imageProxyUrlBackup2: string;
+    urls: string[];
     recoveryTime: number;
   };
   access: {
@@ -62,7 +60,6 @@ export interface Config {
 export interface DeveloperLoggingConfig {
   enableConsole?: boolean;
   enableErrorReporting?: boolean;
-  includeWarnInReporting?: boolean;
   reportUrl?: string;
   baseLevel?: "debug" | "info" | "warn" | "error";
 }

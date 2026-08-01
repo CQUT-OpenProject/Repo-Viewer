@@ -17,7 +17,7 @@ export function getProxiedUrlSync(url: string): string {
     return "";
   }
 
-  if (runtimeConfig.isDev && !USE_TOKEN_MODE && proxyConfig.imageProxyUrl === "") {
+  if (runtimeConfig.isDev && !USE_TOKEN_MODE && proxyConfig.urls.length === 0) {
     return url;
   }
 

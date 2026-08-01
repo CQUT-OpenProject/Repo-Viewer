@@ -7,6 +7,45 @@ type EnvSourceValue = string | boolean | null | undefined;
 type EnvSource = Record<string, EnvSourceValue>;
 type EnvStringRecord = Record<string, string | undefined>;
 
+export const parseProxyUrls = (raw: string): string[] =>
+  raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
+export const resolveDeveloperLoggingConfig = (
+  env: EnvStringRecord,
+  developerMode: boolean,
+  consoleLogging: boolean,
+): DeveloperLoggingConfig => {
+  const reportUrl = resolveEnvWithMapping(env, "LOGGER_REPORT_URL", "");
+
+  const levelValue = resolveEnvWithMapping(env, "LOGGER_LEVEL", "").toLowerCase();
+  const baseLevel: DeveloperLoggingConfig["baseLevel"] = [
+    "debug",
+    "info",
+    "warn",
+    "error",
+  ].includes(levelValue)
+    ? (levelValue as DeveloperLoggingConfig["baseLevel"])
+    : undefined;
+
+  const result: DeveloperLoggingConfig = {
+    enableConsole: developerMode || consoleLogging,
+    enableErrorReporting: reportUrl.length > 0,
+  };
+
+  if (reportUrl.length > 0) {
+    result.reportUrl = reportUrl;
+  }
+
+  if (baseLevel !== undefined) {
+    result.baseLevel = baseLevel;
+  }
+
+  return result;
+};
+
 const normalizeSearchIndexGenerationMode = (
   value: string,
   fallback: "build" | "action" | "off",
@@ -36,11 +75,7 @@ export class ConfigLoader {
     const consoleLogging = EnvParser.parseBoolean(
       resolveEnvWithMapping(stringEnv, "CONSOLE_LOGGING", "false"),
     );
-    const loggingConfig = this.resolveDeveloperLoggingConfig(
-      stringEnv,
-      developerMode,
-      consoleLogging,
-    );
+    const loggingConfig = resolveDeveloperLoggingConfig(stringEnv, developerMode, consoleLogging);
 
     const repoOwner = resolveEnvWithMapping(
       stringEnv,
@@ -132,20 +167,12 @@ export class ConfigLoader {
         },
       },
       proxy: {
-        imageProxyUrl: resolveEnvWithMapping(
-          stringEnv,
-          "DOWNLOAD_PROXY_URL",
-          CONFIG_DEFAULTS.DOWNLOAD_PROXY_URL,
-        ),
-        imageProxyUrlBackup1: resolveEnvWithMapping(
-          stringEnv,
-          "DOWNLOAD_PROXY_URL_BACKUP1",
-          CONFIG_DEFAULTS.DOWNLOAD_PROXY_URL_BACKUP1,
-        ),
-        imageProxyUrlBackup2: resolveEnvWithMapping(
-          stringEnv,
-          "DOWNLOAD_PROXY_URL_BACKUP2",
-          CONFIG_DEFAULTS.DOWNLOAD_PROXY_URL_BACKUP2,
+        urls: parseProxyUrls(
+          resolveEnvWithMapping(
+            stringEnv,
+            "DOWNLOAD_PROXY_URL",
+            CONFIG_DEFAULTS.DOWNLOAD_PROXY_URL,
+          ),
         ),
         recoveryTime: 300000,
       },
@@ -227,54 +254,5 @@ export class ConfigLoader {
       }
     }
     return false;
-  }
-
-  private resolveDeveloperLoggingConfig(
-    env: EnvStringRecord,
-    developerMode: boolean,
-    consoleLogging: boolean,
-  ): DeveloperLoggingConfig {
-    const enableConsole = EnvParser.parseBoolean(
-      resolveEnvWithMapping(
-        env,
-        "LOGGER_ENABLE_CONSOLE",
-        developerMode || consoleLogging ? "true" : "false",
-      ),
-    );
-
-    const enableErrorReporting = EnvParser.parseBoolean(
-      resolveEnvWithMapping(env, "LOGGER_ENABLE_ERROR_REPORTING", "false"),
-    );
-
-    const includeWarnInReporting = EnvParser.parseBoolean(
-      resolveEnvWithMapping(env, "LOGGER_REPORT_WARNINGS", "false"),
-    );
-
-    const reportUrl = resolveEnvWithMapping(env, "LOGGER_REPORT_URL", "");
-    const baseLevelValue = resolveEnvWithMapping(env, "LOGGER_BASE_LEVEL", "").toLowerCase();
-    const baseLevel: DeveloperLoggingConfig["baseLevel"] = [
-      "debug",
-      "info",
-      "warn",
-      "error",
-    ].includes(baseLevelValue)
-      ? (baseLevelValue as DeveloperLoggingConfig["baseLevel"])
-      : undefined;
-
-    const result: DeveloperLoggingConfig = {
-      enableConsole,
-      enableErrorReporting,
-      includeWarnInReporting,
-    };
-
-    if (reportUrl.length > 0) {
-      result.reportUrl = reportUrl;
-    }
-
-    if (baseLevel !== undefined) {
-      result.baseLevel = baseLevel;
-    }
-
-    return result;
   }
 }

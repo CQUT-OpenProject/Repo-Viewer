@@ -23,10 +23,7 @@ function isConsoleEnabled(config: DeveloperConfig): boolean {
 
 function reportIfConfigured(level: "warn" | "error", args: unknown[], error?: Error): void {
   const logging = developerConfig.logging ?? {};
-  if (logging.enableErrorReporting !== true) {
-    return;
-  }
-  if (level === "warn" && logging.includeWarnInReporting !== true) {
+  if (logging.enableErrorReporting !== true || level !== "error") {
     return;
   }
   const reportUrl = logging.reportUrl;
