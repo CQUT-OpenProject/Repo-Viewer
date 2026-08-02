@@ -1,7 +1,7 @@
 import type { GitHubContent } from "@/types";
 import type { CodeSearchResultItem } from "@/services/github/core/search";
 
-export type RepoSearchMode = "code-search" | "github-api";
+export type RepoSearchMode = "aggregated" | "github-api";
 
 export interface RepoSearchFilters {
   keyword: string;
