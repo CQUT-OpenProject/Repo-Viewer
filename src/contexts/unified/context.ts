@@ -1,5 +1,5 @@
 import { createContext, useContext, type Context } from "react";
-import type { GitHubContent, PreviewState, DownloadState } from "@/types";
+import type { GitHubContent, PreviewState, PreviewOpenTrigger, DownloadState } from "@/types";
 import type { RepoSearchState } from "@/hooks/github/useRepoSearch";
 
 /**
@@ -39,7 +39,7 @@ export interface ContentContextValue {
  */
 export interface PreviewContextValue {
   previewState: PreviewState;
-  selectFile: (item: GitHubContent) => Promise<void> | void;
+  selectFile: (item: GitHubContent, trigger?: PreviewOpenTrigger) => Promise<void> | void;
   closePreview: () => void;
 }
 

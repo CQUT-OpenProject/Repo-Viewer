@@ -2,6 +2,9 @@ import { track } from "@vercel/analytics";
 import { shouldLog } from "./filters";
 import type { CoreLogLevel, Logger } from "./types";
 import { configManager, getDeveloperConfig, type Config } from "@/config";
+import type { AppError } from "@/types";
+
+declare const __APP_VERSION__: string;
 
 type DeveloperConfig = Config["developer"];
 
@@ -41,11 +44,29 @@ function reportErrorToVercel(args: unknown[], error?: Error): void {
     return;
   }
 
+  const appError = error as Partial<AppError> | undefined;
   track("app_error", {
     message,
     ...(error?.stack !== undefined ? { stack: error.stack.slice(0, MAX_STACK_LENGTH) } : {}),
+    code: appError?.code,
+    category: appError?.category,
+    statusCode: appError?.statusCode,
+    endpoint: appError?.endpoint,
+    rateLimitRemaining: appError?.rateLimitRemaining,
   });
 }
+
+/**
+ * 上报业务事件到 Vercel Analytics（仅生产环境，开发环境 no-op）
+ */
+export function trackEvent(name: string, props: Record<string, AllowedPropertyValues>): void {
+  if (!import.meta.env.PROD) {
+    return;
+  }
+  track(name, { ...props, appVersion: __APP_VERSION__ });
+}
+
+type AllowedPropertyValues = string | number | boolean | null | undefined;
 
 function emit(level: CoreLogLevel, args: unknown[]): void {
   if (level === "error") {

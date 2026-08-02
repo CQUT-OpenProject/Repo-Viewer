@@ -134,7 +134,7 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
       // 等待主题切换完成（通常在 600ms 左右）
       setTimeout(() => {
         // 重新打开之前预览的文件
-        void selectFile(previewItemToRestore);
+        void selectFile(previewItemToRestore, "theme-reopen");
       }, 650);
     }
   };

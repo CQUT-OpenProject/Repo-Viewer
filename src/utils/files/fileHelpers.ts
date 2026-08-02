@@ -326,3 +326,23 @@ export const isTextFile = (filename: string): boolean => {
 
   return false;
 };
+
+export type PreviewFileType = "markdown" | "text" | "pdf" | "image";
+
+/** 可预览文件类型；不可预览时返回 null */
+export function getPreviewType(filename: string): PreviewFileType | null {
+  const lower = filename.toLowerCase();
+  if (isMarkdownFile(lower)) {
+    return "markdown";
+  }
+  if (isTextFile(filename)) {
+    return "text";
+  }
+  if (isPdfFile(lower)) {
+    return "pdf";
+  }
+  if (isImageFile(lower)) {
+    return "image";
+  }
+  return null;
+}

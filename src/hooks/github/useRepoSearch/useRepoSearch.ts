@@ -15,7 +15,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { GitHub } from "@/services/github";
 import { SearchIndexError, SearchIndexErrorCode } from "@/services/github/core/searchIndex";
-import { logger } from "@/utils/logging/logger";
+import { logger, trackEvent } from "@/utils/logging/logger";
 import { isAbortError } from "@/utils/network/abort";
 import { requestManager } from "@/utils/request/requestManager";
 import type { GitHubContent } from "@/types";
@@ -521,6 +521,16 @@ export function useRepoSearch({
       }
 
       setSearchResult(execution);
+      trackEvent("search_completed", {
+        query: execution.filters.keyword,
+        mode: execution.mode,
+        fallbackReason: fallbackReason ?? null,
+        resultCount: execution.items.length,
+        took: Math.round(execution.took),
+        branches: execution.filters.branches.join(","),
+        pathPrefix: execution.filters.pathPrefix ?? null,
+        extensions: execution.filters.extensions.join(","),
+      });
       return execution;
     } catch (error: unknown) {
       if (isAbortError(error)) {

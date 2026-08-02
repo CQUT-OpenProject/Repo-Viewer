@@ -11,7 +11,7 @@ import { useEffect, useReducer, useRef } from "react";
 import { saveAs } from "file-saver";
 import type { DownloadState, DownloadAction, GitHubContent } from "@/types";
 import { GitHub } from "@/services/github";
-import { logger } from "@/utils/logging/logger";
+import { logger, trackEvent } from "@/utils/logging/logger";
 import { isAbortError } from "@/utils/network/abort";
 import { requestManager } from "@/utils/request/requestManager";
 import {
@@ -130,6 +130,12 @@ export const useDownload = (
     isCancelledRef.current = true;
     dispatch({ type: "CANCEL_DOWNLOAD" });
 
+    trackEvent("download_cancelled", {
+      kind: downloadState.downloadingFolderPath !== null ? "folder" : "file",
+      path: downloadState.downloadingFolderPath ?? downloadState.downloadingPath ?? null,
+      fileCount: downloadState.totalFiles || null,
+    });
+
     if (abortControllerRef.current !== null) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
@@ -167,6 +173,7 @@ export const useDownload = (
     dispatch({ type: "SET_DOWNLOADING_FILE", path: item.path });
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
+    const startedAt = performance.now();
 
     try {
       const downloadUrl = getDirectProxyDownloadUrl(item.download_url);
@@ -180,6 +187,12 @@ export const useDownload = (
       if (!response.ok) {
         const error = new Error(`下载失败: ${String(response.status)} ${response.statusText}`);
         logger.error("下载文件失败:", error);
+        trackEvent("download_failed", {
+          kind: "file",
+          path: item.path,
+          status: response.status,
+          reason: "http",
+        });
         onError(t("error.file.downloadFailed", { message: error.message }));
         return;
       }
@@ -193,12 +206,19 @@ export const useDownload = (
 
       saveAs(blob, item.name);
       logger.info(`文件下载成功: ${item.path}`);
+      trackEvent("download_completed", {
+        kind: "file",
+        path: item.path,
+        size: item.size ?? null,
+        took: Math.round(performance.now() - startedAt),
+      });
     } catch (e: unknown) {
       const error = e as Error;
       if (error.name === "AbortError" || hasBeenCancelled()) {
         logger.info("文件下载已取消");
       } else {
         logger.error("下载文件失败:", error);
+        trackEvent("download_failed", { kind: "file", path: item.path, reason: "network" });
         onError(t("error.file.downloadFailed", { message: error.message }));
       }
     } finally {
@@ -283,6 +303,7 @@ export const useDownload = (
     // 创建新的AbortController
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
+    const startedAt = performance.now();
     let outputSink: ZipOutputSink | null = null;
     let zipPipelineStarted = false;
 
@@ -332,6 +353,13 @@ export const useDownload = (
       }
 
       logger.info(`文件夹下载完成: ${path}`);
+      trackEvent("download_completed", {
+        kind: "folder",
+        path,
+        fileCount: allFiles.length,
+        size: allFiles.reduce((sum, file) => sum + (file.size ?? 0), 0) || null,
+        took: Math.round(performance.now() - startedAt),
+      });
     } catch (e: unknown) {
       const error = e as Error;
       if (outputSink !== null && !zipPipelineStarted) {
@@ -342,6 +370,7 @@ export const useDownload = (
         logger.info("文件夹下载已取消");
       } else {
         logger.error("下载文件夹失败:", error);
+        trackEvent("download_failed", { kind: "folder", path, reason: "folder" });
         onError(t("error.file.folderDownloadFailed", { message: error.message }));
       }
     } finally {

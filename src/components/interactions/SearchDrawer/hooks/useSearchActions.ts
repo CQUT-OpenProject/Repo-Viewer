@@ -1,12 +1,18 @@
 import { GitHub } from "@/services/github";
-import { logger } from "@/utils/logging/logger";
-import type { RepoSearchItem } from "@/hooks/github/useRepoSearch";
+import { logger, trackEvent } from "@/utils/logging/logger";
+import type {
+  RepoSearchExecutionResult,
+  RepoSearchItem,
+  RepoSearchMode,
+} from "@/hooks/github/useRepoSearch";
 import type { GitHubContent } from "@/types";
 
 interface UseSearchActionsProps {
   search: {
     keyword: string;
     branchFilter: string[];
+    mode: RepoSearchMode;
+    searchResult: RepoSearchExecutionResult | null;
     setPreferredMode: (mode: "github-api") => void;
     search: (options?: { mode?: "github-api" }) => Promise<unknown>;
   };
@@ -75,6 +81,14 @@ export const useSearchActions = ({
       : "";
     navigateTo(directoryPath, "forward");
 
+    trackEvent("search_result_click", {
+      query: search.keyword,
+      position: search.searchResult?.items.findIndex((result) => result.path === item.path) ?? -1,
+      path: item.path,
+      branch: item.branch,
+      mode: search.mode,
+    });
+
     // 查找或加载文件项
     let fileItem = findFileItemByPath(item.path);
     if (fileItem === undefined) {
@@ -88,7 +102,7 @@ export const useSearchActions = ({
 
     // 选择文件进行预览
     if (fileItem !== undefined) {
-      await selectFile(fileItem);
+      await selectFile(fileItem, "search");
     }
 
     onClose();
