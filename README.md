@@ -20,7 +20,7 @@
 ## 部署指南
 
 > [!IMPORTANT]
-> 本项目深度适配 Vercel，强烈推荐使用 Vercel 部署
+> Repo-Viewer 深度适配 Vercel，强烈推荐使用 Vercel 部署
 
 ### 环境变量配置
 
