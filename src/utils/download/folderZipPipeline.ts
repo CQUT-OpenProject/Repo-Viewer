@@ -268,6 +268,16 @@ const appendFileToZip = async (
       // Ignore reader cancellation failures during cleanup.
     }
 
+    if (!isAbortError(error)) {
+      try {
+        // 残缺条目必须 finalize，否则 fflate 会卡住后续所有文件输出且不写中央目录
+        zipEntry.push(new Uint8Array(0), true);
+        await writer.flush();
+      } catch {
+        // 保留原始错误，finalize 失败时 zip 回调会另行上报。
+      }
+    }
+
     throw error;
   } finally {
     reader.releaseLock();
