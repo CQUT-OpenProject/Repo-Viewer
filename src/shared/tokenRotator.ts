@@ -2,9 +2,12 @@
  * Shared multi-token rotator for GitHub PATs (client + api).
  */
 export class TokenRotator {
+  /** 失败退避时长，与 TokenManager.BACKOFF_DURATION 保持一致 */
+  private static readonly FAILURE_BACKOFF_MS = 300000;
+
   private tokens: string[] = [];
   private currentIndex = 0;
-  private failedTokens = new Set<string>();
+  private failedTokens = new Map<string, number>();
 
   public setTokens(tokens: string[]): void {
     this.tokens = [...new Set(tokens.map((t) => t.trim()).filter((t) => t.length > 0))];
@@ -32,7 +35,7 @@ export class TokenRotator {
     while (attempts < this.tokens.length) {
       this.currentIndex = (this.currentIndex + 1) % this.tokens.length;
       const token = this.tokens[this.currentIndex];
-      if (token === undefined || token.length === 0 || this.failedTokens.has(token)) {
+      if (token === undefined || token.length === 0 || this.isFailed(token)) {
         attempts += 1;
         continue;
       }
@@ -44,12 +47,20 @@ export class TokenRotator {
 
   public markTokenFailed(token: string): void {
     if (token.length > 0) {
-      this.failedTokens.add(token);
+      this.failedTokens.set(token, Date.now());
     }
   }
 
   public isFailed(token: string): boolean {
-    return this.failedTokens.has(token);
+    const failedAt = this.failedTokens.get(token);
+    if (failedAt === undefined) {
+      return false;
+    }
+    if (Date.now() - failedAt >= TokenRotator.FAILURE_BACKOFF_MS) {
+      this.failedTokens.delete(token);
+      return false;
+    }
+    return true;
   }
 
   public hasTokens(): boolean {
