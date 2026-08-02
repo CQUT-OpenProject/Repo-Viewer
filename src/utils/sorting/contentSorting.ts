@@ -85,7 +85,8 @@ export function getContentFirstLetter(content: GitHubContent): string {
   }
 
   const normalized = firstCharRaw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  const firstChar = normalized.toUpperCase();
+  // toUpperCase 可能扩展字符（如 ß -> SS），只保留首字符作为索引键
+  const firstChar = normalized.toUpperCase().charAt(0);
 
   // 检查是否为字母
   if (/[A-Z]/.test(firstChar)) {
