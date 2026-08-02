@@ -132,7 +132,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
 
   return (
     <>
-      {shouldVirtualize && items.length > 0 ? (
+      {shouldVirtualize ? (
         <Box sx={{ height: listHeight, width: "100%" }}>
           <AutoSizer
             renderProp={({ width, height }) => {
