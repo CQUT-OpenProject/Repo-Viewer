@@ -1,16 +1,7 @@
 import type { GitHubContent } from "@/types";
-import type {
-  SearchIndexErrorCode,
-  SearchIndexResultItem,
-} from "@/services/github/core/searchIndex";
+import type { CodeSearchResultItem } from "@/services/github/core/search";
 
-export type RepoSearchMode = "search-index" | "github-api";
-
-export type RepoSearchFallbackReason =
-  | "index-disabled"
-  | "index-not-ready"
-  | "index-error"
-  | "branch-not-indexed";
+export type RepoSearchMode = "code-search" | "github-api";
 
 export interface RepoSearchFilters {
   keyword: string;
@@ -19,8 +10,8 @@ export interface RepoSearchFilters {
   extensions: string[];
 }
 
-export interface RepoSearchIndexItem extends SearchIndexResultItem {
-  source: "search-index";
+export interface RepoSearchCodeItem extends CodeSearchResultItem {
+  source: "code-search";
 }
 
 export interface RepoSearchApiItem extends GitHubContent {
@@ -28,7 +19,7 @@ export interface RepoSearchApiItem extends GitHubContent {
   branch: string;
 }
 
-export type RepoSearchItem = RepoSearchIndexItem | RepoSearchApiItem;
+export type RepoSearchItem = RepoSearchCodeItem | RepoSearchApiItem;
 
 export interface RepoSearchExecutionResult {
   mode: RepoSearchMode;
@@ -39,25 +30,12 @@ export interface RepoSearchExecutionResult {
 }
 
 export interface RepoSearchError {
-  source: "index" | "search";
-  code?: SearchIndexErrorCode;
+  source: "search";
   message: string;
-  details?: unknown;
   raw?: unknown;
 }
 
-export interface RepoSearchIndexStatus {
-  enabled: boolean;
-  ready: boolean;
-  loading: boolean;
-  error: RepoSearchError | null;
-  indexedBranches: string[];
-  lastUpdatedAt?: number;
-}
-
-export interface RepoSearchExecuteOptions extends Partial<RepoSearchFilters> {
-  mode?: RepoSearchMode;
-}
+export interface RepoSearchExecuteOptions extends Partial<RepoSearchFilters> {}
 
 export interface RepoSearchState {
   keyword: string;
@@ -69,21 +47,12 @@ export interface RepoSearchState {
   pathPrefix: string;
   setPathPrefix: (prefix: string) => void;
   availableBranches: string[];
-  availableModes: RepoSearchMode[];
-  preferredMode: RepoSearchMode;
-  setPreferredMode: (mode: RepoSearchMode) => void;
-  mode: RepoSearchMode;
-  fallbackReason: RepoSearchFallbackReason | null;
-  indexStatus: RepoSearchIndexStatus;
   searchResult: RepoSearchExecutionResult | null;
   searchLoading: boolean;
   searchError: RepoSearchError | null;
   search: (options?: RepoSearchExecuteOptions) => Promise<RepoSearchExecutionResult | null>;
   clearResults: () => void;
   resetFilters: () => void;
-  isBranchIndexed: (branch: string) => boolean;
-  refreshIndexStatus: () => void;
-  initializeIndex: () => void;
 }
 
 export interface UseRepoSearchOptions {

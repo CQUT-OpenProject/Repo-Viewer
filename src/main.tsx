@@ -1,5 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import App from "@/App";
 import "@/index.css";
 import "github-markdown-css/github-markdown.css";
@@ -76,6 +78,8 @@ async function bootstrap(): Promise<void> {
       <ThemeProvider>
         <ResponsiveSnackbarProvider>
           <App />
+          <Analytics />
+          <SpeedInsights />
         </ResponsiveSnackbarProvider>
       </ThemeProvider>
     </React.StrictMode>,

@@ -4,6 +4,9 @@
 
 import type { GitHubContent } from "./github";
 
+/** 预览打开来源，用于区分深链回流与常规浏览 */
+export type PreviewOpenTrigger = "click" | "search" | "deep-link" | "history" | "theme-reopen";
+
 export interface PreviewState {
   previewContent: string | null;
   previewingItem: GitHubContent | null;

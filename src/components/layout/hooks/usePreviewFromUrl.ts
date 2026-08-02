@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { GitHubContent } from "@/types";
+import type { GitHubContent, PreviewOpenTrigger } from "@/types";
 import { getPreviewFromUrl } from "@/utils/routing/urlManager";
 import { logger } from "@/utils/logging/logger";
 
@@ -9,7 +9,7 @@ interface UsePreviewFromUrlOptions {
   error: string | null;
   previewingItem: GitHubContent | null;
   previewingImageItem: GitHubContent | null;
-  onSelectFile: (file: GitHubContent) => Promise<void> | void;
+  onSelectFile: (file: GitHubContent, trigger?: PreviewOpenTrigger) => Promise<void> | void;
 }
 
 /**
@@ -48,7 +48,7 @@ export function usePreviewFromUrl({
         (previewingImageItem !== null && previewingImageItem.path === fileItem.path);
 
       if (!hasActivePreview) {
-        await onSelectFile(fileItem);
+        await onSelectFile(fileItem, "deep-link");
       }
     };
 

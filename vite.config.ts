@@ -240,10 +240,6 @@ const generateBuildArtifacts = async (logger: Logger): Promise<void> => {
     [path.resolve(rootDir, "scripts/dist/generateInitialContent.js")],
     "generateInitialContent",
   );
-  await runNodeCommand(
-    [path.resolve(rootDir, "scripts/dist/generateDocfindIndex.js")],
-    "generateDocfindIndex",
-  );
 };
 
 const createProxyConfig = (requestLogger: ReturnType<typeof createRequestLoggerMiddleware>) => ({
@@ -468,15 +464,7 @@ export default defineConfig({
   base: APP_BASE_URL,
   lint: {
     plugins: ["typescript", "unicorn", "react"],
-    ignorePatterns: [
-      ".vite/**",
-      ".docfind/**",
-      "dist/**",
-      "node_modules/**",
-      "public/search-index/**",
-      "scripts/**",
-      "vite.config.ts",
-    ],
+    ignorePatterns: [".vite/**", "dist/**", "node_modules/**", "scripts/**", "vite.config.ts"],
     rules: {
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-floating-promises": "error",
@@ -529,25 +517,6 @@ export default defineConfig({
   test: {
     include: ["src/**/*.test.ts", "api/**/*.test.ts"],
     environment: "node",
-  },
-  run: {
-    tasks: {
-      "generate:index": {
-        command:
-          "node node_modules/typescript/bin/tsc -p scripts/tsconfig.json && node scripts/dist/generateDocfindIndex.js",
-        env: [
-          "ENABLED_SEARCH_INDEX",
-          "SEARCH_INDEX_GENERATION_MODE",
-          "SEARCH_INDEX_BRANCHES",
-          "GITHUB_ACTIONS",
-          "GITHUB_REPO_OWNER",
-          "GITHUB_REPO_NAME",
-          "GITHUB_REPO_BRANCH",
-          "GITHUB_PAT1",
-          "GITHUB_PAT2",
-        ],
-      },
-    },
   },
   staged: {
     "*": "vp check --fix",

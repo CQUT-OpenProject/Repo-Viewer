@@ -17,10 +17,8 @@ yarn-error.log*
 coverage
 .temp
 .tmp
-.docfind
 report
 src/generated/*.generated.ts
-public/search-index/
 public/initial-content/
 /.serena
 .vercel

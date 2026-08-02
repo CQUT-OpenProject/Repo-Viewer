@@ -7,7 +7,6 @@
 import * as ContentServiceModule from "./github/core/content/service";
 import * as AuthModule from "./github/core/Auth";
 import * as ConfigModule from "./github/core/Config";
-import { getSearchIndexConfig } from "@/config";
 import {
   markProxyServiceFailed as proxyMarkProxyServiceFailed,
   getCurrentProxyService as proxyGetCurrentProxyService,
@@ -15,7 +14,6 @@ import {
 } from "./github/proxy/ProxyService";
 
 type SearchServiceModule = typeof import("./github/core/search");
-type SearchIndexServiceModule = typeof import("./github/core/searchIndex");
 type BranchServiceModule = typeof import("./github/core/BranchService");
 type ClearCachesModule = typeof import("./github/cache/clearCaches");
 
@@ -23,14 +21,6 @@ const loadSearchService = (() => {
   let modulePromise: Promise<SearchServiceModule> | null = null;
   return (): Promise<SearchServiceModule> => {
     modulePromise ??= import("./github/core/search");
-    return modulePromise;
-  };
-})();
-
-const loadSearchIndexService = (() => {
-  let modulePromise: Promise<SearchIndexServiceModule> | null = null;
-  return (): Promise<SearchIndexServiceModule> => {
-    modulePromise ??= import("./github/core/searchIndex");
     return modulePromise;
   };
 })();
@@ -76,29 +66,8 @@ export const GitHub = {
       loadSearchService().then(({ searchMultipleBranchesWithTreesApi }) =>
         searchMultipleBranchesWithTreesApi(...args),
       ),
-  },
-
-  SearchIndex: {
-    isEnabled: (): boolean => getSearchIndexConfig().enabled,
-    ensureReady: (...args: Parameters<SearchIndexServiceModule["ensureSearchIndexReady"]>) =>
-      loadSearchIndexService().then(({ ensureSearchIndexReady }) =>
-        ensureSearchIndexReady(...args),
-      ),
-    getIndexedBranches: (...args: Parameters<SearchIndexServiceModule["getIndexedBranches"]>) =>
-      loadSearchIndexService().then(({ getIndexedBranches }) => getIndexedBranches(...args)),
-    prefetchBranch: (
-      ...args: Parameters<SearchIndexServiceModule["prefetchSearchIndexForBranch"]>
-    ) =>
-      loadSearchIndexService().then(({ prefetchSearchIndexForBranch }) =>
-        prefetchSearchIndexForBranch(...args),
-      ),
-    search: (...args: Parameters<SearchIndexServiceModule["searchIndex"]>) =>
-      loadSearchIndexService().then(({ searchIndex }) => searchIndex(...args)),
-    invalidateCache: (): void => {
-      void loadSearchIndexService().then(({ invalidateSearchIndexCache }) => {
-        invalidateSearchIndexCache();
-      });
-    },
+    searchCode: (...args: Parameters<SearchServiceModule["searchCodeWithApi"]>) =>
+      loadSearchService().then(({ searchCodeWithApi }) => searchCodeWithApi(...args)),
   },
 
   Branch: {

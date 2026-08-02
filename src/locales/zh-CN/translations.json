@@ -12,17 +12,15 @@
     },
     "results": {
       "summary": "@@count@@ 项结果 • @@took@@ ms • @@mode@@",
-      "indexMode": "索引模式",
       "apiMode": "API 模式",
       "noResults": "暂无结果",
       "noResultsHint": "尝试更换关键字或调整筛选条件",
-      "emptyIndexResult": "未检索到索引结果，可尝试使用 API 模式搜索。",
-      "apiSearchButton": "使用 API 模式搜索",
-      "apiSearchButtonShort": "API 搜索",
       "source": {
-        "index": "索引",
-        "api": "API"
-      }
+        "api": "API",
+        "code": "内容"
+      },
+      "codeMode": "内容搜索模式",
+      "defaultBranchHint": "内容搜索仅覆盖默认分支，其他分支仅匹配文件路径"
     },
     "input": {
       "placeholder": "键入搜索内容",
@@ -46,53 +44,6 @@
       "search": "搜索"
     },
     "error": "搜索失败：@@message@@",
-    "index": {
-      "refresh": "刷新索引状态",
-      "detecting": "正在检测索引产物…",
-      "disabled": "已禁用索引模式，将使用 API 模式搜索。配置 ENABLED_SEARCH_INDEX 以启用索引模式。",
-      "ready": "索引最新更新时间：@@time@@。支持的分支数：@@count@@。",
-      "notReady": {
-        "title": "未检测到可用索引",
-        "description1": "请先生成 docfind 索引产物并随站点发布",
-        "description2": "确认 manifest.json 与 docfind.js/docfind_bg.wasm 已部署"
-      },
-      "errors": {
-        "branchMissing": {
-          "title": "索引分支不存在，将使用 API 模式搜索",
-          "description1": "未找到 @@branch@@ 分支",
-          "description2": "在目标仓库配置 Actions 以生成索引分支"
-        },
-        "manifestNotFound": {
-          "title": "索引清单缺失，将使用 API 模式搜索",
-          "description1": "未找到 manifest.json",
-          "description2": "检查构建流程是否生成并发布索引产物"
-        },
-        "manifestInvalid": {
-          "title": "索引清单格式错误，将使用 API 模式搜索",
-          "description1": "请重新生成索引产物"
-        },
-        "fileNotFound": {
-          "title": "索引产物缺失，将使用 API 模式搜索",
-          "description1": "未找到 docfind.js 或 docfind_bg.wasm",
-          "description2": "请重新生成索引产物"
-        },
-        "documentInvalid": {
-          "title": "索引结果异常，将使用 API 模式搜索",
-          "description1": "索引内容损坏或格式不正确",
-          "description2": "请重新生成索引产物"
-        },
-        "unsupportedCompression": {
-          "title": "不支持的压缩格式，将使用 API 模式搜索",
-          "description1": "索引文件使用了不支持的压缩格式",
-          "description2": "使用标准的 gzip 压缩格式重新生成索引文件"
-        },
-        "default": {
-          "title": "无法加载索引，将使用 API 模式搜索",
-          "description1": "@@message@@",
-          "description2": "检查索引文件是否存在且格式正确"
-        }
-      }
-    },
     "github": {
       "open": "在 GitHub 中打开"
     }

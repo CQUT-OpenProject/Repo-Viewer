@@ -1,4 +1,4 @@
-import type { Config, DeveloperLoggingConfig } from "../types";
+import type { Config } from "../types";
 import { CONFIG_DEFAULTS } from "../constants";
 import { EnvParser } from "../utils/env-parser";
 import { resolveEnvWithMapping } from "../utils/env-mapping";
@@ -7,16 +7,11 @@ type EnvSourceValue = string | boolean | null | undefined;
 type EnvSource = Record<string, EnvSourceValue>;
 type EnvStringRecord = Record<string, string | undefined>;
 
-const normalizeSearchIndexGenerationMode = (
-  value: string,
-  fallback: "build" | "action" | "off",
-): "build" | "action" | "off" => {
-  const normalized = value.trim().toLowerCase();
-  if (normalized === "build" || normalized === "action" || normalized === "off") {
-    return normalized;
-  }
-  return fallback;
-};
+export const parseProxyUrls = (raw: string): string[] =>
+  raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
 
 /**
  * 配置加载器
@@ -36,11 +31,6 @@ export class ConfigLoader {
     const consoleLogging = EnvParser.parseBoolean(
       resolveEnvWithMapping(stringEnv, "CONSOLE_LOGGING", "false"),
     );
-    const loggingConfig = this.resolveDeveloperLoggingConfig(
-      stringEnv,
-      developerMode,
-      consoleLogging,
-    );
 
     const repoOwner = resolveEnvWithMapping(
       stringEnv,
@@ -57,31 +47,6 @@ export class ConfigLoader {
       "GITHUB_REPO_BRANCH",
       CONFIG_DEFAULTS.GITHUB_REPO_BRANCH,
     );
-
-    const searchIndexEnabled = EnvParser.parseBoolean(
-      resolveEnvWithMapping(stringEnv, "ENABLED_SEARCH_INDEX", "false"),
-    );
-    const searchIndexGenerationMode = normalizeSearchIndexGenerationMode(
-      resolveEnvWithMapping(
-        stringEnv,
-        "SEARCH_INDEX_GENERATION_MODE",
-        CONFIG_DEFAULTS.SEARCH_INDEX_GENERATION_MODE,
-      ),
-      CONFIG_DEFAULTS.SEARCH_INDEX_GENERATION_MODE,
-    );
-    const searchIndexBranchesValue = resolveEnvWithMapping(stringEnv, "SEARCH_INDEX_BRANCHES", "");
-    const searchIndexBranches = Array.from(
-      new Set(
-        searchIndexBranchesValue
-          .split(/[\s,]+/)
-          .map((branch) => branch.trim())
-          .filter((branch) => branch.length > 0),
-      ),
-    );
-    const searchIndexDefaultBranch = searchIndexBranches[0] ?? repoBranch;
-    const searchIndexManifestPath = CONFIG_DEFAULTS.SEARCH_INDEX_MANIFEST_PATH;
-    const searchIndexAssetBasePath = CONFIG_DEFAULTS.SEARCH_INDEX_ASSET_BASE_PATH;
-    const searchIndexRefreshIntervalMs = CONFIG_DEFAULTS.SEARCH_INDEX_REFRESH_INTERVAL_MS;
 
     return {
       site: {
@@ -119,33 +84,17 @@ export class ConfigLoader {
             resolveEnvWithMapping(stringEnv, "HIDE_DOWNLOAD_FOLDERS", ""),
           ),
         },
-        searchIndex: {
-          enabled: searchIndexEnabled,
-          generationMode: searchIndexGenerationMode,
-          defaultBranch: searchIndexDefaultBranch,
-          manifestPath: searchIndexManifestPath,
-          assetBasePath: searchIndexAssetBasePath,
-          refreshIntervalMs: searchIndexRefreshIntervalMs,
-        },
         footer: {
           leftText: resolveEnvWithMapping(stringEnv, "FOOTER_LEFT_TEXT", ""),
         },
       },
       proxy: {
-        imageProxyUrl: resolveEnvWithMapping(
-          stringEnv,
-          "DOWNLOAD_PROXY_URL",
-          CONFIG_DEFAULTS.DOWNLOAD_PROXY_URL,
-        ),
-        imageProxyUrlBackup1: resolveEnvWithMapping(
-          stringEnv,
-          "DOWNLOAD_PROXY_URL_BACKUP1",
-          CONFIG_DEFAULTS.DOWNLOAD_PROXY_URL_BACKUP1,
-        ),
-        imageProxyUrlBackup2: resolveEnvWithMapping(
-          stringEnv,
-          "DOWNLOAD_PROXY_URL_BACKUP2",
-          CONFIG_DEFAULTS.DOWNLOAD_PROXY_URL_BACKUP2,
+        urls: parseProxyUrls(
+          resolveEnvWithMapping(
+            stringEnv,
+            "DOWNLOAD_PROXY_URL",
+            CONFIG_DEFAULTS.DOWNLOAD_PROXY_URL,
+          ),
         ),
         recoveryTime: 300000,
       },
@@ -157,7 +106,6 @@ export class ConfigLoader {
       developer: {
         mode: developerMode,
         consoleLogging,
-        logging: loggingConfig,
       },
       runtime: {
         isDev: this.getBooleanFlag(env, "DEV"),
@@ -227,54 +175,5 @@ export class ConfigLoader {
       }
     }
     return false;
-  }
-
-  private resolveDeveloperLoggingConfig(
-    env: EnvStringRecord,
-    developerMode: boolean,
-    consoleLogging: boolean,
-  ): DeveloperLoggingConfig {
-    const enableConsole = EnvParser.parseBoolean(
-      resolveEnvWithMapping(
-        env,
-        "LOGGER_ENABLE_CONSOLE",
-        developerMode || consoleLogging ? "true" : "false",
-      ),
-    );
-
-    const enableErrorReporting = EnvParser.parseBoolean(
-      resolveEnvWithMapping(env, "LOGGER_ENABLE_ERROR_REPORTING", "false"),
-    );
-
-    const includeWarnInReporting = EnvParser.parseBoolean(
-      resolveEnvWithMapping(env, "LOGGER_REPORT_WARNINGS", "false"),
-    );
-
-    const reportUrl = resolveEnvWithMapping(env, "LOGGER_REPORT_URL", "");
-    const baseLevelValue = resolveEnvWithMapping(env, "LOGGER_BASE_LEVEL", "").toLowerCase();
-    const baseLevel: DeveloperLoggingConfig["baseLevel"] = [
-      "debug",
-      "info",
-      "warn",
-      "error",
-    ].includes(baseLevelValue)
-      ? (baseLevelValue as DeveloperLoggingConfig["baseLevel"])
-      : undefined;
-
-    const result: DeveloperLoggingConfig = {
-      enableConsole,
-      enableErrorReporting,
-      includeWarnInReporting,
-    };
-
-    if (reportUrl.length > 0) {
-      result.reportUrl = reportUrl;
-    }
-
-    if (baseLevel !== undefined) {
-      result.baseLevel = baseLevel;
-    }
-
-    return result;
   }
 }

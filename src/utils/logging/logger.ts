@@ -1,6 +1,10 @@
+import { track } from "@vercel/analytics";
 import { shouldLog } from "./filters";
 import type { CoreLogLevel, Logger } from "./types";
 import { configManager, getDeveloperConfig, type Config } from "@/config";
+import type { AppError } from "@/types";
+
+declare const __APP_VERSION__: string;
 
 type DeveloperConfig = Config["developer"];
 
@@ -16,65 +20,61 @@ const MAP: Record<CoreLogLevel, keyof Console> = {
   error: "error",
 };
 
+const MAX_ERROR_MESSAGE_LENGTH = 255;
+const MAX_STACK_LENGTH = 500;
+
 function isConsoleEnabled(config: DeveloperConfig): boolean {
-  const logging = config.logging ?? {};
-  return logging.enableConsole ?? (config.mode || config.consoleLogging);
+  return config.mode || config.consoleLogging;
 }
 
-function reportIfConfigured(level: "warn" | "error", args: unknown[], error?: Error): void {
-  const logging = developerConfig.logging ?? {};
-  if (logging.enableErrorReporting !== true) {
-    return;
-  }
-  if (level === "warn" && logging.includeWarnInReporting !== true) {
-    return;
-  }
-  const reportUrl = logging.reportUrl;
-  if (typeof reportUrl !== "string" || reportUrl.trim().length === 0) {
+function resolveErrorMessage(args: unknown[], error?: Error): string {
+  const message =
+    error?.message ??
+    (typeof args[0] === "string" ? args[0] : args[0] === undefined ? "" : JSON.stringify(args[0]));
+  return message.slice(0, MAX_ERROR_MESSAGE_LENGTH);
+}
+
+function reportErrorToVercel(args: unknown[], error?: Error): void {
+  if (!import.meta.env.PROD) {
     return;
   }
 
-  const payload = JSON.stringify({
-    level,
-    logger: "App",
-    message:
-      error?.message ??
-      (typeof args[0] === "string"
-        ? args[0]
-        : args[0] === undefined
-          ? ""
-          : JSON.stringify(args[0])),
-    stack: error?.stack,
-    args,
-    timestamp: Date.now(),
+  const message = resolveErrorMessage(args, error);
+  if (message.length === 0) {
+    return;
+  }
+
+  const appError = error as Partial<AppError> | undefined;
+  track("app_error", {
+    message,
+    ...(error?.stack !== undefined ? { stack: error.stack.slice(0, MAX_STACK_LENGTH) } : {}),
+    code: appError?.code,
+    category: appError?.category,
+    statusCode: appError?.statusCode,
+    endpoint: appError?.endpoint,
+    rateLimitRemaining: appError?.rateLimitRemaining,
   });
-
-  if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
-    try {
-      navigator.sendBeacon(reportUrl.trim(), payload);
-      return;
-    } catch {
-      // fall through
-    }
-  }
-
-  if (typeof fetch === "function") {
-    void fetch(reportUrl.trim(), {
-      method: "POST",
-      body: payload,
-      headers: { "Content-Type": "application/json" },
-      keepalive: true,
-      mode: "cors",
-    }).catch(() => undefined);
-  }
 }
+
+/**
+ * 上报业务事件到 Vercel Analytics（仅生产环境，开发环境 no-op）
+ */
+export function trackEvent(name: string, props: Record<string, AllowedPropertyValues>): void {
+  if (!import.meta.env.PROD) {
+    return;
+  }
+  track(name, { ...props, appVersion: __APP_VERSION__ });
+}
+
+type AllowedPropertyValues = string | number | boolean | null | undefined;
 
 function emit(level: CoreLogLevel, args: unknown[]): void {
+  if (level === "error") {
+    const firstError = args.find((arg): arg is Error => arg instanceof Error);
+    reportErrorToVercel(args, firstError);
+  }
+
   if (!isConsoleEnabled(developerConfig)) {
-    if (level === "error" || level === "warn") {
-      const firstError = args.find((arg): arg is Error => arg instanceof Error);
-      reportIfConfigured(level, args, firstError);
-    }
     return;
   }
 
@@ -97,11 +97,6 @@ function emit(level: CoreLogLevel, args: unknown[]): void {
         }
       }
     }
-  }
-
-  if (level === "error" || level === "warn") {
-    const firstError = args.find((arg): arg is Error => arg instanceof Error);
-    reportIfConfigured(level, args, firstError);
   }
 }
 

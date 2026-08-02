@@ -9,5 +9,5 @@
     "outDir": "./dist",
     "rootDir": "./"
   },
-  "include": ["./generateInitialContent.ts", "./generateDocfindIndex.ts", "./utils/**/*.ts"]
+  "include": ["./generateInitialContent.ts", "./utils/**/*.ts"]
 }

@@ -18,15 +18,12 @@ import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 import { resolveItemHtmlUrl } from "./utils";
 import { useI18n } from "@/contexts/I18nContext";
 import { useSearchFilters } from "./hooks/useSearchFilters";
-import { useFallbackDialog } from "./hooks/useFallbackDialog";
 import { useSearchDrawerInit } from "./hooks/useSearchDrawerInit";
 import { useSearchActions } from "./hooks/useSearchActions";
 import { useSearchFieldLabel } from "./hooks/useSearchFieldLabel";
 import { SearchInput } from "./SearchInput";
 import { FilterSection, FilterToggleButton } from "./FilterSection";
-import { IndexStatus } from "./IndexStatus";
 import { SearchResults } from "./SearchResults";
-import { FallbackDialog } from "./FallbackDialog";
 
 interface SearchDrawerProps {
   open: boolean;
@@ -50,8 +47,7 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
   const { selectFile } = usePreviewContext();
 
   // 解构搜索相关状态
-  const { branchFilter, availableBranches, indexStatus, pathPrefix, refreshIndexStatus } = search;
-  const { enabled, loading, error, ready, indexedBranches, lastUpdatedAt } = indexStatus;
+  const { branchFilter, availableBranches, pathPrefix } = search;
 
   // 使用自定义 hooks
   const {
@@ -66,10 +62,6 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
     handleResetFilters,
   } = useSearchFilters({ search });
 
-  const { fallbackDialogOpen, openFallbackPrompt, handleFallbackDialogClose } = useFallbackDialog({
-    search,
-  });
-
   // 初始化逻辑
   const handleDialogEntered = useSearchDrawerInit({
     currentPath,
@@ -80,7 +72,7 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
   });
 
   // 搜索操作
-  const { handleSearch, handleApiSearch, handleResultClick } = useSearchActions({
+  const { handleSearch, handleResultClick } = useSearchActions({
     search,
     currentBranch,
     defaultBranch,
@@ -106,12 +98,6 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
     search.setKeyword(value);
   };
 
-  // Fallback 对话框确认
-  const handleFallbackDialogConfirm = () => {
-    handleFallbackDialogClose();
-    handleApiSearch();
-  };
-
   // 打开 GitHub
   const handleOpenGithub = (item: { htmlUrl?: string; html_url?: string }) => {
     const candidateUrl = resolveItemHtmlUrl(item);
@@ -128,7 +114,7 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
     return t("search.results.summary", {
       count: items.length,
       took: took.toFixed(1),
-      mode: mode === "search-index" ? t("search.results.indexMode") : t("search.results.apiMode"),
+      mode: mode === "code-search" ? t("search.results.codeMode") : t("search.results.apiMode"),
     });
   }, [search.searchResult, t]);
 
@@ -232,16 +218,6 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
               }}
             />
 
-            <IndexStatus
-              enabled={enabled}
-              loading={loading}
-              error={error}
-              ready={ready}
-              indexedBranches={indexedBranches}
-              lastUpdatedAt={lastUpdatedAt}
-              onRefresh={refreshIndexStatus}
-            />
-
             {search.searchError !== null && (
               <Alert severity="error">
                 {t("search.error", { message: search.searchError.message })}
@@ -286,24 +262,15 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
             <SearchResults
               items={search.searchResult?.items ?? []}
               keyword={search.keyword}
-              loading={search.searchLoading}
               searchResult={search.searchResult}
               onResultClick={(item) => {
                 void handleResultClick(item);
               }}
               onOpenGithub={handleOpenGithub}
-              onFallbackPrompt={openFallbackPrompt}
-              disableSearchButton={disableSearchButton}
             />
           </Stack>
         </DialogContent>
       </Dialog>
-
-      <FallbackDialog
-        open={fallbackDialogOpen}
-        onClose={handleFallbackDialogClose}
-        onConfirm={handleFallbackDialogConfirm}
-      />
     </>
   );
 };

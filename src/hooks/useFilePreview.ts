@@ -4,11 +4,17 @@
 
 import React, { useReducer, useRef, useEffect } from "react";
 import { useTheme } from "@mui/material";
-import type { PreviewState, PreviewAction, GitHubContent } from "@/types";
+import type { PreviewState, PreviewAction, PreviewOpenTrigger, GitHubContent } from "@/types";
 import { GitHub } from "@/services/github";
-import { logger } from "@/utils/logging/logger";
+import { logger, trackEvent } from "@/utils/logging/logger";
 import { openPDFPreview } from "@/utils/pdf/pdfPreviewHelper";
-import { isImageFile, isMarkdownFile, isPdfFile, isTextFile } from "@/utils/files/fileHelpers";
+import {
+  getPreviewType,
+  isImageFile,
+  isMarkdownFile,
+  isPdfFile,
+  isTextFile,
+} from "@/utils/files/fileHelpers";
 import { isAbortError } from "@/utils/network/abort";
 import {
   getPreviewFromUrl,
@@ -63,7 +69,7 @@ export const useFilePreview = (
   findFileItemByPath?: (path: string) => GitHubContent | undefined,
 ): {
   previewState: PreviewState;
-  selectFile: (item: GitHubContent) => Promise<void>;
+  selectFile: (item: GitHubContent, trigger?: PreviewOpenTrigger) => Promise<void>;
   closePreview: () => void;
 } => {
   const [previewState, dispatch] = useReducer(previewReducer, initialPreviewState);
@@ -75,6 +81,21 @@ export const useFilePreview = (
   const loadingPreviewPathRef = useRef<string | null>(null);
   const previewRequestControllerRef = useRef<AbortController | null>(null);
   const previewRequestIdRef = useRef(0);
+  const previewOpenedAtRef = useRef<number | null>(null);
+
+  const trackPreviewClose = React.useCallback((item: GitHubContent) => {
+    const type = getPreviewType(item.name);
+    if (type === null) {
+      return;
+    }
+    const openedAt = previewOpenedAtRef.current;
+    previewOpenedAtRef.current = null;
+    trackEvent("preview_close", {
+      type,
+      path: item.path,
+      durationMs: openedAt !== null ? Math.round(performance.now() - openedAt) : null,
+    });
+  }, []);
 
   const cancelActivePreviewRequest = React.useCallback(() => {
     if (previewRequestControllerRef.current !== null) {
@@ -143,7 +164,7 @@ export const useFilePreview = (
   );
 
   const selectFile = React.useCallback(
-    async (item: GitHubContent) => {
+    async (item: GitHubContent, trigger: PreviewOpenTrigger = "click") => {
       if (item.download_url === null || item.download_url === "") {
         onError(t("error.preview.downloadLinkUnavailable"));
         return;
@@ -161,6 +182,17 @@ export const useFilePreview = (
       loadingPreviewPathRef.current = targetPath;
       currentPreviewItemRef.current = item;
       dispatch({ type: "RESET_PREVIEW" });
+
+      const previewType = getPreviewType(item.name);
+      if (previewType !== null) {
+        previewOpenedAtRef.current = performance.now();
+        trackEvent("preview_open", {
+          type: previewType,
+          trigger,
+          path: item.path,
+          size: item.size ?? null,
+        });
+      }
 
       try {
         const useToken = isTokenMode();
@@ -223,6 +255,7 @@ export const useFilePreview = (
     loadingPreviewPathRef.current = null;
     const currentItem = currentPreviewItemRef.current;
     if (currentItem !== null) {
+      trackPreviewClose(currentItem);
       const dirPath = currentItem.path.split("/").slice(0, -1).join("/");
       updateUrlWithHistory(dirPath);
       currentPreviewItemRef.current = null;
@@ -245,6 +278,9 @@ export const useFilePreview = (
         if (hasActivePreview && !urlHasPreview) {
           cancelActivePreviewRequest();
           loadingPreviewPathRef.current = null;
+          if (currentPreviewItemRef.current !== null) {
+            trackPreviewClose(currentPreviewItemRef.current);
+          }
           dispatch({ type: "RESET_PREVIEW" });
           currentPreviewItemRef.current = null;
           hasActivePreviewRef.current = false;
@@ -263,7 +299,7 @@ export const useFilePreview = (
               const fileItem = findFileItemByPath(previewPath);
               if (fileItem !== undefined) {
                 currentPreviewItemRef.current = fileItem;
-                void selectFile(fileItem);
+                void selectFile(fileItem, "history");
               } else {
                 logger.warn(`前进操作无法找到文件: ${previewPath}`);
               }
@@ -280,7 +316,7 @@ export const useFilePreview = (
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [cancelActivePreviewRequest, selectFile, findFileItemByPath]);
+  }, [cancelActivePreviewRequest, selectFile, findFileItemByPath, trackPreviewClose]);
 
   return {
     previewState,

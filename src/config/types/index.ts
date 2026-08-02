@@ -23,22 +23,12 @@ export interface Config {
       enabled: boolean;
       hiddenFolders: string[];
     };
-    searchIndex: {
-      enabled: boolean;
-      generationMode: "build" | "action" | "off";
-      defaultBranch: string;
-      manifestPath: string;
-      assetBasePath: string;
-      refreshIntervalMs: number;
-    };
     footer: {
       leftText: string;
     };
   };
   proxy: {
-    imageProxyUrl: string;
-    imageProxyUrlBackup1: string;
-    imageProxyUrlBackup2: string;
+    urls: string[];
     recoveryTime: number;
   };
   access: {
@@ -47,7 +37,6 @@ export interface Config {
   developer: {
     mode: boolean;
     consoleLogging: boolean;
-    logging?: DeveloperLoggingConfig;
   };
   runtime: {
     isDev: boolean;
@@ -57,14 +46,6 @@ export interface Config {
     githubPATs: string[];
     totalCount: number;
   };
-}
-
-export interface DeveloperLoggingConfig {
-  enableConsole?: boolean;
-  enableErrorReporting?: boolean;
-  includeWarnInReporting?: boolean;
-  reportUrl?: string;
-  baseLevel?: "debug" | "info" | "warn" | "error";
 }
 
 /**

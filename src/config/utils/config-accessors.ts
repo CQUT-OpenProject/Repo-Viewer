@@ -30,14 +30,6 @@ export const getGithubConfig = (): Config["github"] => getConfig().github;
 export const getFeaturesConfig = (): Config["features"] => getConfig().features;
 
 /**
- * 获取搜索索引配置
- *
- * @returns 搜索索引功能配置
- */
-export const getSearchIndexConfig = (): Config["features"]["searchIndex"] =>
-  getConfig().features.searchIndex;
-
-/**
  * 获取代理配置
  *
  * @returns 代理相关配置

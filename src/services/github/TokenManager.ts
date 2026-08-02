@@ -1,4 +1,4 @@
-import { logger } from "@/utils/logging/logger";
+import { logger, trackEvent } from "@/utils/logging/logger";
 import { getGithubPATs, isTokenMode, isDeveloperMode, configManager, EnvParser } from "@/config";
 import { TokenRotator } from "@/shared/tokenRotator";
 
@@ -200,6 +200,13 @@ export class GitHubTokenManager {
 
     const remainingHeader = error.headers.get("x-ratelimit-remaining");
     const resetHeader = error.headers.get("x-ratelimit-reset");
+
+    if (error.status === 401 || error.status === 403 || error.status === 429) {
+      trackEvent("github_api_error", {
+        statusCode: error.status,
+        rateLimitRemaining: remainingHeader,
+      });
+    }
 
     if (currentToken !== "" && remainingHeader !== null && resetHeader !== null) {
       const remaining = parseInt(remainingHeader, 10);
