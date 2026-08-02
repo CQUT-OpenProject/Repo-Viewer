@@ -139,15 +139,15 @@ export const SearchResultItem: React.FC<SearchResultItemProps> = ({
                 <Chip
                   size="small"
                   label={item.branch}
-                  color={item.source === "search-index" ? "primary" : "default"}
+                  color={item.source === "code-search" ? "primary" : "default"}
                   sx={{
                     borderRadius: g3BorderRadius({ radius: 12, smoothness: 0.8 }),
                     fontSize: isSmallScreen ? "0.7rem" : undefined,
                   }}
                 />
                 <Typography variant={isSmallScreen ? "caption" : "body2"} color="text.secondary">
-                  {item.source === "search-index"
-                    ? t("search.results.source.index")
+                  {item.source === "code-search"
+                    ? t("search.results.source.code")
                     : t("search.results.source.api")}
                 </Typography>
               </Stack>

@@ -31,10 +31,10 @@ describe("basePath", () => {
 
   it("builds absolute app urls from the configured base", () => {
     expect(
-      buildAbsoluteAppUrl("search-index/manifest.json", {
+      buildAbsoluteAppUrl("assets/manifest.json", {
         baseUrl: "/repo-viewer/",
         origin: "https://example.com",
       }),
-    ).toBe("https://example.com/repo-viewer/search-index/manifest.json");
+    ).toBe("https://example.com/repo-viewer/assets/manifest.json");
   });
 });

@@ -175,6 +175,12 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
             )}
           </Stack>
 
+          {branchFilter.some((branch) => branch !== defaultBranch) && (
+            <Typography variant="caption" color="text.secondary">
+              {t("search.results.defaultBranchHint")}
+            </Typography>
+          )}
+
           <TextField
             label={t("search.filter.extensionLabel")}
             value={extensionInput}

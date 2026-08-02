@@ -13,7 +13,7 @@
 ## 主要功能
 
 - 📁 **仓库浏览**：直观的文件结构导航，同时提供首页文件与文件夹排除选项
-- 🔎 **文件搜索**：支持基于自建索引和 Github API 的快速文件搜索，可按分支、路径前缀和扩展名过滤
+- 🔎 **文件搜索**：基于 GitHub Code Search API 的快速搜索（内容 + 路径），可按分支、路径前缀和扩展名过滤
 - 📄 **文件预览**：多种文件格式预览，目前支持 `Markdown`、 `PDF` 和 `图片`
 - ⬇️ **文件下载**：可下载单个文件或整个文件夹
 
@@ -46,16 +46,6 @@
 4. **部署应用**:
    - 点击 `Deploy` 按钮
    - Vercel 将自动构建和部署你的应用
-
-### RV-Index 索引
-
-> 此功能由 [docfind](https://github.com/microsoft/docfind) 提供支持
-
-Repo-Viewer 使用 docfind 生成静态索引并随站点发布。构建时运行 `scripts/generateDocfindIndex`，产物位于 `public/search-index/`：
-
-- `public/search-index/manifest.json`
-- `public/search-index/<branch>/docfind.js`
-- `public/search-index/<branch>/docfind_bg.wasm`
 
 ## 数据收集
 

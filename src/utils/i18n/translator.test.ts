@@ -68,9 +68,9 @@ describe("Translator", () => {
       t.translate("search.results.summary", {
         count: 2,
         took: "1.2",
-        mode: "索引模式",
+        mode: "内容搜索模式",
       }),
-    ).toBe("2 项结果 • 1.2 ms • 索引模式");
+    ).toBe("2 项结果 • 1.2 ms • 内容搜索模式");
   });
 
   it("falls back to .other when .one is missing", () => {

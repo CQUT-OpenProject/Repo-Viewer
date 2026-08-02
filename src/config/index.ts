@@ -4,7 +4,6 @@ export {
   getSiteConfig,
   getGithubConfig,
   getFeaturesConfig,
-  getSearchIndexConfig,
   getProxyConfig,
   getAccessConfig,
   getDeveloperConfig,

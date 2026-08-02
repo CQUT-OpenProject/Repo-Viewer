@@ -2,21 +2,16 @@
  * 搜索结果列表组件
  *
  * 显示搜索结果列表，支持虚拟化渲染大量结果。
- * 当索引搜索无结果时，提供切换到API搜索的选项。
  */
 
 import {
-  Alert,
   Box,
-  Button,
   List as MuiList,
   ListItem,
   ListItemText,
-  Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 import { SearchResultItem } from "./SearchResultItem";
 import { getHighlightRegex } from "./utils";
 import type { RepoSearchItem } from "@/hooks/github/useRepoSearch";
@@ -34,8 +29,6 @@ interface SearchResultsProps {
   items: RepoSearchItem[];
   /** 搜索关键词 */
   keyword: string;
-  /** 是否加载中 */
-  loading: boolean;
   /** 搜索结果数据 */
   searchResult: {
     mode: string;
@@ -45,10 +38,6 @@ interface SearchResultsProps {
   onResultClick: (item: RepoSearchItem) => void;
   /** 在GitHub打开回调 */
   onOpenGithub: (item: RepoSearchItem) => void;
-  /** 显示回退提示回调 */
-  onFallbackPrompt: () => void;
-  /** 是否禁用搜索按钮 */
-  disableSearchButton: boolean;
 }
 
 /**
@@ -114,12 +103,9 @@ const SearchResultRow = ({
 export const SearchResults: React.FC<SearchResultsProps> = ({
   items,
   keyword,
-  loading,
   searchResult,
   onResultClick,
   onOpenGithub,
-  onFallbackPrompt,
-  disableSearchButton,
 }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -144,47 +130,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
     [items, keyword, keywordLower, highlightRegex, isSmallScreen, onResultClick, onOpenGithub],
   );
 
-  const showEmptyIndexResult =
-    !loading &&
-    keyword.trim() !== "" &&
-    searchResult?.mode === "search-index" &&
-    searchResult.items.length === 0;
-
   return (
     <>
-      {showEmptyIndexResult && (
-        <Alert
-          severity="info"
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 1,
-            px: isSmallScreen ? 1.5 : 2,
-          }}
-          action={
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={onFallbackPrompt}
-              disabled={disableSearchButton}
-              sx={{
-                borderRadius: g3BorderRadius(G3_PRESETS.button),
-                whiteSpace: "nowrap",
-              }}
-            >
-              {isSmallScreen
-                ? t("search.results.apiSearchButtonShort")
-                : t("search.results.apiSearchButton")}
-            </Button>
-          }
-        >
-          <Typography variant={isSmallScreen ? "caption" : "body2"}>
-            {t("search.results.emptyIndexResult")}
-          </Typography>
-        </Alert>
-      )}
-
       {shouldVirtualize && items.length > 0 ? (
         <Box sx={{ height: listHeight, width: "100%" }}>
           <AutoSizer

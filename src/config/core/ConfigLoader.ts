@@ -13,17 +13,6 @@ export const parseProxyUrls = (raw: string): string[] =>
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 
-const normalizeSearchIndexGenerationMode = (
-  value: string,
-  fallback: "build" | "action" | "off",
-): "build" | "action" | "off" => {
-  const normalized = value.trim().toLowerCase();
-  if (normalized === "build" || normalized === "action" || normalized === "off") {
-    return normalized;
-  }
-  return fallback;
-};
-
 /**
  * 配置加载器
  *
@@ -58,31 +47,6 @@ export class ConfigLoader {
       "GITHUB_REPO_BRANCH",
       CONFIG_DEFAULTS.GITHUB_REPO_BRANCH,
     );
-
-    const searchIndexEnabled = EnvParser.parseBoolean(
-      resolveEnvWithMapping(stringEnv, "ENABLED_SEARCH_INDEX", "false"),
-    );
-    const searchIndexGenerationMode = normalizeSearchIndexGenerationMode(
-      resolveEnvWithMapping(
-        stringEnv,
-        "SEARCH_INDEX_GENERATION_MODE",
-        CONFIG_DEFAULTS.SEARCH_INDEX_GENERATION_MODE,
-      ),
-      CONFIG_DEFAULTS.SEARCH_INDEX_GENERATION_MODE,
-    );
-    const searchIndexBranchesValue = resolveEnvWithMapping(stringEnv, "SEARCH_INDEX_BRANCHES", "");
-    const searchIndexBranches = Array.from(
-      new Set(
-        searchIndexBranchesValue
-          .split(/[\s,]+/)
-          .map((branch) => branch.trim())
-          .filter((branch) => branch.length > 0),
-      ),
-    );
-    const searchIndexDefaultBranch = searchIndexBranches[0] ?? repoBranch;
-    const searchIndexManifestPath = CONFIG_DEFAULTS.SEARCH_INDEX_MANIFEST_PATH;
-    const searchIndexAssetBasePath = CONFIG_DEFAULTS.SEARCH_INDEX_ASSET_BASE_PATH;
-    const searchIndexRefreshIntervalMs = CONFIG_DEFAULTS.SEARCH_INDEX_REFRESH_INTERVAL_MS;
 
     return {
       site: {
@@ -119,14 +83,6 @@ export class ConfigLoader {
           hiddenFolders: EnvParser.parseStringArray(
             resolveEnvWithMapping(stringEnv, "HIDE_DOWNLOAD_FOLDERS", ""),
           ),
-        },
-        searchIndex: {
-          enabled: searchIndexEnabled,
-          generationMode: searchIndexGenerationMode,
-          defaultBranch: searchIndexDefaultBranch,
-          manifestPath: searchIndexManifestPath,
-          assetBasePath: searchIndexAssetBasePath,
-          refreshIntervalMs: searchIndexRefreshIntervalMs,
         },
         footer: {
           leftText: resolveEnvWithMapping(stringEnv, "FOOTER_LEFT_TEXT", ""),

@@ -1,20 +1,14 @@
 import { GitHub } from "@/services/github";
 import { logger, trackEvent } from "@/utils/logging/logger";
-import type {
-  RepoSearchExecutionResult,
-  RepoSearchItem,
-  RepoSearchMode,
-} from "@/hooks/github/useRepoSearch";
+import type { RepoSearchExecutionResult, RepoSearchItem } from "@/hooks/github/useRepoSearch";
 import type { GitHubContent } from "@/types";
 
 interface UseSearchActionsProps {
   search: {
     keyword: string;
     branchFilter: string[];
-    mode: RepoSearchMode;
     searchResult: RepoSearchExecutionResult | null;
-    setPreferredMode: (mode: "github-api") => void;
-    search: (options?: { mode?: "github-api" }) => Promise<unknown>;
+    search: () => Promise<unknown>;
   };
   currentBranch: string;
   defaultBranch: string;
@@ -40,7 +34,6 @@ export const useSearchActions = ({
   onClose,
 }: UseSearchActionsProps): {
   handleSearch: () => Promise<void>;
-  handleApiSearch: () => void;
   handleResultClick: (item: RepoSearchItem) => Promise<void>;
 } => {
   // 执行搜索
@@ -50,17 +43,6 @@ export const useSearchActions = ({
     } catch (error: unknown) {
       logger.warn("搜索失败", error);
     }
-  };
-
-  // 使用 API 模式搜索
-  const handleApiSearch = () => {
-    if (search.keyword.trim() === "") {
-      return;
-    }
-    search.setPreferredMode("github-api");
-    void search.search({ mode: "github-api" }).catch((error: unknown) => {
-      logger.warn("使用 API 模式搜索失败", error);
-    });
   };
 
   // 点击搜索结果
@@ -86,7 +68,6 @@ export const useSearchActions = ({
       position: search.searchResult?.items.findIndex((result) => result.path === item.path) ?? -1,
       path: item.path,
       branch: item.branch,
-      mode: search.mode,
     });
 
     // 查找或加载文件项
@@ -110,7 +91,6 @@ export const useSearchActions = ({
 
   return {
     handleSearch,
-    handleApiSearch,
     handleResultClick,
   };
 };

@@ -21,17 +21,15 @@
         "one": "@@count@@ result • @@took@@ ms • @@mode@@",
         "other": "@@count@@ results • @@took@@ ms • @@mode@@"
       },
-      "indexMode": "Index Mode",
       "apiMode": "API Mode",
       "noResults": "No results",
       "noResultsHint": "Try different keywords or adjust filters",
-      "emptyIndexResult": "No index results found. Try using API mode search.",
-      "apiSearchButton": "Use API Mode Search",
-      "apiSearchButtonShort": "API Search",
       "source": {
-        "index": "Index",
-        "api": "API"
-      }
+        "api": "API",
+        "code": "Code"
+      },
+      "codeMode": "Code Mode",
+      "defaultBranchHint": "Content search only covers the default branch; other branches match file paths only"
     },
     "input": {
       "placeholder": "Type to search",
@@ -55,53 +53,6 @@
       "search": "Search"
     },
     "error": "Search failed: @@message@@",
-    "index": {
-      "refresh": "Refresh index status",
-      "detecting": "Detecting index assets…",
-      "disabled": "Index mode is disabled. API mode search will be used. Configure ENABLED_SEARCH_INDEX to enable index mode.",
-      "ready": "Index last updated: @@time@@. Supported branches: @@count@@.",
-      "notReady": {
-        "title": "No available index detected",
-        "description1": "Generate docfind assets and publish them with the site",
-        "description2": "Ensure manifest.json and docfind.js/docfind_bg.wasm are deployed"
-      },
-      "errors": {
-        "branchMissing": {
-          "title": "Index branch does not exist. API mode search will be used",
-          "description1": "Branch @@branch@@ not found",
-          "description2": "Configure Actions in the target repository to generate the index branch"
-        },
-        "manifestNotFound": {
-          "title": "Manifest missing. API mode search will be used",
-          "description1": "manifest.json not found",
-          "description2": "Check if the build generated and published index assets"
-        },
-        "manifestInvalid": {
-          "title": "Manifest format error. API mode search will be used",
-          "description1": "Regenerate the index assets"
-        },
-        "fileNotFound": {
-          "title": "Index assets missing. API mode search will be used",
-          "description1": "docfind.js or docfind_bg.wasm not found",
-          "description2": "Regenerate the index assets"
-        },
-        "documentInvalid": {
-          "title": "Index results invalid. API mode search will be used",
-          "description1": "Index content is corrupted or incorrectly formatted",
-          "description2": "Regenerate the index assets"
-        },
-        "unsupportedCompression": {
-          "title": "Unsupported compression format. API mode search will be used",
-          "description1": "Index file uses an unsupported compression format",
-          "description2": "Regenerate the index file using standard gzip compression"
-        },
-        "default": {
-          "title": "Failed to load index. API mode search will be used",
-          "description1": "@@message@@",
-          "description2": "Check if the index file exists and is correctly formatted"
-        }
-      }
-    },
     "github": {
       "open": "Open in GitHub"
     }

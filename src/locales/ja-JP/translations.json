@@ -12,17 +12,15 @@
     },
     "results": {
       "summary": "@@count@@ 件の結果 • @@took@@ ms • @@mode@@",
-      "indexMode": "インデックスモード",
       "apiMode": "APIモード",
       "noResults": "結果がありません",
       "noResultsHint": "キーワードを変更するか、フィルタを調整してください",
-      "emptyIndexResult": "インデックス検索結果が見つかりません。APIモード検索をお試しください。",
-      "apiSearchButton": "APIモード検索を使用",
-      "apiSearchButtonShort": "API検索",
       "source": {
-        "index": "インデックス",
-        "api": "API"
-      }
+        "api": "API",
+        "code": "コード"
+      },
+      "codeMode": "コード検索モード",
+      "defaultBranchHint": "コンテンツ検索はデフォルトブランチのみ対象です。他のブランチはファイルパスのみ一致します"
     },
     "input": {
       "placeholder": "検索キーワードを入力",
@@ -46,53 +44,6 @@
       "search": "検索"
     },
     "error": "検索に失敗しました：@@message@@",
-    "index": {
-      "refresh": "インデックス状態を更新",
-      "detecting": "インデックスアセットを検出中…",
-      "disabled": "インデックスモードが無効です。APIモード検索を使用します。ENABLED_SEARCH_INDEX を設定してインデックスモードを有効にしてください。",
-      "ready": "インデックス最終更新：@@time@@。対応ブランチ数：@@count@@。",
-      "notReady": {
-        "title": "利用可能なインデックスが検出されませんでした",
-        "description1": "docfind のインデックスアセットを生成してサイトに公開してください",
-        "description2": "manifest.json と docfind.js/docfind_bg.wasm の配置を確認してください"
-      },
-      "errors": {
-        "branchMissing": {
-          "title": "インデックスブランチが存在しません。APIモード検索を使用します",
-          "description1": "@@branch@@ ブランチが見つかりません",
-          "description2": "対象リポジトリで Actions を設定してインデックスブランチを生成してください"
-        },
-        "manifestNotFound": {
-          "title": "マニフェストが見つかりません。APIモード検索を使用します",
-          "description1": "manifest.json が見つかりません",
-          "description2": "ビルドでインデックスアセットが生成・公開されているか確認してください"
-        },
-        "manifestInvalid": {
-          "title": "マニフェスト形式エラー。APIモード検索を使用します",
-          "description1": "インデックスアセットを再生成してください"
-        },
-        "fileNotFound": {
-          "title": "インデックスアセットが見つかりません。APIモード検索を使用します",
-          "description1": "docfind.js または docfind_bg.wasm が見つかりません",
-          "description2": "インデックスアセットを再生成してください"
-        },
-        "documentInvalid": {
-          "title": "インデックス結果が不正です。APIモード検索を使用します",
-          "description1": "インデックス内容が破損しているか、形式が正しくありません",
-          "description2": "インデックスアセットを再生成してください"
-        },
-        "unsupportedCompression": {
-          "title": "非対応の圧縮形式です。APIモード検索を使用します",
-          "description1": "インデックスファイルが非対応の圧縮形式を使用しています",
-          "description2": "標準の gzip 圧縮形式でインデックスファイルを再生成してください"
-        },
-        "default": {
-          "title": "インデックスの読み込みに失敗しました。APIモード検索を使用します",
-          "description1": "@@message@@",
-          "description2": "インデックスファイルが存在し、形式が正しいか確認してください"
-        }
-      }
-    },
     "github": {
       "open": "GitHub で開く"
     }

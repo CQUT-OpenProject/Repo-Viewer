@@ -222,8 +222,6 @@ const getRepoEnvConfig = (): RepoEnvConfig => {
   };
 };
 
-const getSearchIndexRepoEnvConfig = (): RepoEnvConfig => getRepoEnvConfig();
-
 const encodePathSegments = (input: string): string =>
   input
     .split("/")
@@ -267,6 +265,73 @@ const parsePositiveInt = (
   }
 
   return parsed;
+};
+
+const parseListParam = (value: string | string[] | undefined): string[] => {
+  const raw = getSingleQueryParam(value);
+  if (raw === undefined) {
+    return [];
+  }
+  return raw
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+};
+
+// 构造 GitHub Code Search 查询语句
+const buildCodeSearchQuery = (
+  repoOwner: string,
+  repoName: string,
+  keyword: string,
+  pathPrefix = "",
+  extensions: string[] = [],
+): string => {
+  const parts = [`repo:${repoOwner}/${repoName}`, keyword];
+  const normalizedPrefix = pathPrefix.trim().replace(/^\/+/, "");
+  if (normalizedPrefix.length > 0) {
+    const prefixWithSlash = normalizedPrefix.endsWith("/")
+      ? normalizedPrefix
+      : `${normalizedPrefix}/`;
+    parts.push(`path:${prefixWithSlash}`);
+  }
+  for (const extension of extensions) {
+    parts.push(`extension:${extension}`);
+  }
+  return parts.join(" ");
+};
+
+// 归一化 Code Search 响应项，仅保留前端需要的字段
+const normalizeCodeSearchItems = (items: unknown): Record<string, unknown>[] => {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+  const normalized: Record<string, unknown>[] = [];
+  for (const item of items) {
+    if (item === null || typeof item !== "object") {
+      continue;
+    }
+    const raw = item as Record<string, unknown>;
+    const textMatches: { fragment: string }[] = [];
+    if (Array.isArray(raw["text_matches"])) {
+      for (const match of raw["text_matches"]) {
+        if (match === null || typeof match !== "object") {
+          continue;
+        }
+        const fragment = (match as Record<string, unknown>)["fragment"];
+        if (typeof fragment === "string" && fragment.length > 0) {
+          textMatches.push({ fragment });
+        }
+      }
+    }
+    normalized.push({
+      name: typeof raw["name"] === "string" ? raw["name"] : "",
+      path: typeof raw["path"] === "string" ? raw["path"] : "",
+      sha: typeof raw["sha"] === "string" ? raw["sha"] : "",
+      htmlUrl: typeof raw["html_url"] === "string" ? raw["html_url"] : "",
+      textMatches,
+    });
+  }
+  return normalized;
 };
 
 const isAllowedGitHubAssetHost = (hostname: string): boolean =>
@@ -461,11 +526,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         return;
       }
 
-      const repoScopeParam = getSingleQueryParam(req.query["repoScope"]);
-      const useSearchIndexRepo = repoScopeParam?.toLowerCase() === "search-index";
-      const { repoOwner, repoName } = useSearchIndexRepo
-        ? getSearchIndexRepoEnvConfig()
-        : getRepoEnvConfig();
+      const { repoOwner, repoName } = getRepoEnvConfig();
       if (repoOwner.length === 0 || repoName.length === 0) {
         res.status(500).json({
           error: "Repository configuration missing",
@@ -550,19 +611,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       }
     }
 
-    if (actionParam === "getSearchIndexAsset") {
-      const indexBranchParam = parseBranchOverride(req.query["indexBranch"]) ?? "RV-Index";
-      const pathParam = getSingleQueryParam(req.query["path"]);
-      const responseTypeParam = (
-        getSingleQueryParam(req.query["responseType"]) ?? "json"
-      ).toLowerCase();
-
-      if (pathParam === undefined || pathParam.trim().length === 0) {
-        res.status(400).json({ error: "Missing path parameter" });
+    if (actionParam === "searchCode") {
+      const keywordParam = getSingleQueryParam(req.query["keyword"]);
+      if (keywordParam === undefined || keywordParam.trim().length === 0) {
+        res.status(400).json({ error: "Missing keyword parameter" });
         return;
       }
 
-      const { repoOwner, repoName } = getSearchIndexRepoEnvConfig();
+      const { repoOwner, repoName } = getRepoEnvConfig();
       if (repoOwner.length === 0 || repoName.length === 0) {
         res.status(500).json({
           error: "Repository configuration missing",
@@ -571,67 +627,58 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         return;
       }
 
-      const encodedBranch = encodePathSegments(indexBranchParam);
-      const normalizedPath = pathParam.replace(/^\/+/, "");
-      const encodedPath = encodePathSegments(normalizedPath);
-      const rawUrl = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${encodedBranch}/${encodedPath}`;
+      const pathPrefix = getSingleQueryParam(req.query["pathPrefix"]) ?? "";
+      const extensions = parseListParam(req.query["extensions"]);
+      const limit = parsePositiveInt(req.query["limit"], 100, 100);
+      const perPage = Math.max(1, Math.min(limit, 100));
+
+      const query = buildCodeSearchQuery(
+        repoOwner,
+        repoName,
+        keywordParam.trim(),
+        pathPrefix,
+        extensions,
+      );
 
       try {
-        const normalizedPath = pathParam.replace(/^\/+/, "");
-        const isWasm = normalizedPath.toLowerCase().endsWith(".wasm");
-        const isJavascript = normalizedPath.toLowerCase().endsWith(".js");
-
-        if (responseTypeParam === "binary") {
-          const response = await handleRequestWithRetry(() =>
-            axios.get<ArrayBuffer>(rawUrl, {
-              headers: getAuthHeaders(),
-              responseType: "arraybuffer",
-            }),
-          );
-
-          res.setHeader("Content-Type", isWasm ? "application/wasm" : "application/octet-stream");
-          res.status(200).send(Buffer.from(response.data));
-          return;
-        }
-
-        if (responseTypeParam === "text") {
-          const response = await handleRequestWithRetry(() =>
-            axios.get<string>(rawUrl, {
-              headers: getAuthHeaders(),
-              responseType: "text",
-            }),
-          );
-
-          if (isJavascript) {
-            res.setHeader("Content-Type", "application/javascript; charset=utf-8");
-          } else {
-            res.setHeader("Content-Type", "text/plain; charset=utf-8");
-          }
-          res.status(200).send(response.data);
-          return;
-        }
-
         const response = await handleRequestWithRetry(() =>
-          axios.get<unknown>(rawUrl, {
-            headers: getAuthHeaders(),
-            responseType: "json",
+          axios.get<unknown>(`${GITHUB_API_BASE}/search/code`, {
+            headers: {
+              ...getAuthHeaders(),
+              Accept: "application/vnd.github.text-match+json",
+            },
+            params: {
+              q: query,
+              per_page: perPage,
+            },
           }),
         );
 
-        res.status(200).json(response.data);
+        const payload = response.data as { total_count?: number; items?: unknown };
+        res.status(200).json({
+          status: "success",
+          data: {
+            totalCount: typeof payload.total_count === "number" ? payload.total_count : 0,
+            items: normalizeCodeSearchItems(payload.items),
+          },
+        });
         return;
       } catch (error) {
         const axiosError = error as AxiosErrorResponse;
         const status = axiosError.response?.status ?? 500;
 
-        if (status === 404) {
-          res.status(404).json({ error: "Index file not found" });
+        if (status === 403 || status === 429) {
+          apiLogger.warn("Code search rate limited or permission denied");
+          res.status(429).json({
+            error: "Code search rate limit reached",
+            message: "GitHub 搜索限速或权限不足，请稍后重试",
+          });
           return;
         }
 
-        apiLogger.error("Failed to fetch index asset:", axiosError.message ?? "Unknown error");
+        apiLogger.error("Failed to search code:", axiosError.message ?? "Unknown error");
         res.status(status).json({
-          error: "Failed to fetch index asset",
+          error: "Failed to search code",
           message: axiosError.message ?? "Unknown error",
         });
         return;

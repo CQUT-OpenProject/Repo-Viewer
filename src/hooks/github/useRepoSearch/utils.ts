@@ -1,6 +1,4 @@
-import { SearchIndexError, SearchIndexErrorCode } from "@/services/github/core/searchIndex";
-
-import type { RepoSearchError, RepoSearchFallbackReason, RepoSearchMode } from "./types";
+import type { RepoSearchError } from "./types";
 
 export type BranchSelectionMode = "auto" | "manual";
 
@@ -17,15 +15,6 @@ interface BranchSelectionResolution {
   manualBranches: string[];
   effectiveBranches: string[];
   effectiveSelectionMode: BranchSelectionMode;
-}
-
-interface ResolveModeAndFallbackOptions {
-  preferredMode: RepoSearchMode;
-  indexFeatureEnabled: boolean;
-  indexReady: boolean;
-  hasIndexError: boolean;
-  effectiveBranches: string[];
-  isBranchIndexed: (branch: string) => boolean;
 }
 
 export function sanitizeBranchList(
@@ -108,61 +97,6 @@ export function resolveBranchSelection({
   };
 }
 
-export function resolveModeAndFallback({
-  preferredMode,
-  indexFeatureEnabled,
-  indexReady,
-  hasIndexError,
-  effectiveBranches,
-  isBranchIndexed,
-}: ResolveModeAndFallbackOptions): {
-  effectiveMode: RepoSearchMode;
-  fallbackReason: RepoSearchFallbackReason | null;
-} {
-  if (preferredMode !== "search-index") {
-    return {
-      effectiveMode: preferredMode,
-      fallbackReason: null,
-    };
-  }
-
-  if (!indexFeatureEnabled) {
-    return {
-      effectiveMode: "github-api",
-      fallbackReason: "index-disabled",
-    };
-  }
-
-  if (hasIndexError) {
-    return {
-      effectiveMode: "github-api",
-      fallbackReason: "index-error",
-    };
-  }
-
-  if (!indexReady) {
-    return {
-      effectiveMode: "github-api",
-      fallbackReason: "index-not-ready",
-    };
-  }
-
-  if (
-    effectiveBranches.length > 0 &&
-    !effectiveBranches.some((branch) => isBranchIndexed(branch))
-  ) {
-    return {
-      effectiveMode: "github-api",
-      fallbackReason: "branch-not-indexed",
-    };
-  }
-
-  return {
-    effectiveMode: "search-index",
-    fallbackReason: null,
-  };
-}
-
 export function sanitizeExtensions(extensions: string[] | string): string[] {
   const values = Array.isArray(extensions) ? extensions : [extensions];
   const normalized: string[] = [];
@@ -184,49 +118,11 @@ export function sanitizeExtensions(extensions: string[] | string): string[] {
   return normalized;
 }
 
-export function normalizeSearchIndexError(error: unknown): RepoSearchError {
-  if (error instanceof SearchIndexError) {
-    return {
-      source: "index",
-      code: error.code,
-      message: error.message,
-      details: error.details,
-      raw: error,
-    } satisfies RepoSearchError;
-  }
-
-  const message = error instanceof Error ? error.message : "Unknown search index error";
+export function normalizeSearchError(error: unknown): RepoSearchError {
+  const message = error instanceof Error ? error.message : "未知搜索错误";
   return {
-    source: "index",
-    message,
-    raw: error,
-  } satisfies RepoSearchError;
-}
-
-export function normalizeSearchError(error: unknown, mode: RepoSearchMode): RepoSearchError {
-  if (error instanceof SearchIndexError) {
-    return {
-      source: "search",
-      code: error.code,
-      message: error.message,
-      details: error.details,
-      raw: error,
-    } satisfies RepoSearchError;
-  }
-
-  const message = error instanceof Error ? error.message : "Unknown search error";
-  const base: RepoSearchError = {
     source: "search",
     message,
     raw: error,
-  };
-
-  if (mode === "search-index") {
-    return {
-      ...base,
-      code: SearchIndexErrorCode.INDEX_FILE_NOT_FOUND,
-    } satisfies RepoSearchError;
-  }
-
-  return base;
+  } satisfies RepoSearchError;
 }

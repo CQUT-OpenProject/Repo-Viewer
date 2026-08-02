@@ -1,26 +1,6 @@
-import { describe, expect, it, vi } from "vite-plus/test";
+import { describe, expect, it } from "vite-plus/test";
 
-vi.mock("@/services/github/core/searchIndex", () => {
-  class MockSearchIndexError extends Error {
-    code: string;
-    details?: unknown;
-
-    constructor(code: string, message: string, details?: unknown) {
-      super(message);
-      this.code = code;
-      this.details = details;
-    }
-  }
-
-  return {
-    SearchIndexError: MockSearchIndexError,
-    SearchIndexErrorCode: {
-      INDEX_FILE_NOT_FOUND: "INDEX_FILE_NOT_FOUND",
-    },
-  };
-});
-
-import { resolveBranchSelection, resolveModeAndFallback } from "./utils";
+import { normalizeSearchError, resolveBranchSelection, sanitizeExtensions } from "./utils";
 
 const createBranchContext = (branches: string[]) => {
   const availableBranches = new Set<string>();
@@ -77,18 +57,21 @@ describe("useRepoSearch utils", () => {
     expect(result.effectiveBranches).toEqual(["release"]);
   });
 
-  it("index disabled 时会自动降级到 github-api", () => {
-    const result = resolveModeAndFallback({
-      preferredMode: "search-index",
-      indexFeatureEnabled: false,
-      indexReady: true,
-      hasIndexError: false,
-      effectiveBranches: ["main"],
-      isBranchIndexed: () => true,
-    });
+  it("sanitizeExtensions 会去除点号、去重并转小写", () => {
+    expect(sanitizeExtensions([".TS", "ts", "py", ".PY"])).toEqual(["ts", "py"]);
+    expect(sanitizeExtensions(" md ")).toEqual(["md"]);
+    expect(sanitizeExtensions([".", ""])).toEqual([]);
+  });
 
-    expect(result.effectiveMode).toBe("github-api");
-    expect(result.fallbackReason).toBe("index-disabled");
+  it("normalizeSearchError 会包裹为 RepoSearchError", () => {
+    const rawError = new Error("boom");
+    const result = normalizeSearchError(rawError);
+
+    expect(result.source).toBe("search");
+    expect(result.message).toBe("boom");
+    expect(result.raw).toBe(rawError);
+
+    expect(normalizeSearchError("not-an-error").message).toBe("未知搜索错误");
   });
 
   it("空分支筛选时回退到 current/default 分支", () => {

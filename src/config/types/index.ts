@@ -23,14 +23,6 @@ export interface Config {
       enabled: boolean;
       hiddenFolders: string[];
     };
-    searchIndex: {
-      enabled: boolean;
-      generationMode: "build" | "action" | "off";
-      defaultBranch: string;
-      manifestPath: string;
-      assetBasePath: string;
-      refreshIntervalMs: number;
-    };
     footer: {
       leftText: string;
     };

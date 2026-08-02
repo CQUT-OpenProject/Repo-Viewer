@@ -1,1 +1,1 @@
-export const SEARCH_INDEX_DEFAULT_LIMIT = 200;
+export const DEFAULT_SEARCH_LIMIT = 200;

@@ -5,3 +5,5 @@
  */
 
 export { searchMultipleBranchesWithTreesApi } from "./treesSearch";
+export { searchCodeWithApi } from "./codeSearch";
+export type { CodeSearchOptions, CodeSearchResultItem } from "./codeSearch";
