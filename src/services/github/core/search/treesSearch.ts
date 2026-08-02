@@ -90,10 +90,7 @@ async function searchBranchWithTreesApi(
         ? itemPath.slice(itemPath.lastIndexOf("/") + 1)
         : itemPath;
 
-      if (
-        !fileName.toLowerCase().includes(normalizedSearchTerm) &&
-        !itemPath.toLowerCase().includes(normalizedSearchTerm)
-      ) {
+      if (!itemPath.toLowerCase().includes(normalizedSearchTerm)) {
         continue;
       }
 

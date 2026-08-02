@@ -265,7 +265,7 @@ export const useFilePreview = (
   };
 
   useEffect(() => {
-    const handlePopState = (event: PopStateEvent): void => {
+    const handlePopState = (): void => {
       if (isHandlingNavigationRef.current) {
         return;
       }
@@ -309,7 +309,6 @@ export const useFilePreview = (
       } finally {
         isHandlingNavigationRef.current = false;
       }
-      void event;
     };
 
     window.addEventListener("popstate", handlePopState);

@@ -48,8 +48,6 @@ export class RequestBatcher {
 
   private readonly fingerprintCache = new Map<string, FingerprintData & { expiresAt: number }>();
 
-  private batchTimeout: ReturnType<typeof setTimeout> | null = null;
-  private readonly batchDelay = 20;
   private readonly maxRetries = 3;
   private readonly fingerprintTTL = 5 * 60 * 1000;
 
@@ -194,11 +192,6 @@ export class RequestBatcher {
       // 如果还没有这个键的请求队列，创建它
       if (!this.batchedRequests.has(requestKey)) {
         this.batchedRequests.set(requestKey, []);
-
-        // 设置超时以批量处理请求
-        this.batchTimeout ??= window.setTimeout(() => {
-          this.processBatch();
-        }, this.batchDelay);
       }
 
       // 添加到队列
@@ -317,13 +310,6 @@ export class RequestBatcher {
       this.batchedRequests.delete(requestKey);
       throw lastError;
     }
-  }
-
-  // 处理批处理队列
-  private processBatch(): void {
-    this.batchTimeout = null;
-
-    // 已经在enqueue中处理了所有队列
   }
 
   /**
