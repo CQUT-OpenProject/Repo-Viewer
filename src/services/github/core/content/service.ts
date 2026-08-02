@@ -151,7 +151,7 @@ export async function getContents(
       excludeFiles: [...INITIAL_CONTENT_EXCLUDE_FILES],
     });
 
-    await storeDirectoryContents(cacheKey, path, branch, contents);
+    await storeDirectoryContents(cacheKey, contents);
     options?.onSource?.("network");
 
     return contents;
@@ -225,7 +225,7 @@ export async function getFileContent(fileUrl: string, signal?: AbortSignal): Pro
       content = await fetchTextByUrl(serverApiUrl);
     }
 
-    await storeFileContent(cacheKey, fileUrl, content);
+    await storeFileContent(cacheKey, content);
 
     return content;
   } catch (unknownError) {

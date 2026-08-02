@@ -154,10 +154,9 @@ export class AdvancedCache<K extends string, V> {
    *
    * @param key - 缓存键
    * @param value - 要缓存的值
-   * @param version - 版本标识，默认为'1.0'
    * @returns Promise，设置完成后解析
    */
-  async set(key: K, value: V, version = "1.0"): Promise<void> {
+  async set(key: K, value: V): Promise<void> {
     const now = Date.now();
     const keyStr = key;
     await this.checkMemoryPressureAndCleanup();
@@ -169,7 +168,6 @@ export class AdvancedCache<K extends string, V> {
       accessCount: 1,
       lastAccess: now,
       size,
-      version,
     };
 
     this.cache.set(key, item);

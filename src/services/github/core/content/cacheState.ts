@@ -3,7 +3,6 @@ import { logger } from "@/utils/logging/logger";
 import { SmartCache } from "@/utils/cache/SmartCache";
 
 import { CacheManager } from "../../cache/CacheManager";
-import { generateContentVersion, generateFileVersion } from "./cacheKeys";
 
 /**
  * 缓存状态管理模块
@@ -115,21 +114,16 @@ export async function getCachedFileContent(cacheKey: string): Promise<string | n
  * 如果主缓存不可用，则回退到内存缓存以保证功能可用性。
  *
  * @param cacheKey - 目录缓存键
- * @param path - 目录路径
- * @param branch - Git 分支名
  * @param contents - 目录内容数组
  * @returns Promise<void>
  */
 export async function storeDirectoryContents(
   cacheKey: string,
-  path: string,
-  branch: string,
   contents: GitHubContent[],
 ): Promise<void> {
   if (cacheAvailable) {
-    const version = generateContentVersion(path, branch, contents);
     const contentCache = CacheManager.getContentCache();
-    await contentCache.set(cacheKey, contents, version);
+    await contentCache.set(cacheKey, contents);
     return;
   }
 
@@ -140,19 +134,13 @@ export async function storeDirectoryContents(
  * 写入文件内容缓存，逻辑同上。
  *
  * @param cacheKey - 文件缓存键
- * @param fileUrl - 文件 URL
  * @param content - 文件内容
  * @returns Promise<void>
  */
-export async function storeFileContent(
-  cacheKey: string,
-  fileUrl: string,
-  content: string,
-): Promise<void> {
+export async function storeFileContent(cacheKey: string, content: string): Promise<void> {
   if (cacheAvailable) {
-    const version = generateFileVersion(fileUrl, content);
     const fileCache = CacheManager.getFileCache();
-    await fileCache.set(cacheKey, content, version);
+    await fileCache.set(cacheKey, content);
     return;
   }
 
