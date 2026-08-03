@@ -9,6 +9,7 @@ import * as AuthModule from "./github/core/Auth";
 import * as ConfigModule from "./github/core/Config";
 import {
   markProxyServiceFailed as proxyMarkProxyServiceFailed,
+  markProxyServiceSucceeded as proxyMarkProxyServiceSucceeded,
   getCurrentProxyService as proxyGetCurrentProxyService,
   transformImageUrl as proxyTransformImageUrl,
 } from "./github/proxy/ProxyService";
@@ -90,6 +91,7 @@ export const GitHub = {
 
   Proxy: {
     markProxyServiceFailed: proxyMarkProxyServiceFailed,
+    markProxyServiceSucceeded: proxyMarkProxyServiceSucceeded,
     getCurrentProxyService: proxyGetCurrentProxyService,
     transformImageUrl: proxyTransformImageUrl,
   },

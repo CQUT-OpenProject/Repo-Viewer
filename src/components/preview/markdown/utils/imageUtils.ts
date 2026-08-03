@@ -267,5 +267,13 @@ export const handleImageLoad = (
       window.clearTimeout(timerId);
       imageState.imageTimers.delete(imgSrc);
     }
+
+    // 代理URL加载成功，标记代理恢复健康
+    if (PROXY_FAILURE_HOSTS.some((host) => imgSrc.includes(host))) {
+      const proxyUrl = getOriginFromUrl(imgSrc);
+      if (typeof proxyUrl === "string" && proxyUrl.length > 0) {
+        GitHub.Proxy.markProxyServiceSucceeded(proxyUrl);
+      }
+    }
   }
 };

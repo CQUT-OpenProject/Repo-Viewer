@@ -44,6 +44,16 @@ export function markProxyServiceFailed(proxyUrl: string): void {
 }
 
 /**
+ * 标记代理服务恢复成功
+ */
+export function markProxyServiceSucceeded(proxyUrl: string): void {
+  if (proxyUrl !== "") {
+    proxyHealthManager.recordSuccess(proxyUrl);
+    logger.debug(`标记代理服务恢复: ${proxyUrl}`);
+  }
+}
+
+/**
  * 获取当前代理服务
  */
 export function getCurrentProxyService(): string {

@@ -62,6 +62,23 @@ class ProxyHealthManager {
   }
 
   /**
+   * 记录代理成功
+   *
+   * 重置连续失败计数并恢复健康状态，使恢复后的代理重新参与健康排序。
+   *
+   * @param proxyUrl - 代理URL
+   * @returns void
+   */
+  public recordSuccess(proxyUrl: string): void {
+    const health = this.proxyHealth.get(proxyUrl);
+    if (health !== undefined) {
+      health.consecutiveFailures = 0;
+      health.isHealthy = true;
+      logger.debug(`代理成功: ${proxyUrl}, 已恢复健康状态`);
+    }
+  }
+
+  /**
    * 获取最佳代理服务
    *
    * 根据健康状态选择代理；健康优先，其次失败次数更少。

@@ -39,4 +39,15 @@ describe("ProxyHealthManager", () => {
 
     expect(proxyHealthManager.getBestProxy()).toBe("https://gh-proxy.com");
   });
+
+  it("re-promotes a proxy to healthy after a successful request", () => {
+    proxyHealthManager.recordFailure("https://gh-proxy.com");
+    proxyHealthManager.recordFailure("https://gh-proxy.com");
+    proxyHealthManager.recordFailure("https://gh-proxy.com");
+    expect(proxyHealthManager.getBestProxy()).toBe("");
+
+    proxyHealthManager.recordSuccess("https://gh-proxy.com");
+
+    expect(proxyHealthManager.getBestProxy()).toBe("https://gh-proxy.com");
+  });
 });
