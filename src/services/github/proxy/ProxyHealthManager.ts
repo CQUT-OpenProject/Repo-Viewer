@@ -81,7 +81,7 @@ class ProxyHealthManager {
         return a.consecutiveFailures - b.consecutiveFailures;
       });
 
-    return healthyProxies.length > 0 ? (healthyProxies[0]?.url ?? "") : (PROXY_SERVICES[0] ?? "");
+    return healthyProxies.length > 0 ? (healthyProxies[0]?.url ?? "") : "";
   }
 
   /**

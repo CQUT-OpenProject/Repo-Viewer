@@ -1,6 +1,6 @@
 import { logger } from "@/utils/logging/logger";
 import { getProxyConfig, getRuntimeConfig } from "@/config";
-import { USE_TOKEN_MODE, PROXY_SERVICES } from "./ProxyConfig";
+import { USE_TOKEN_MODE } from "./ProxyConfig";
 import { proxyHealthManager } from "./ProxyHealthManager";
 import { ProxyUrlTransformer } from "./ProxyUrlTransformer";
 
@@ -47,8 +47,7 @@ export function markProxyServiceFailed(proxyUrl: string): void {
  * 获取当前代理服务
  */
 export function getCurrentProxyService(): string {
-  const bestProxy = proxyHealthManager.getBestProxy();
-  return bestProxy !== "" ? bestProxy : (PROXY_SERVICES[0] ?? "");
+  return proxyHealthManager.getBestProxy();
 }
 
 /**
