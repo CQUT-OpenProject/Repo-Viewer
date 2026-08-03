@@ -266,7 +266,7 @@ export async function consumeHydratedDirectory(
   }
 
   initialDirectoryStore.delete(key);
-  await storeDirectoryContents(cacheKey, path, branch, contents);
+  await storeDirectoryContents(cacheKey, contents);
   cleanupInitialHydrationStateIfEmpty();
   logger.debug(`ContentHydration: 使用首屏注水目录数据 -> ${path === "" ? "/" : path}`);
   return contents;
@@ -301,7 +301,7 @@ export async function consumeHydratedFile(
   }
 
   initialFileStore.delete(key);
-  await storeFileContent(cacheKey, fileUrl, entry.content);
+  await storeFileContent(cacheKey, entry.content);
   cleanupInitialHydrationStateIfEmpty();
   logger.debug(`ContentHydration: 使用首屏注水文件数据 -> ${path}`);
   return entry.content;

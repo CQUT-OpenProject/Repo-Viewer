@@ -1,11 +1,11 @@
 /**
  * @fileoverview 仓库搜索 Hook
  *
- * 提供 GitHub 仓库内容的搜索功能，采用合并执行策略：
- * 1. 默认分支：使用 GitHub Code Search API（内容 + 路径全文搜索，支持 CJK）
- * 2. 非默认分支：使用 GitHub Trees API 路径搜索（Code Search 仅索引默认分支）
+ * 提供 GitHub 仓库内容的搜索功能，采用聚合搜索策略：
+ * 1. 所有选中分支：并行使用 Trees API 匹配文件路径/文件名
+ * 2. 含默认分支时：额外并行 GitHub Code Search API（内容全文，仅索引默认分支）
  *
- * 结果按 Code Search 优先合并去重，Code Search 失败时保留 Trees 结果。
+ * 结果按 Code Search 优先合并去重；Code Search 失败或无索引时仍保留 Trees 路径结果。
  *
  * @module hooks/github/useRepoSearch/useRepoSearch
  */
@@ -28,6 +28,7 @@ import type {
   UseRepoSearchOptions,
 } from "./types";
 import {
+  mergeSearchResults,
   normalizeSearchError,
   resolveBranchSelection,
   sanitizeBranchList,
@@ -47,8 +48,7 @@ interface RepoSearchInputFilters {
 /**
  * 仓库搜索 Hook
  *
- * 提供完整的仓库内容搜索功能，自动合并默认分支的 Code Search 结果
- * 与非默认分支的 Trees API 路径搜索结果。
+ * 提供完整的仓库聚合搜索功能，并行合并 Code Search 与 Trees API 结果。
  *
  * @param options - 搜索配置选项
  * @param options.currentBranch - 当前分支名称
@@ -235,48 +235,50 @@ export function useRepoSearch({
       const execution = await requestManager.request(SEARCH_REQUEST_KEY, async (signal) => {
         const trimmedDefaultBranch = defaultBranch.trim();
         const useCodeSearch = resolvedBranches.includes(trimmedDefaultBranch);
-        const nonDefaultBranches = resolvedBranches.filter(
-          (branch) => branch !== trimmedDefaultBranch,
-        );
 
         const treesPromise =
-          nonDefaultBranches.length > 0
+          resolvedBranches.length > 0
             ? GitHub.Search.searchMultipleBranchesWithTreesApi(
                 keyword,
-                nonDefaultBranches,
+                resolvedBranches,
                 pathPrefixRaw,
                 sanitizedExtensions,
                 signal,
               )
             : Promise.resolve([]);
 
-        let codeItems: RepoSearchCodeItem[] = [];
-        let codeSearchError: unknown = null;
-
-        if (useCodeSearch) {
-          try {
-            const results = await GitHub.Search.searchCode({
+        const codeSearchPromise = useCodeSearch
+          ? GitHub.Search.searchCode({
               keyword,
               branch: trimmedDefaultBranch,
               pathPrefix: pathPrefixRaw === "" ? undefined : pathPrefixRaw,
               extensions: sanitizedExtensions.length > 0 ? sanitizedExtensions : undefined,
               limit: DEFAULT_SEARCH_LIMIT,
               signal,
-            });
-            codeItems = results.map((item) => ({
-              ...item,
-              source: "code-search" as const,
-            }));
-          } catch (error) {
-            if (isAbortError(error)) {
-              throw error;
-            }
-            codeSearchError = error;
-            logger.warn(`[RepoSearch] Code Search 失败，回退到 Trees 结果: ${keyword}`, error);
-          }
-        }
+            })
+              .then((results) => ({
+                codeItems: results.map(
+                  (item): RepoSearchCodeItem => ({
+                    ...item,
+                    source: "code-search",
+                  }),
+                ),
+                codeSearchError: null as unknown,
+              }))
+              .catch((error: unknown) => {
+                if (isAbortError(error)) {
+                  throw error;
+                }
+                logger.warn(`[RepoSearch] Code Search 失败，保留 Trees 结果: ${keyword}`, error);
+                return { codeItems: [] as RepoSearchCodeItem[], codeSearchError: error };
+              })
+          : Promise.resolve({ codeItems: [] as RepoSearchCodeItem[], codeSearchError: null });
 
-        const branchResults = await treesPromise;
+        const [{ codeItems, codeSearchError }, branchResults] = await Promise.all([
+          codeSearchPromise,
+          treesPromise,
+        ]);
+
         const treesItems: RepoSearchApiItem[] = branchResults.flatMap(({ branch, results }) =>
           results.map((item) => ({
             ...item,
@@ -289,14 +291,14 @@ export function useRepoSearch({
           throw codeSearchError;
         }
 
-        const seenPaths = new Set(codeItems.map((item) => item.path));
-        const items: RepoSearchItem[] = [
-          ...codeItems,
-          ...treesItems.filter((item) => !seenPaths.has(item.path)),
-        ];
+        const items: RepoSearchItem[] = mergeSearchResults(
+          codeItems,
+          treesItems,
+          trimmedDefaultBranch,
+        );
 
         return {
-          mode: useCodeSearch ? "code-search" : "github-api",
+          mode: useCodeSearch ? "aggregated" : "github-api",
           items,
           took: performance.now() - startedAt,
           filters: {

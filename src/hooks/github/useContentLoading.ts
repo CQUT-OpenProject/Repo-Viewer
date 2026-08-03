@@ -38,6 +38,7 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
   const lastSignatureRef = useRef<string>("");
   const forceRefreshRef = useRef<boolean>(false);
   const revalidateKeyRef = useRef<string | null>(null);
+  const skippedByThemeRef = useRef<boolean>(false);
 
   const buildContentsSignature = React.useCallback((data: GitHubContent[]): string => {
     if (data.length === 0) {
@@ -83,6 +84,9 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
         setError(null);
       }
 
+      const requestedPath = currentPathRef.current;
+      const requestedBranch = currentBranchRef.current;
+
       try {
         const sourceTracker: { value: ContentSource } = { value: "network" };
 
@@ -90,7 +94,7 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
         const data = await requestManager.request(
           "github-contents",
           (signal) =>
-            GitHub.Content.getContents(currentPathRef.current, signal, {
+            GitHub.Content.getContents(requestedPath, signal, {
               forceRefresh,
               onSource: (source) => {
                 sourceTracker.value = source;
@@ -98,6 +102,15 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
             }),
           { debounce: forceRefresh ? 0 : 100 },
         );
+
+        // 请求期间路径或分支已变化，丢弃过期响应，避免旧数据覆盖新路径
+        if (
+          currentPathRef.current !== requestedPath ||
+          currentBranchRef.current !== requestedBranch
+        ) {
+          logger.debug("路径或分支已变化，丢弃过期响应");
+          return;
+        }
 
         const filteredData = filterContents(data);
         const nextSignature = buildContentsSignature(filteredData);
@@ -144,7 +157,12 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
           setContents([]);
         }
       } finally {
-        if (shouldShowLoading) {
+        // 仅当仍是当前路径/分支时复位 loading，避免被取消的旧请求提前清除新请求的加载状态
+        if (
+          shouldShowLoading &&
+          currentPathRef.current === requestedPath &&
+          currentBranchRef.current === requestedBranch
+        ) {
           setLoading(false);
         }
       }
@@ -156,6 +174,7 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
   useEffect(() => {
     // 主题切换期间跳过内容重新加载
     if (isThemeChangingRef.current) {
+      skippedByThemeRef.current = true;
       logger.debug("主题切换中，跳过内容重新加载");
       return;
     }
@@ -165,6 +184,21 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
 
     void loadContents({ forceRefresh: shouldForceRefresh });
   }, [path, branch, refreshTrigger, loadContents, isThemeChangingRef]);
+
+  // 主题切换期间跳过的加载在切换结束后补跑，避免内容停留在旧路径
+  useEffect(() => {
+    const handleThemeChanged = (): void => {
+      if (skippedByThemeRef.current) {
+        skippedByThemeRef.current = false;
+        setRefreshTrigger((prev) => prev + 1);
+      }
+    };
+
+    window.addEventListener("theme:changed", handleThemeChanged);
+    return () => {
+      window.removeEventListener("theme:changed", handleThemeChanged);
+    };
+  }, []);
 
   const refresh = () => {
     forceRefreshRef.current = true;

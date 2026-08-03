@@ -154,10 +154,9 @@ export class AdvancedCache<K extends string, V> {
    *
    * @param key - 缓存键
    * @param value - 要缓存的值
-   * @param version - 版本标识，默认为'1.0'
    * @returns Promise，设置完成后解析
    */
-  async set(key: K, value: V, version = "1.0"): Promise<void> {
+  async set(key: K, value: V): Promise<void> {
     const now = Date.now();
     const keyStr = key;
     await this.checkMemoryPressureAndCleanup();
@@ -169,7 +168,6 @@ export class AdvancedCache<K extends string, V> {
       accessCount: 1,
       lastAccess: now,
       size,
-      version,
     };
 
     this.cache.set(key, item);
@@ -348,10 +346,35 @@ export class AdvancedCache<K extends string, V> {
       await this.delete(key);
     }
 
+    if (this.config.enablePersistence && this.config.useIndexedDB && this.db !== null) {
+      await this.cleanupExpiredPersistenceEntries();
+    }
+
     this.stats.lastCleanup = now;
 
     if (expiredKeys.length > 0) {
       logger.debug(`定期清理：删除了${expiredKeys.length.toString()}个过期缓存项`);
+    }
+  }
+
+  /**
+   * 清理持久层（IndexedDB）中的过期缓存项
+   *
+   * 内存LRU只保留最近使用的条目，被驱逐的条目仍存在于IndexedDB中，
+   * 只有被get触达时才会过期删除；此方法定期全量扫描，防止持久层无限膨胀。
+   */
+  private async cleanupExpiredPersistenceEntries(): Promise<void> {
+    try {
+      const items = await loadAllFromIndexedDB(this.db, this.config);
+      const now = Date.now();
+      for (const entry of items) {
+        const ttl = calculateTTL(this.config, entry.data);
+        if (now - entry.data.timestamp > ttl) {
+          await deleteItemFromIndexedDB(this.db, this.config, entry.key);
+        }
+      }
+    } catch (error: unknown) {
+      logger.debug("清理IndexedDB过期条目失败", error);
     }
   }
 
@@ -397,10 +420,10 @@ export class AdvancedCache<K extends string, V> {
       const items = await loadAllFromIndexedDB(this.db, this.config);
       let loadedCount = 0;
       const now = Date.now();
-      const defaultTTL = this.config.defaultTTL;
       items.forEach((entry) => {
         try {
-          if (now - entry.timestamp <= defaultTTL) {
+          const ttl = calculateTTL(this.config, entry.data);
+          if (now - entry.timestamp <= ttl) {
             this.cache.set(entry.key as K, entry.data);
             loadedCount += 1;
           }

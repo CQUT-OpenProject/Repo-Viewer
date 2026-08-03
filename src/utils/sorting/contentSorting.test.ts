@@ -36,4 +36,9 @@ describe("contentSorting", () => {
     expect(getContentFirstLetter(createContent("Équipe.txt", "file"))).toBe("E");
     expect(getContentFirstLetter(createContent("Álvaro.md", "file"))).toBe("A");
   });
+
+  it("returns a single-letter index even when uppercasing expands the character", () => {
+    expect(getContentFirstLetter(createContent("ßetrieb.md", "file"))).toBe("S");
+    expect(getContentFirstLetter(createContent("İstanbul.md", "file"))).toBe("I");
+  });
 });

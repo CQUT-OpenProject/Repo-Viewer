@@ -114,7 +114,8 @@ export const SearchDrawer: React.FC<SearchDrawerProps> = ({ open, onClose }) => 
     return t("search.results.summary", {
       count: items.length,
       took: took.toFixed(1),
-      mode: mode === "code-search" ? t("search.results.codeMode") : t("search.results.apiMode"),
+      mode:
+        mode === "aggregated" ? t("search.results.aggregatedMode") : t("search.results.apiMode"),
     });
   }, [search.searchResult, t]);
 

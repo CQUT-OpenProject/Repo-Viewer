@@ -111,6 +111,12 @@ export const MarkdownImage: React.FC<MarkdownImageProps> = ({
         const newSrc = handleImageError(stateKey, originalSrc, imageState, setIsImageFailed);
         if (newSrc !== null && newSrc.trim().length > 0 && newSrc !== stateKey) {
           event.currentTarget.src = newSrc;
+        } else if (newSrc === null) {
+          // 代理已切换，用新代理重新转换 URL 并重试
+          const retrySrc = transformImageSrc(src, previewingItem, currentBranch).imgSrc.trim();
+          if (retrySrc.length > 0 && retrySrc !== stateKey) {
+            event.currentTarget.src = retrySrc;
+          }
         }
       }}
     />

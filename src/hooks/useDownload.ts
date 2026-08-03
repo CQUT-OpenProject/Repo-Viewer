@@ -144,8 +144,10 @@ export const useDownload = (
     logger.info("下载已取消");
 
     setTimeout(() => {
-      isCancelledRef.current = false;
-      dispatch({ type: "RESET_DOWNLOAD_STATE" });
+      if (abortControllerRef.current === null) {
+        isCancelledRef.current = false;
+        dispatch({ type: "RESET_DOWNLOAD_STATE" });
+      }
     }, 500);
   };
 

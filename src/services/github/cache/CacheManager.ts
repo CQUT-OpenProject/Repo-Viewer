@@ -11,12 +11,21 @@ class CacheManagerImpl {
   private contentCache: AdvancedCache<string, unknown> | null = null;
   private fileCache: AdvancedCache<string, string> | null = null;
   private initialized = false;
+  private initializationPromise: Promise<void> | null = null;
 
-  public async initialize(): Promise<void> {
+  public initialize(): Promise<void> {
     if (this.initialized) {
-      return;
+      return Promise.resolve();
     }
 
+    this.initializationPromise ??= this.initializeImpl().finally(() => {
+      this.initializationPromise = null;
+    });
+
+    return this.initializationPromise;
+  }
+
+  private async initializeImpl(): Promise<void> {
     try {
       const [contentCache, fileCache] = await Promise.all([
         (async () => {

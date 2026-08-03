@@ -116,8 +116,15 @@ export const useFilePreview = (
   }, [cancelActivePreviewRequest]);
 
   const loadTextLikeContent = React.useCallback(
-    async (item: GitHubContent, targetPath: string, kind: "markdown" | "text"): Promise<void> => {
-      updateUrlWithHistory(item.path.split("/").slice(0, -1).join("/"), item.path);
+    async (
+      item: GitHubContent,
+      targetPath: string,
+      kind: "markdown" | "text",
+      syncUrl = true,
+    ): Promise<void> => {
+      if (syncUrl) {
+        updateUrlWithHistory(item.path.split("/").slice(0, -1).join("/"), item.path);
+      }
       dispatch({ type: "SET_PREVIEW_LOADING", loading: true });
       const requestId = previewRequestIdRef.current + 1;
       previewRequestIdRef.current = requestId;
@@ -203,9 +210,9 @@ export const useFilePreview = (
         const isCurrentTarget = (): boolean => currentPreviewItemRef.current?.path === targetPath;
 
         if (isMarkdownFile(fileNameLower)) {
-          await loadTextLikeContent(item, targetPath, "markdown");
+          await loadTextLikeContent(item, targetPath, "markdown", trigger !== "history");
         } else if (isTextFile(item.name)) {
-          await loadTextLikeContent(item, targetPath, "text");
+          await loadTextLikeContent(item, targetPath, "text", trigger !== "history");
         } else if (isPdfFile(fileNameLower)) {
           try {
             await openPDFPreview({
@@ -230,7 +237,9 @@ export const useFilePreview = (
           }
         } else if (isImageFile(fileNameLower)) {
           const dirPath = item.path.split("/").slice(0, -1).join("/");
-          updateUrlWithHistory(dirPath, item.path);
+          if (trigger !== "history") {
+            updateUrlWithHistory(dirPath, item.path);
+          }
           if (!isCurrentTarget()) {
             return;
           }
@@ -273,7 +282,9 @@ export const useFilePreview = (
       try {
         const hasActivePreview = hasActivePreviewRef.current;
         const urlHasPreview = hasPreviewParam();
-        const previewPath = getPreviewFromUrl();
+        // history.state 中保存完整预览路径，优先使用以避免重名文件歧义
+        const statePreview = (event.state as { preview?: string } | null)?.preview;
+        const previewPath = statePreview?.split("/").pop() ?? getPreviewFromUrl();
 
         if (hasActivePreview && !urlHasPreview) {
           cancelActivePreviewRequest();
@@ -296,7 +307,8 @@ export const useFilePreview = (
               !(currentPreviewPath?.endsWith(`/${previewPath}`) ?? false))
           ) {
             if (findFileItemByPath !== undefined) {
-              const fileItem = findFileItemByPath(previewPath);
+              // state 中完整路径优先，hash 仅文件名时回退到文件名匹配
+              const fileItem = findFileItemByPath(statePreview ?? previewPath);
               if (fileItem !== undefined) {
                 currentPreviewItemRef.current = fileItem;
                 void selectFile(fileItem, "history");
@@ -309,7 +321,6 @@ export const useFilePreview = (
       } finally {
         isHandlingNavigationRef.current = false;
       }
-      void event;
     };
 
     window.addEventListener("popstate", handlePopState);

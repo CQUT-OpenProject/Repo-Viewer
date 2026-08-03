@@ -160,6 +160,58 @@ describe("downloadFolderAsZip", () => {
     expect(decoder.decode(unzipped["docs/kept.txt"])).toBe("kept");
   });
 
+  it("continues after a mid-stream failure and still produces a valid archive with subsequent files", async () => {
+    const saveAsImpl = vi.fn();
+    const onFileError = vi.fn();
+    const streamError = new Error("connection dropped");
+    const failingReader = {
+      read: vi
+        .fn()
+        .mockResolvedValueOnce({ done: false, value: encoder.encode("partial-") })
+        .mockRejectedValueOnce(streamError),
+      cancel: vi.fn(async () => {}),
+      releaseLock: vi.fn(),
+    };
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {
+      const target = typeof url === "string" ? url : url instanceof URL ? url.toString() : url.url;
+
+      if (target.includes("broken")) {
+        return {
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          body: { getReader: () => failingReader },
+        } as unknown as Response;
+      }
+
+      return createStreamResponse(["kept"]);
+    });
+
+    await downloadFolderAsZip({
+      files: [
+        { path: "docs/broken.txt", url: "https://example.com/broken.txt" },
+        { path: "docs/kept.txt", url: "https://example.com/kept.txt" },
+      ],
+      signal: new AbortController().signal,
+      archiveName: "midstream.zip",
+      fetchImpl,
+      saveAsImpl,
+      showSaveFilePickerImpl: null,
+      onFileError,
+    });
+
+    expect(onFileError).toHaveBeenCalledTimes(1);
+    expect(onFileError).toHaveBeenCalledWith(
+      expect.objectContaining({ path: "docs/broken.txt" }),
+      streamError,
+    );
+    expect(saveAsImpl).toHaveBeenCalledTimes(1);
+
+    const [savedBlob] = saveAsImpl.mock.calls[0] as [Blob, string];
+    const unzipped = unzipSync(new Uint8Array(await savedBlob.arrayBuffer()));
+    expect(decoder.decode(unzipped["docs/kept.txt"])).toBe("kept");
+  });
+
   it("aborts the active reader and sink when cancellation happens mid-stream", async () => {
     const abortController = new AbortController();
     const cancel = vi.fn(async () => {});

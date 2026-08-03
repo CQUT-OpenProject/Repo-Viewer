@@ -1,4 +1,9 @@
-import type { RepoSearchError } from "./types";
+import type {
+  RepoSearchApiItem,
+  RepoSearchCodeItem,
+  RepoSearchError,
+  RepoSearchItem,
+} from "./types";
 
 export type BranchSelectionMode = "auto" | "manual";
 
@@ -125,4 +130,26 @@ export function normalizeSearchError(error: unknown): RepoSearchError {
     message,
     raw: error,
   } satisfies RepoSearchError;
+}
+
+/**
+ * 合并 Code Search 与 Trees API 搜索结果。
+ *
+ * Code Search 仅索引默认分支；默认分支的同名结果以 Code Search 优先，
+ * 其余分支的 Trees 结果全部保留，避免非默认分支的同名文件被误杀。
+ */
+export function mergeSearchResults(
+  codeItems: RepoSearchCodeItem[],
+  treesItems: RepoSearchApiItem[],
+  defaultBranch: string,
+): RepoSearchItem[] {
+  const seenPaths = new Set(codeItems.map((item) => item.path));
+  const trimmedDefaultBranch = defaultBranch.trim();
+
+  return [
+    ...codeItems,
+    ...treesItems.filter(
+      (item) => item.branch !== trimmedDefaultBranch || !seenPaths.has(item.path),
+    ),
+  ];
 }

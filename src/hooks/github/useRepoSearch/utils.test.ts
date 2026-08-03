@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { normalizeSearchError, resolveBranchSelection, sanitizeExtensions } from "./utils";
+import type { RepoSearchApiItem, RepoSearchCodeItem } from "./types";
+import {
+  mergeSearchResults,
+  normalizeSearchError,
+  resolveBranchSelection,
+  sanitizeExtensions,
+} from "./utils";
 
 const createBranchContext = (branches: string[]) => {
   const availableBranches = new Set<string>();
@@ -16,6 +22,24 @@ const createBranchContext = (branches: string[]) => {
     branchOrder,
   };
 };
+
+const codeItem = (path: string): RepoSearchCodeItem => ({
+  branch: "main",
+  path,
+  name: path.split("/").pop() ?? path,
+  sha: "code-sha",
+  source: "code-search",
+});
+
+const treesItem = (path: string, branch: string): RepoSearchApiItem =>
+  ({
+    path,
+    name: path.split("/").pop() ?? path,
+    sha: `${branch}-sha`,
+    type: "file",
+    source: "github-api",
+    branch,
+  }) as RepoSearchApiItem;
 
 describe("useRepoSearch utils", () => {
   it("auto 模式会跟随 currentBranch 变化", () => {
@@ -95,5 +119,47 @@ describe("useRepoSearch utils", () => {
 
     expect(byCurrentBranch.effectiveBranches).toEqual(["feature"]);
     expect(byDefaultBranch.effectiveBranches).toEqual(["main"]);
+  });
+
+  it("默认分支的同名文件以 Code Search 结果优先去重", () => {
+    const result = mergeSearchResults(
+      [codeItem("src/util.ts")],
+      [treesItem("src/util.ts", "main")],
+      "main",
+    );
+
+    expect(result).toHaveLength(1);
+    expect(result[0]?.source).toBe("code-search");
+  });
+
+  it("非默认分支的同名文件不被 Code Search 结果误杀", () => {
+    const result = mergeSearchResults(
+      [codeItem("src/util.ts")],
+      [treesItem("src/util.ts", "develop")],
+      "main",
+    );
+
+    expect(result).toHaveLength(2);
+    expect(result[1]).toMatchObject({ branch: "develop", source: "github-api" });
+  });
+
+  it("无 Code Search 结果时保留全部 Trees 结果", () => {
+    const result = mergeSearchResults(
+      [],
+      [treesItem("a.ts", "main"), treesItem("b.ts", "main")],
+      "main",
+    );
+
+    expect(result).toHaveLength(2);
+  });
+
+  it("不同非默认分支的同路径文件各自保留", () => {
+    const result = mergeSearchResults(
+      [codeItem("src/util.ts")],
+      [treesItem("src/util.ts", "develop"), treesItem("src/util.ts", "release")],
+      "main",
+    );
+
+    expect(result).toHaveLength(3);
   });
 });

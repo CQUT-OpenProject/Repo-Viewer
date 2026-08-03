@@ -29,7 +29,8 @@
         "code": "Code"
       },
       "codeMode": "Code Mode",
-      "defaultBranchHint": "Content search only covers the default branch; other branches match file paths only"
+      "aggregatedMode": "Aggregated Search",
+      "defaultBranchHint": "Default branch: content and path search; other branches: path match only"
     },
     "input": {
       "placeholder": "Type to search",

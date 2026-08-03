@@ -43,5 +43,4 @@ export interface CacheItemMeta {
   accessCount: number;
   lastAccess: number;
   size: number;
-  version: string;
 }

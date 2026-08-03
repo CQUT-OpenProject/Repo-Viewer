@@ -20,7 +20,8 @@
         "code": "内容"
       },
       "codeMode": "内容搜索模式",
-      "defaultBranchHint": "内容搜索仅覆盖默认分支，其他分支仅匹配文件路径"
+      "aggregatedMode": "聚合搜索",
+      "defaultBranchHint": "默认分支同时检索内容与路径；非默认分支仅匹配文件路径"
     },
     "input": {
       "placeholder": "键入搜索内容",

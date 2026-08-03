@@ -20,7 +20,8 @@
         "code": "コード"
       },
       "codeMode": "コード検索モード",
-      "defaultBranchHint": "コンテンツ検索はデフォルトブランチのみ対象です。他のブランチはファイルパスのみ一致します"
+      "aggregatedMode": "統合検索",
+      "defaultBranchHint": "デフォルトブランチはコンテンツとパスを検索；その他のブランチはパスのみ一致"
     },
     "input": {
       "placeholder": "検索キーワードを入力",

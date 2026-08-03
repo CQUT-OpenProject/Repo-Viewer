@@ -3,7 +3,6 @@ import { logger } from "@/utils/logging/logger";
 import { SmartCache } from "@/utils/cache/SmartCache";
 
 import { CacheManager } from "../../cache/CacheManager";
-import { generateContentVersion, generateFileVersion } from "./cacheKeys";
 
 /**
  * 缓存状态管理模块
@@ -28,6 +27,11 @@ let initializationAttempts = 0;
 const MAX_INIT_ATTEMPTS = 3;
 
 /**
+ * 进行中的初始化Promise，并发调用方共享同一次初始化。
+ */
+let initializationPromise: Promise<void> | null = null;
+
+/**
  * 判断当前是否可以使用主缓存。
  *
  * @returns 主缓存是否可用
@@ -39,7 +43,8 @@ export function isCacheAvailable(): boolean {
 /**
  * 确保缓存系统已初始化。
  *
- * 失败时会自动降级到内存缓存，最多尝试三次以避免无限重试。
+ * 并发调用共享同一次初始化；失败时自动降级到内存缓存并允许后续重试，
+ * 最多尝试 MAX_INIT_ATTEMPTS 次以避免无限重试。
  *
  * @returns Promise<void>
  */
@@ -48,6 +53,14 @@ export async function ensureCacheInitialized(): Promise<void> {
     return;
   }
 
+  initializationPromise ??= initializeCache().finally(() => {
+    initializationPromise = null;
+  });
+
+  await initializationPromise;
+}
+
+async function initializeCache(): Promise<void> {
   if (initializationAttempts >= MAX_INIT_ATTEMPTS) {
     logger.warn("ContentCache: 已达到最大初始化尝试次数，使用内存降级缓存");
     cacheInitialized = true;
@@ -68,9 +81,6 @@ export async function ensureCacheInitialized(): Promise<void> {
       `ContentCache: 缓存系统初始化失败（尝试 ${initializationAttempts.toString()}/${MAX_INIT_ATTEMPTS.toString()}），使用内存降级缓存`,
       cause,
     );
-
-    cacheInitialized = true;
-    cacheAvailable = false;
 
     if (import.meta.env.DEV) {
       logger.error("缓存初始化失败详情:", cause);
@@ -115,21 +125,16 @@ export async function getCachedFileContent(cacheKey: string): Promise<string | n
  * 如果主缓存不可用，则回退到内存缓存以保证功能可用性。
  *
  * @param cacheKey - 目录缓存键
- * @param path - 目录路径
- * @param branch - Git 分支名
  * @param contents - 目录内容数组
  * @returns Promise<void>
  */
 export async function storeDirectoryContents(
   cacheKey: string,
-  path: string,
-  branch: string,
   contents: GitHubContent[],
 ): Promise<void> {
   if (cacheAvailable) {
-    const version = generateContentVersion(path, branch, contents);
     const contentCache = CacheManager.getContentCache();
-    await contentCache.set(cacheKey, contents, version);
+    await contentCache.set(cacheKey, contents);
     return;
   }
 
@@ -140,19 +145,13 @@ export async function storeDirectoryContents(
  * 写入文件内容缓存，逻辑同上。
  *
  * @param cacheKey - 文件缓存键
- * @param fileUrl - 文件 URL
  * @param content - 文件内容
  * @returns Promise<void>
  */
-export async function storeFileContent(
-  cacheKey: string,
-  fileUrl: string,
-  content: string,
-): Promise<void> {
+export async function storeFileContent(cacheKey: string, content: string): Promise<void> {
   if (cacheAvailable) {
-    const version = generateFileVersion(fileUrl, content);
     const fileCache = CacheManager.getFileCache();
-    await fileCache.set(cacheKey, content, version);
+    await fileCache.set(cacheKey, content);
     return;
   }
 

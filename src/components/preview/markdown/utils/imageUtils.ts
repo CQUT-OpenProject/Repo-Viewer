@@ -1,3 +1,4 @@
+import { getGithubConfig } from "@/config";
 import { GitHub } from "@/services/github";
 import type { GitHubContent } from "@/types";
 import { logger } from "@/utils/logging/logger";
@@ -78,11 +79,7 @@ export const tryDirectImageLoad = (imgSrc: string): string | null => {
     }
 
     const proxy = "https://cdn.jsdelivr.net/gh";
-    const currentProxy = GitHub.Proxy.getCurrentProxyService();
-    const repoOwner = currentProxy.includes("Royfor12") ? "Royfor12" : "CQUT-OpenProject";
-    const repoName = currentProxy.includes("CQUT-Course-Guide-Sharing-Scheme")
-      ? "CQUT-Course-Guide-Sharing-Scheme"
-      : "Repo-Viewer";
+    const { repoOwner, repoName } = getGithubConfig();
     const newSrc = `${proxy}/${repoOwner}/${repoName}@main/${directPath}`;
     logger.info("尝试使用JSDelivr加载图片:", newSrc);
     return newSrc;

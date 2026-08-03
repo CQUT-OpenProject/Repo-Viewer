@@ -57,12 +57,15 @@ const isFreshThemeData = (themeData: SavedThemeData): boolean =>
 
 const getInitialThemeState = (): { mode: PaletteMode; isAutoMode: boolean } => {
   const savedThemeData = readSavedThemeData();
-  if (savedThemeData !== null && isFreshThemeData(savedThemeData)) {
+  if (savedThemeData !== null) {
     const isAutoMode = savedThemeData.isAutoMode ?? true;
-    return {
-      mode: isAutoMode ? getSystemBasedMode() : savedThemeData.mode,
-      isAutoMode,
-    };
+    // 手动模式偏好应持久生效，不受过期时间限制
+    if (!isAutoMode && (savedThemeData.mode === "dark" || savedThemeData.mode === "light")) {
+      return { mode: savedThemeData.mode, isAutoMode };
+    }
+    if (isFreshThemeData(savedThemeData)) {
+      return { mode: getSystemBasedMode(), isAutoMode };
+    }
   }
 
   return {
