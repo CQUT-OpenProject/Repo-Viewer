@@ -27,6 +27,11 @@ let initializationAttempts = 0;
 const MAX_INIT_ATTEMPTS = 3;
 
 /**
+ * 进行中的初始化Promise，并发调用方共享同一次初始化。
+ */
+let initializationPromise: Promise<void> | null = null;
+
+/**
  * 判断当前是否可以使用主缓存。
  *
  * @returns 主缓存是否可用
@@ -38,7 +43,8 @@ export function isCacheAvailable(): boolean {
 /**
  * 确保缓存系统已初始化。
  *
- * 失败时会自动降级到内存缓存，最多尝试三次以避免无限重试。
+ * 并发调用共享同一次初始化；失败时自动降级到内存缓存并允许后续重试，
+ * 最多尝试 MAX_INIT_ATTEMPTS 次以避免无限重试。
  *
  * @returns Promise<void>
  */
@@ -47,6 +53,16 @@ export async function ensureCacheInitialized(): Promise<void> {
     return;
   }
 
+  if (initializationPromise === null) {
+    initializationPromise = initializeCache().finally(() => {
+      initializationPromise = null;
+    });
+  }
+
+  await initializationPromise;
+}
+
+async function initializeCache(): Promise<void> {
   if (initializationAttempts >= MAX_INIT_ATTEMPTS) {
     logger.warn("ContentCache: 已达到最大初始化尝试次数，使用内存降级缓存");
     cacheInitialized = true;
@@ -67,9 +83,6 @@ export async function ensureCacheInitialized(): Promise<void> {
       `ContentCache: 缓存系统初始化失败（尝试 ${initializationAttempts.toString()}/${MAX_INIT_ATTEMPTS.toString()}），使用内存降级缓存`,
       cause,
     );
-
-    cacheInitialized = true;
-    cacheAvailable = false;
 
     if (import.meta.env.DEV) {
       logger.error("缓存初始化失败详情:", cause);
