@@ -8,6 +8,9 @@ import {
 import { logger } from "@/utils/logging/logger";
 import type { PathManagementState } from "./types";
 
+/** 刷新期间导航锁定的最长持续时间，防止请求挂起时导航被永久忽略 */
+const REFRESH_LOCK_TIMEOUT = 5000;
+
 /**
  * 路径管理 Hook
  *
@@ -60,6 +63,7 @@ export function usePathManagement(branch: string): PathManagementState {
   const currentBranchRef = useRef<string>(branch);
   const isRefreshInProgressRef = useRef(false);
   const refreshTargetPathRef = useRef<string | null>(null);
+  const refreshLockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   currentPathRef.current = currentPath;
   currentBranchRef.current = branch;
 
@@ -161,7 +165,30 @@ export function usePathManagement(branch: string): PathManagementState {
 
   // 设置刷新状态（供其他 Hook 使用）
   const setRefreshState = (isRefreshing: boolean, targetPath?: string) => {
-    isRefreshInProgressRef.current = isRefreshing;
+    if (!isRefreshing) {
+      if (refreshLockTimeoutRef.current !== null) {
+        clearTimeout(refreshLockTimeoutRef.current);
+        refreshLockTimeoutRef.current = null;
+      }
+      isRefreshInProgressRef.current = false;
+      refreshTargetPathRef.current = targetPath ?? null;
+      return;
+    }
+
+    // 刷新请求可能挂起（fetch 无超时），加兜底解锁，避免导航被永久忽略
+    if (refreshLockTimeoutRef.current !== null) {
+      clearTimeout(refreshLockTimeoutRef.current);
+    }
+    refreshLockTimeoutRef.current = setTimeout(() => {
+      refreshLockTimeoutRef.current = null;
+      if (isRefreshInProgressRef.current) {
+        logger.warn("刷新路径锁定超时，自动解除");
+        isRefreshInProgressRef.current = false;
+        refreshTargetPathRef.current = null;
+      }
+    }, REFRESH_LOCK_TIMEOUT);
+
+    isRefreshInProgressRef.current = true;
     refreshTargetPathRef.current = targetPath ?? null;
   };
 
