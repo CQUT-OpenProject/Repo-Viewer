@@ -272,7 +272,24 @@ export class RequestBatcher {
     const retryOptions: RetryOptions = {
       maxRetries: this.maxRetries,
       backoff: (attempt) => Math.min(1000 * Math.pow(2, attempt), 5000), // 指数退避，最大5秒
-      shouldRetry: (error) => !isAbortError(error),
+      shouldRetry: (error) => {
+        if (isAbortError(error)) {
+          return false;
+        }
+        // 网络层错误（无状态码）或 5xx：可重试
+        const statusCode =
+          typeof error === "object" && error !== null && "statusCode" in error
+            ? (error as { statusCode?: unknown }).statusCode
+            : undefined;
+        if (typeof statusCode !== "number") {
+          return true;
+        }
+        if (statusCode >= 500) {
+          return true;
+        }
+        // 401 令牌失效（轮换后可能成功）、403/429 限流：可重试
+        return statusCode === 401 || statusCode === 403 || statusCode === 429;
+      },
       onRetry: (attempt, error) => {
         const errorMessage = error instanceof Error ? error.message : String(error);
         logger.warn(
