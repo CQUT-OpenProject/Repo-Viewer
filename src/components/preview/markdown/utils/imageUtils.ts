@@ -23,10 +23,20 @@ const getOriginFromUrl = (url: string): string | null => {
 };
 
 /**
+ * 将相对URL解析为绝对URL，与浏览器对<img src>的解析保持一致
+ */
+const resolveAgainstPageUrl = (url: string): string => {
+  try {
+    return new URL(url, window.location.href).href;
+  } catch {
+    return url;
+  }
+};
+
+/**
  * 图片加载状态接口
  */
 export interface ImageLoadingState {
-  loadedImages: Set<string>;
   failedImages: Set<string>;
   imageTimers: Map<string, number>;
 }
@@ -37,7 +47,6 @@ export interface ImageLoadingState {
  * @returns 初始化的图片加载状态
  */
 export const createImageLoadingState = (): ImageLoadingState => ({
-  loadedImages: new Set<string>(),
   failedImages: new Set<string>(),
   imageTimers: new Map<string, number>(),
 });
@@ -148,7 +157,7 @@ export const handleImageError = (
 
   // 清除超时计时器
   const timerId = imageState.imageTimers.get(imgSrc);
-  if (typeof timerId === "number") {
+  if (timerId !== undefined) {
     window.clearTimeout(timerId);
     imageState.imageTimers.delete(imgSrc);
   }
@@ -192,10 +201,8 @@ export const handleImageError = (
     logger.info("尝试使用直接URL加载:", directSrc);
     // 设置新的超时定时器
     const newTimerId = window.setTimeout(() => {
-      if (!imageState.loadedImages.has(directSrc) && !imageState.loadedImages.has(imgSrc)) {
-        imageState.failedImages.add(imgSrc);
-        setIsImageFailed(true);
-      }
+      imageState.failedImages.add(imgSrc);
+      setIsImageFailed(true);
     }, 15000); // 15秒超时
 
     imageState.imageTimers.set(directSrc, newTimerId);
@@ -208,17 +215,17 @@ export const handleImageError = (
     originalSrc.length > 0 &&
     !imageState.failedImages.has(originalSrc)
   ) {
-    logger.debug("尝试使用原始URL:", originalSrc);
+    // 相对路径会被浏览器解析为绝对URL，计时器键必须与之匹配才能在加载成功后清除
+    const resolvedOriginalSrc = resolveAgainstPageUrl(originalSrc);
+    logger.debug("尝试使用原始URL:", resolvedOriginalSrc);
     // 为原始URL设置超时计时器
     const newTimerId = window.setTimeout(() => {
-      if (!imageState.loadedImages.has(originalSrc) && !imageState.loadedImages.has(imgSrc)) {
-        imageState.failedImages.add(originalSrc);
-        setIsImageFailed(true);
-      }
+      imageState.failedImages.add(originalSrc);
+      setIsImageFailed(true);
     }, 15000); // 15秒超时
 
-    imageState.imageTimers.set(originalSrc, newTimerId);
-    return originalSrc;
+    imageState.imageTimers.set(resolvedOriginalSrc, newTimerId);
+    return resolvedOriginalSrc;
   } else {
     // 记录失败的图片
     if (imgSrc.length > 0) {
@@ -233,9 +240,9 @@ export const handleImageError = (
 /**
  * 处理图片加载成功
  *
- * 记录成功加载的图片，清除超时计时器。
+ * 清除超时计时器，避免已成功加载的回退图片被计时器误标失败。
  *
- * @param imgSrc - 图片URL
+ * @param imgSrc - 实际加载成功的图片URL（与计时器注册的键一致）
  * @param imageState - 图片加载状态对象
  * @param setIsImageLoaded - 设置加载成功状态的函数
  * @returns void
@@ -250,14 +257,13 @@ export const handleImageLoad = (
 
   logger.debug("图片加载成功:", imgSrc);
 
-  // 记录已加载的图片，以便主题切换时不再重复加载效果
+  // 记录已加载的图片
   if (imgSrc.length > 0) {
-    imageState.loadedImages.add(imgSrc);
     imageState.failedImages.delete(imgSrc);
 
     // 清除超时计时器
     const timerId = imageState.imageTimers.get(imgSrc);
-    if (typeof timerId === "number") {
+    if (timerId !== undefined) {
       window.clearTimeout(timerId);
       imageState.imageTimers.delete(imgSrc);
     }
