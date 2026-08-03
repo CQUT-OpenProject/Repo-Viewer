@@ -8,11 +8,6 @@ vi.mock("../../cache/CacheManager", () => ({
   },
 }));
 
-import {
-  ensureCacheInitialized,
-  isCacheAvailable,
-} from "./cacheState";
-
 describe("ensureCacheInitialized", () => {
   beforeEach(() => {
     vi.resetModules();
