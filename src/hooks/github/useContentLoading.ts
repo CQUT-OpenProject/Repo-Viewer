@@ -83,10 +83,11 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
         setError(null);
       }
 
+      const requestedPath = currentPathRef.current;
+      const requestedBranch = currentBranchRef.current;
+
       try {
         const sourceTracker: { value: ContentSource } = { value: "network" };
-        const requestedPath = currentPathRef.current;
-        const requestedBranch = currentBranchRef.current;
 
         // 使用 requestManager 自动处理请求取消和防抖
         const data = await requestManager.request(
@@ -155,7 +156,12 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
           setContents([]);
         }
       } finally {
-        if (shouldShowLoading) {
+        // 仅当仍是当前路径/分支时复位 loading，避免被取消的旧请求提前清除新请求的加载状态
+        if (
+          shouldShowLoading &&
+          currentPathRef.current === requestedPath &&
+          currentBranchRef.current === requestedBranch
+        ) {
           setLoading(false);
         }
       }
