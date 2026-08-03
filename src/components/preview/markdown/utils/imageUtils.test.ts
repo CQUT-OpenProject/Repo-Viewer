@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createImageLoadingState, handleImageError } from "./imageUtils";
+import { createImageLoadingState, handleImageError, tryDirectImageLoad } from "./imageUtils";
 
 const markProxyServiceFailedMock = vi.fn();
 const getCurrentProxyServiceMock = vi.fn();
@@ -13,14 +13,35 @@ vi.mock("@/services/github", () => ({
   },
 }));
 
+const getGithubConfigMock = vi.fn();
+vi.mock("@/config", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/config")>();
+  return {
+    ...actual,
+    getGithubConfig: () => getGithubConfigMock(),
+  };
+});
+
 const PROXIED_SRC = "https://gh-proxy.com/https://raw.githubusercontent.com/o/r/main/img.png";
 
 beforeEach(() => {
   markProxyServiceFailedMock.mockReset();
   getCurrentProxyServiceMock.mockReset();
+  getGithubConfigMock.mockReset();
+  getGithubConfigMock.mockReturnValue({ repoOwner: "CQUT-OpenProject", repoName: "Repo-Viewer" });
   vi.stubGlobal("window", {
     setTimeout: (fn: () => void) => setTimeout(fn, 0) as unknown as number,
     clearTimeout: (id: number) => clearTimeout(id as unknown as NodeJS.Timeout),
+  });
+});
+
+describe("tryDirectImageLoad", () => {
+  it("builds the jsDelivr URL from the configured repository", () => {
+    getGithubConfigMock.mockReturnValue({ repoOwner: "Royfor12", repoName: "Repo-Viewer" });
+
+    const result = tryDirectImageLoad(PROXIED_SRC);
+
+    expect(result).toBe("https://cdn.jsdelivr.net/gh/Royfor12/Repo-Viewer@main/img.png");
   });
 });
 
