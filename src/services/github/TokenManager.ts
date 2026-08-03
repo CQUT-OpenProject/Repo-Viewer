@@ -9,7 +9,6 @@ interface TokenState {
   token: string;
   rateLimitRemaining: number;
   rateLimitReset: number;
-  lastUsed: number;
   failureCount: number;
   lastFailure: number;
 }
@@ -19,7 +18,6 @@ interface TokenState {
  */
 export class GitHubTokenManager {
   private readonly rotator = new TokenRotator();
-  private usageCount = new Map<string, number>();
   private tokenStates = new Map<string, TokenState>();
   private static readonly BACKOFF_DURATION = 300000;
   private static readonly MIN_RATE_LIMIT = 10;
@@ -76,21 +74,11 @@ export class GitHubTokenManager {
     return this.rotator.getNextToken();
   }
 
-  public markTokenUsed(token: string): void {
-    const count = this.usageCount.get(token) ?? 0;
-    this.usageCount.set(token, count + 1);
-    if (count > 30) {
-      this.usageCount.set(token, 0);
-      this.getNextToken();
-    }
-  }
-
   public markTokenFailed(token: string): string {
     const state = this.tokenStates.get(token) ?? {
       token,
       rateLimitRemaining: 0,
       rateLimitReset: 0,
-      lastUsed: 0,
       failureCount: 0,
       lastFailure: 0,
     };
@@ -172,14 +160,12 @@ export class GitHubTokenManager {
       token,
       rateLimitRemaining: 5000,
       rateLimitReset: 0,
-      lastUsed: 0,
       failureCount: 0,
       lastFailure: 0,
     };
 
     state.rateLimitRemaining = remaining;
     state.rateLimitReset = reset;
-    state.lastUsed = Date.now();
     this.tokenStates.set(token, state);
 
     logger.debug(
@@ -188,11 +174,7 @@ export class GitHubTokenManager {
   }
 
   public getGitHubPAT(): string {
-    const token = this.selectBestToken();
-    if (token !== "") {
-      this.markTokenUsed(token);
-    }
-    return token;
+    return this.selectBestToken();
   }
 
   public handleApiError(error: Response): void {
