@@ -13,7 +13,7 @@ import { createAbortError, isAbortError } from "@/utils/network/abort";
 
 import { GITHUB_API_BASE, GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "../Config";
 import { getForceServerProxy } from "../../config/ProxyForceManager";
-import { getAuthHeaders } from "../Auth";
+import { getAuthHeaders, handleApiError } from "../Auth";
 
 /**
  * Git 树节点项接口
@@ -101,7 +101,7 @@ async function fetchBranchHeadShaDirectly(
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status.toString()}: ${response.statusText}`);
+    throw handleApiError(response, apiUrl);
   }
 
   const data = (await response.json()) as GitRefResponse;
@@ -156,7 +156,7 @@ async function fetchTreeDirectly(
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status.toString()}: ${response.statusText}`);
+    throw handleApiError(response, apiUrl);
   }
 
   const data = (await response.json()) as { tree?: GitTreeItem[] };

@@ -11,7 +11,7 @@ import {
   filterAndNormalizeGitHubContents,
   transformGitHubContentsResponse,
 } from "../../schemas/dataTransformers";
-import { getAuthHeaders } from "../Auth";
+import { getAuthHeaders, handleApiError } from "../Auth";
 import { getApiUrl, getCurrentBranch } from "../Config";
 import { getCurrentProxyService } from "../../proxy/ProxyService";
 import { ProxyUrlTransformer } from "../../proxy/ProxyUrlTransformer";
@@ -121,7 +121,7 @@ export async function getContents(
           const result = await fetch(apiUrl, requestInit);
 
           if (!result.ok) {
-            throw new Error(`HTTP ${result.status.toString()}: ${result.statusText}`);
+            throw handleApiError(result, apiUrl);
           }
 
           const json: unknown = await result.json();
@@ -197,7 +197,7 @@ export async function getFileContent(fileUrl: string, signal?: AbortSignal): Pro
     const fetchTextByUrl = async (targetUrl: string): Promise<string> => {
       const response = await fetch(targetUrl, { signal });
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status.toString()}: ${response.statusText}`);
+        throw handleApiError(response, targetUrl);
       }
       return response.text();
     };
