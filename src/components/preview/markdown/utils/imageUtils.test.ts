@@ -1,5 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createImageLoadingState, handleImageError, tryDirectImageLoad } from "./imageUtils";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  createImageLoadingState,
+  handleImageError,
+  handleImageLoad,
+  tryDirectImageLoad,
+} from "./imageUtils";
 
 const markProxyServiceFailedMock = vi.fn();
 const getCurrentProxyServiceMock = vi.fn();
@@ -83,5 +88,72 @@ describe("handleImageError", () => {
     );
 
     expect(result).toBe("https://raw.example.com/img.png");
+  });
+
+  describe("fallback load that succeeds", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+      vi.stubGlobal("window", {
+        setTimeout: (fn: () => void, ms?: number) => setTimeout(fn, ms ?? 0) as unknown as number,
+        clearTimeout: (id: number) => clearTimeout(id as unknown as NodeJS.Timeout),
+      });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("does not mark failure when the jsDelivr fallback loads", () => {
+      getCurrentProxyServiceMock.mockReturnValue("https://gh-proxy.com");
+      const imageState = createImageLoadingState();
+      const setIsImageFailed = vi.fn();
+
+      const directSrc = handleImageError(PROXIED_SRC, PROXIED_SRC, imageState, setIsImageFailed);
+      expect(directSrc).toContain("cdn.jsdelivr.net/gh");
+
+      // MarkdownImage reports the load using the key it put in the <img> (the proxied src)
+      handleImageLoad(PROXIED_SRC, imageState, vi.fn());
+
+      vi.advanceTimersByTime(16_000);
+
+      expect(setIsImageFailed).not.toHaveBeenCalledWith(true);
+      expect(imageState.failedImages.has(PROXIED_SRC)).toBe(false);
+    });
+
+    it("does not mark failure when the original src fallback loads", () => {
+      getCurrentProxyServiceMock.mockReturnValue("https://gh-proxy.com");
+      const imageState = createImageLoadingState();
+      const setIsImageFailed = vi.fn();
+
+      const originalSrc = "https://raw.example.com/img.png";
+      const result = handleImageError(
+        "https://proxy.example.com/x.png",
+        originalSrc,
+        imageState,
+        setIsImageFailed,
+      );
+      expect(result).toBe(originalSrc);
+
+      // The <img> still reports onLoad under the proxied key while displaying originalSrc
+      handleImageLoad("https://proxy.example.com/x.png", imageState, vi.fn());
+
+      vi.advanceTimersByTime(16_000);
+
+      expect(setIsImageFailed).not.toHaveBeenCalledWith(true);
+      expect(imageState.failedImages.has("https://proxy.example.com/x.png")).toBe(false);
+    });
+
+    it("still marks failure when the fallback never loads", () => {
+      getCurrentProxyServiceMock.mockReturnValue("https://gh-proxy.com");
+      const imageState = createImageLoadingState();
+      const setIsImageFailed = vi.fn();
+
+      handleImageError(PROXIED_SRC, PROXIED_SRC, imageState, setIsImageFailed);
+
+      vi.advanceTimersByTime(16_000);
+
+      expect(setIsImageFailed).toHaveBeenCalledWith(true);
+      expect(imageState.failedImages.has(PROXIED_SRC)).toBe(true);
+    });
   });
 });

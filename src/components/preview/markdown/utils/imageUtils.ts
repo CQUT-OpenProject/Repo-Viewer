@@ -192,7 +192,7 @@ export const handleImageError = (
     logger.info("尝试使用直接URL加载:", directSrc);
     // 设置新的超时定时器
     const newTimerId = window.setTimeout(() => {
-      if (!imageState.loadedImages.has(directSrc)) {
+      if (!imageState.loadedImages.has(directSrc) && !imageState.loadedImages.has(imgSrc)) {
         imageState.failedImages.add(imgSrc);
         setIsImageFailed(true);
       }
@@ -211,7 +211,7 @@ export const handleImageError = (
     logger.debug("尝试使用原始URL:", originalSrc);
     // 为原始URL设置超时计时器
     const newTimerId = window.setTimeout(() => {
-      if (!imageState.loadedImages.has(originalSrc)) {
+      if (!imageState.loadedImages.has(originalSrc) && !imageState.loadedImages.has(imgSrc)) {
         imageState.failedImages.add(originalSrc);
         setIsImageFailed(true);
       }
