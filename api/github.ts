@@ -706,8 +706,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       const branchToUse = branchOverride ?? (repoBranch.length > 0 ? repoBranch : "main");
       const encodedBranch = encodeURIComponent(branchToUse);
 
-      // 处理空路径
-      const pathSegment = path === "" ? "" : `/${path}`;
+      // 目录路径需段级编码（与直连路径 getApiUrl 及 getFileContent 保持一致），
+      // 否则含空格/中文等特殊字符的目录在代理模式下无法访问
+      const encodedPath = encodePathSegments(path);
+      const pathSegment = path === "" ? "" : `/${encodedPath}`;
       const apiPath = `/repos/${repoOwner}/${repoName}/contents${pathSegment}?ref=${encodedBranch}`;
 
       try {

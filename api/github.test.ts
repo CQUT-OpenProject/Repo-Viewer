@@ -157,6 +157,34 @@ describe("api/github handler security hardening", () => {
     expect(Buffer.isBuffer(state.sentBody)).toBe(true);
   });
 
+  it("encodes special characters in the getContents directory path", async () => {
+    const handler = await loadHandler();
+    const { res, state } = createMockRes();
+
+    mockedAxiosGet.mockResolvedValueOnce({
+      data: [{ name: "a.md" }],
+      headers: {},
+    } as never);
+
+    await handler(
+      {
+        query: {
+          action: "getContents",
+          path: "docs 文档",
+          branch: "main",
+        },
+      },
+      res,
+    );
+
+    expect(state.statusCode).toBe(200);
+    expect(mockedAxiosGet).toHaveBeenCalledTimes(1);
+    const [calledUrl] = mockedAxiosGet.mock.calls[0] ?? [];
+    expect(calledUrl).toBe(
+      `https://api.github.com/repos/test-owner/test-repo/contents/docs%20%E6%96%87%E6%A1%A3?ref=main`,
+    );
+  });
+
   it("rejects getGitHubAsset non-https url", async () => {
     const handler = await loadHandler();
     const { res, state } = createMockRes();
