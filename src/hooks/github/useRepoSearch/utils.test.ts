@@ -121,6 +121,20 @@ describe("useRepoSearch utils", () => {
     expect(byDefaultBranch.effectiveBranches).toEqual(["main"]);
   });
 
+  it("currentBranch 已失效（不在可用分支中）时回退到默认分支", () => {
+    const context = createBranchContext(["main"]);
+
+    const result = resolveBranchSelection({
+      selectionMode: "auto",
+      manualBranches: [],
+      currentBranch: "deleted-branch",
+      defaultBranch: "main",
+      ...context,
+    });
+
+    expect(result.effectiveBranches).toEqual(["main"]);
+  });
+
   it("默认分支的同名文件以 Code Search 结果优先去重", () => {
     const result = mergeSearchResults(
       [codeItem("src/util.ts")],
