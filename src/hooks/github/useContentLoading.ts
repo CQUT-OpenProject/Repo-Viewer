@@ -85,12 +85,14 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
 
       try {
         const sourceTracker: { value: ContentSource } = { value: "network" };
+        const requestedPath = currentPathRef.current;
+        const requestedBranch = currentBranchRef.current;
 
         // 使用 requestManager 自动处理请求取消和防抖
         const data = await requestManager.request(
           "github-contents",
           (signal) =>
-            GitHub.Content.getContents(currentPathRef.current, signal, {
+            GitHub.Content.getContents(requestedPath, signal, {
               forceRefresh,
               onSource: (source) => {
                 sourceTracker.value = source;
@@ -98,6 +100,15 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
             }),
           { debounce: forceRefresh ? 0 : 100 },
         );
+
+        // 请求期间路径或分支已变化，丢弃过期响应，避免旧数据覆盖新路径
+        if (
+          currentPathRef.current !== requestedPath ||
+          currentBranchRef.current !== requestedBranch
+        ) {
+          logger.debug("路径或分支已变化，丢弃过期响应");
+          return;
+        }
 
         const filteredData = filterContents(data);
         const nextSignature = buildContentsSignature(filteredData);
