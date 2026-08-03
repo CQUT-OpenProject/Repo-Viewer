@@ -38,6 +38,7 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
   const lastSignatureRef = useRef<string>("");
   const forceRefreshRef = useRef<boolean>(false);
   const revalidateKeyRef = useRef<string | null>(null);
+  const skippedByThemeRef = useRef<boolean>(false);
 
   const buildContentsSignature = React.useCallback((data: GitHubContent[]): string => {
     if (data.length === 0) {
@@ -173,6 +174,7 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
   useEffect(() => {
     // 主题切换期间跳过内容重新加载
     if (isThemeChangingRef.current) {
+      skippedByThemeRef.current = true;
       logger.debug("主题切换中，跳过内容重新加载");
       return;
     }
@@ -182,6 +184,21 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
 
     void loadContents({ forceRefresh: shouldForceRefresh });
   }, [path, branch, refreshTrigger, loadContents, isThemeChangingRef]);
+
+  // 主题切换期间跳过的加载在切换结束后补跑，避免内容停留在旧路径
+  useEffect(() => {
+    const handleThemeChanged = (): void => {
+      if (skippedByThemeRef.current) {
+        skippedByThemeRef.current = false;
+        setRefreshTrigger((prev) => prev + 1);
+      }
+    };
+
+    window.addEventListener("theme:changed", handleThemeChanged);
+    return () => {
+      window.removeEventListener("theme:changed", handleThemeChanged);
+    };
+  }, []);
 
   const refresh = () => {
     forceRefreshRef.current = true;
