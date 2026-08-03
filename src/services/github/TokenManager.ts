@@ -208,6 +208,16 @@ export class GitHubTokenManager {
     if (error.status === 429) {
       if (currentToken !== "") {
         logger.warn(`令牌请求频率限制，尝试使用下一个令牌`);
+
+        // 无限速响应头时无法记录配额，将剩余配额置 0，避免 selectBestToken 再次选中该 token
+        const remaining = remainingHeader !== null ? parseInt(remainingHeader, 10) : 0;
+        const reset = resetHeader !== null ? parseInt(resetHeader, 10) : 0;
+        this.updateTokenRateLimit(
+          currentToken,
+          isNaN(remaining) ? 0 : remaining,
+          isNaN(reset) ? 0 : reset,
+        );
+
         this.getNextToken();
       }
     }
