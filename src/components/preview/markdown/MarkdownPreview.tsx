@@ -148,7 +148,7 @@ const MarkdownPreview = ({
         observerRef.current.disconnect();
       }
     };
-  }, [isLazyLoadEnabled, shouldRender]);
+  }, [isLazyLoadEnabled, shouldRender, hasReadmeContent]);
 
   // 监听主题切换事件
   useEffect(() => {
