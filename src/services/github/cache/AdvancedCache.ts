@@ -47,10 +47,6 @@ export class AdvancedCache<K extends string, V> {
 
     this.dbName = buildDbName(this.config.storageKey);
 
-    if (this.config.enablePersistence) {
-      void this.initializePersistence();
-    }
-
     this.startPeriodicCleanup();
   }
 
