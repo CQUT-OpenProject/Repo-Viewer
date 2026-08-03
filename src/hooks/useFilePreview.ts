@@ -274,7 +274,7 @@ export const useFilePreview = (
   };
 
   useEffect(() => {
-    const handlePopState = (): void => {
+    const handlePopState = (event: PopStateEvent): void => {
       if (isHandlingNavigationRef.current) {
         return;
       }
@@ -282,7 +282,9 @@ export const useFilePreview = (
       try {
         const hasActivePreview = hasActivePreviewRef.current;
         const urlHasPreview = hasPreviewParam();
-        const previewPath = getPreviewFromUrl();
+        // history.state 中保存完整预览路径，优先使用以避免重名文件歧义
+        const statePreview = (event.state as { preview?: string } | null)?.preview;
+        const previewPath = statePreview?.split("/").pop() ?? getPreviewFromUrl();
 
         if (hasActivePreview && !urlHasPreview) {
           cancelActivePreviewRequest();
@@ -305,7 +307,8 @@ export const useFilePreview = (
               !(currentPreviewPath?.endsWith(`/${previewPath}`) ?? false))
           ) {
             if (findFileItemByPath !== undefined) {
-              const fileItem = findFileItemByPath(previewPath);
+              // state 中完整路径优先，hash 仅文件名时回退到文件名匹配
+              const fileItem = findFileItemByPath(statePreview ?? previewPath);
               if (fileItem !== undefined) {
                 currentPreviewItemRef.current = fileItem;
                 void selectFile(fileItem, "history");
