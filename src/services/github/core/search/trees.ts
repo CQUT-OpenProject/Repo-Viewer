@@ -49,6 +49,7 @@ const TREE_CACHE_MAX_SIZE = 24;
 const branchTreeCache = new SmartCache<string, CachedBranchTree>({
   maxSize: TREE_CACHE_MAX_SIZE,
   ttl: TREE_CACHE_TTL,
+  ttlMode: "sliding",
   cleanupThreshold: 0.75,
   cleanupRatio: 0.25,
 });
