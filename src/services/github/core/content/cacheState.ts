@@ -53,11 +53,9 @@ export async function ensureCacheInitialized(): Promise<void> {
     return;
   }
 
-  if (initializationPromise === null) {
-    initializationPromise = initializeCache().finally(() => {
-      initializationPromise = null;
-    });
-  }
+  initializationPromise ??= initializeCache().finally(() => {
+    initializationPromise = null;
+  });
 
   await initializationPromise;
 }

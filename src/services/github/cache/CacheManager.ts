@@ -18,11 +18,9 @@ class CacheManagerImpl {
       return Promise.resolve();
     }
 
-    if (this.initializationPromise === null) {
-      this.initializationPromise = this.initializeImpl().finally(() => {
-        this.initializationPromise = null;
-      });
-    }
+    this.initializationPromise ??= this.initializeImpl().finally(() => {
+      this.initializationPromise = null;
+    });
 
     return this.initializationPromise;
   }
