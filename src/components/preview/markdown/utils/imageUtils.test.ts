@@ -75,7 +75,12 @@ describe("handleImageError", () => {
     const imageState = createImageLoadingState();
     const setIsImageFailed = vi.fn();
 
-    const result = handleImageError("https://proxy.example.com/x.png", "https://raw.example.com/img.png", imageState, setIsImageFailed);
+    const result = handleImageError(
+      "https://proxy.example.com/x.png",
+      "https://raw.example.com/img.png",
+      imageState,
+      setIsImageFailed,
+    );
 
     expect(result).toBe("https://raw.example.com/img.png");
   });

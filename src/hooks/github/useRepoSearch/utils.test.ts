@@ -31,14 +31,15 @@ const codeItem = (path: string): RepoSearchCodeItem => ({
   source: "code-search",
 });
 
-const treesItem = (path: string, branch: string): RepoSearchApiItem => ({
-  path,
-  name: path.split("/").pop() ?? path,
-  sha: `${branch}-sha`,
-  type: "file",
-  source: "github-api",
-  branch,
-} as RepoSearchApiItem);
+const treesItem = (path: string, branch: string): RepoSearchApiItem =>
+  ({
+    path,
+    name: path.split("/").pop() ?? path,
+    sha: `${branch}-sha`,
+    type: "file",
+    source: "github-api",
+    branch,
+  }) as RepoSearchApiItem;
 
 describe("useRepoSearch utils", () => {
   it("auto 模式会跟随 currentBranch 变化", () => {
@@ -143,7 +144,11 @@ describe("useRepoSearch utils", () => {
   });
 
   it("无 Code Search 结果时保留全部 Trees 结果", () => {
-    const result = mergeSearchResults([], [treesItem("a.ts", "main"), treesItem("b.ts", "main")], "main");
+    const result = mergeSearchResults(
+      [],
+      [treesItem("a.ts", "main"), treesItem("b.ts", "main")],
+      "main",
+    );
 
     expect(result).toHaveLength(2);
   });
