@@ -1,6 +1,6 @@
 import { logger } from "@/utils/logging/logger";
-import type { CacheConfig, CacheStats, CacheItemMeta } from "./CacheTypes";
-import { calculateTTL, estimateSize } from "./CacheUtils";
+import type { CacheConfig, CacheItemMeta } from "./CacheTypes";
+import { calculateTTL } from "./CacheUtils";
 import {
   buildDbName,
   clearIndexedDB,
@@ -29,22 +29,12 @@ import { LRUCache } from "./LRUCache";
 export class AdvancedCache<K extends string, V> {
   private readonly cache: LRUCache<K>;
   private readonly config: CacheConfig;
-  private readonly stats: CacheStats;
   private readonly dbName: string;
   private db: IDBDatabase | null = null;
 
   constructor(config: CacheConfig) {
     this.cache = new LRUCache<K>(config.maxSize);
     this.config = { ...config };
-    this.stats = {
-      hits: 0,
-      misses: 0,
-      size: 0,
-      hitRate: 0,
-      memoryUsage: 0,
-      lastCleanup: Date.now(),
-    };
-
     this.dbName = buildDbName(this.config.storageKey);
 
     this.startPeriodicCleanup();
@@ -112,8 +102,6 @@ export class AdvancedCache<K extends string, V> {
     }
 
     if (item === undefined) {
-      this.stats.misses++;
-      this.updateHitRate();
       return undefined;
     }
 
@@ -122,8 +110,6 @@ export class AdvancedCache<K extends string, V> {
 
     if (now - item.timestamp > ttl) {
       await this.delete(key);
-      this.stats.misses++;
-      this.updateHitRate();
       return undefined;
     }
 
@@ -138,8 +124,6 @@ export class AdvancedCache<K extends string, V> {
       });
     }
 
-    this.stats.hits++;
-    this.updateHitRate();
     return item.value as V;
   }
 
@@ -156,19 +140,15 @@ export class AdvancedCache<K extends string, V> {
     const now = Date.now();
     const keyStr = key;
     await this.checkMemoryPressureAndCleanup();
-    const size = estimateSize(value);
 
     const item: CacheItemMeta = {
       value,
       timestamp: now,
       accessCount: 1,
       lastAccess: now,
-      size,
     };
 
     this.cache.set(key, item);
-    this.stats.size = this.cache.size;
-    this.updateMemoryUsage();
 
     if (this.config.enablePersistence) {
       this.saveItemToPersistence(keyStr, item).catch((error: unknown) => {
@@ -233,8 +213,6 @@ export class AdvancedCache<K extends string, V> {
     const keyStr = key;
     const result = this.cache.delete(key);
     if (result) {
-      this.stats.size = this.cache.size;
-      this.updateMemoryUsage();
       if (this.config.enablePersistence) {
         await this.deleteItemFromPersistence(keyStr).catch((error: unknown) => {
           logger.warn("从持久化存储删除缓存项失败", error);
@@ -253,11 +231,6 @@ export class AdvancedCache<K extends string, V> {
    */
   async clear(): Promise<void> {
     this.cache.clear();
-    this.stats.size = 0;
-    this.stats.hits = 0;
-    this.stats.misses = 0;
-    this.updateMemoryUsage();
-    this.updateHitRate();
 
     if (this.config.enablePersistence) {
       await this.clearPersistence().catch((error: unknown) => {
@@ -273,19 +246,6 @@ export class AdvancedCache<K extends string, V> {
    */
   size(): number {
     return this.cache.size;
-  }
-
-  private updateHitRate(): void {
-    const total = this.stats.hits + this.stats.misses;
-    this.stats.hitRate = total > 0 ? this.stats.hits / total : 0;
-  }
-
-  private updateMemoryUsage(): void {
-    let totalSize = 0;
-    this.cache.forEach((item) => {
-      totalSize += item.size;
-    });
-    this.stats.memoryUsage = totalSize;
   }
 
   /**
@@ -345,8 +305,6 @@ export class AdvancedCache<K extends string, V> {
     if (this.config.enablePersistence && this.config.useIndexedDB && this.db !== null) {
       await this.cleanupExpiredPersistenceEntries();
     }
-
-    this.stats.lastCleanup = now;
 
     if (expiredKeys.length > 0) {
       logger.debug(`定期清理：删除了${expiredKeys.length.toString()}个过期缓存项`);
@@ -427,8 +385,6 @@ export class AdvancedCache<K extends string, V> {
           logger.debug(`加载缓存项失败: ${entry.key}`, error);
         }
       });
-      this.stats.size = this.cache.size;
-      this.updateMemoryUsage();
       logger.debug(`从IndexedDB恢复缓存: ${loadedCount.toString()}项 (${this.config.storageKey})`);
     } catch (error: unknown) {
       logger.debug("从IndexedDB加载失败", error);
@@ -475,8 +431,6 @@ export class AdvancedCache<K extends string, V> {
         }
       }
 
-      this.stats.size = this.cache.size;
-      this.updateMemoryUsage();
       logger.debug(
         `从localStorage恢复缓存: ${loadedCount.toString()}项 (${this.config.storageKey})`,
       );

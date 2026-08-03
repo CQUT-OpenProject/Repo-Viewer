@@ -23,18 +23,6 @@ export interface CacheConfig {
 }
 
 /**
- * 缓存统计接口
- */
-export interface CacheStats {
-  hits: number;
-  misses: number;
-  size: number;
-  hitRate: number;
-  memoryUsage: number;
-  lastCleanup: number;
-}
-
-/**
  * 缓存项元数据接口
  */
 export interface CacheItemMeta {
@@ -42,5 +30,4 @@ export interface CacheItemMeta {
   timestamp: number;
   accessCount: number;
   lastAccess: number;
-  size: number;
 }

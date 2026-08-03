@@ -41,6 +41,13 @@ export function isCacheAvailable(): boolean {
 }
 
 /**
+ * 清空内存降级缓存，供清缓存操作调用。
+ */
+export function clearFallbackCache(): void {
+  fallbackCache.clear();
+}
+
+/**
  * 确保缓存系统已初始化。
  *
  * 并发调用共享同一次初始化；失败时自动降级到内存缓存并允许后续重试，
