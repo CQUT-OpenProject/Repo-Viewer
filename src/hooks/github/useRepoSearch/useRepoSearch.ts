@@ -28,6 +28,7 @@ import type {
   UseRepoSearchOptions,
 } from "./types";
 import {
+  mergeSearchResults,
   normalizeSearchError,
   resolveBranchSelection,
   sanitizeBranchList,
@@ -290,11 +291,11 @@ export function useRepoSearch({
           throw codeSearchError;
         }
 
-        const seenPaths = new Set(codeItems.map((item) => item.path));
-        const items: RepoSearchItem[] = [
-          ...codeItems,
-          ...treesItems.filter((item) => !seenPaths.has(item.path)),
-        ];
+        const items: RepoSearchItem[] = mergeSearchResults(
+          codeItems,
+          treesItems,
+          trimmedDefaultBranch,
+        );
 
         return {
           mode: useCodeSearch ? "aggregated" : "github-api",
