@@ -225,7 +225,10 @@ export async function getBranchTree(
   )
     .then((tree) => {
       throwIfAborted(signal);
-      branchTreeCache.set(cacheKey, { tree });
+      // 仅缓存有效结果；malformed 响应（无 tree 数组）不缓存，避免暂时性故障被持久化为空搜索
+      if (tree !== null) {
+        branchTreeCache.set(cacheKey, { tree });
+      }
       return tree;
     })
     .catch((error: unknown) => {
