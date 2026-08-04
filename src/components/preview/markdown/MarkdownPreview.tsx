@@ -48,6 +48,7 @@ const MarkdownPreview = ({
   previewingItem,
   lazyLoad = true,
   currentBranch,
+  withTopMargin = true,
   onInternalLinkClick,
   onRenderComplete,
 }: ExtendedMarkdownPreviewProps) => {
@@ -225,7 +226,7 @@ const MarkdownPreview = ({
   };
 
   if (loadingReadme) {
-    return <MarkdownPreviewSkeleton isSmallScreen={isSmallScreen} />;
+    return <MarkdownPreviewSkeleton isSmallScreen={isSmallScreen} withTopMargin={withTopMargin} />;
   }
 
   if (!hasReadmeContent) {
@@ -241,7 +242,7 @@ const MarkdownPreview = ({
         square
         elevation={0}
         className={isThemeChanging ? "theme-transition-katex" : ""}
-        sx={createMarkdownStyles(theme, latexCount, isSmallScreen)}
+        sx={createMarkdownStyles(theme, latexCount, isSmallScreen, withTopMargin)}
       >
         {shouldRender && !isThemeChanging && (
           <Box

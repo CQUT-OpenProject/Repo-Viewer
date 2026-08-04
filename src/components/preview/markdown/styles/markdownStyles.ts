@@ -21,6 +21,7 @@ export const createMarkdownStyles = (
   theme: Theme,
   latexCount: number,
   isSmallScreen = false,
+  withTopMargin = true,
 ): SxProps<Theme> => {
   const containerBorderRadius = responsiveG3Styles.readmeContainer(isSmallScreen);
   const isDark = theme.palette.mode === "dark";
@@ -44,7 +45,7 @@ export const createMarkdownStyles = (
     position: "relative",
     py: { xs: 2.5, sm: 3 },
     px: { xs: 2.5, sm: 4 },
-    mt: 2,
+    ...(withTopMargin ? { mt: 2 } : {}),
     mb: 3,
     borderRadius: containerBorderRadius,
     bgcolor: "background.paper",

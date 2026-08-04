@@ -18,6 +18,7 @@ import type { FC, ReactNode, RefObject } from "react";
 import type { NavigationDirection } from "@/contexts/unified";
 import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 import PreviewCloseButton, { navigationActionButtonSize } from "@/components/ui/PreviewCloseButton";
+import { contentSectionSpacing } from "@/components/layout/hooks";
 
 /**
  * 面包屑导航组件属性接口
@@ -120,7 +121,7 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
     <Box
       ref={breadcrumbsContainerRef}
       sx={{
-        mb: compact ? 0 : { xs: 1.5, sm: 2.25 },
+        mb: compact ? 0 : contentSectionSpacing,
         position: "relative",
         display: "flex",
         alignItems: "center",

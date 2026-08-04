@@ -1,3 +1,3 @@
 export { useImageNavigation } from "./useImageNavigation";
-export { useBreadcrumbLayout } from "./useBreadcrumbLayout";
+export { useBreadcrumbLayout, contentSectionSpacing } from "./useBreadcrumbLayout";
 export { usePreviewFromUrl } from "./usePreviewFromUrl";

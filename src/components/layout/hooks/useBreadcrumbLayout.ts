@@ -2,6 +2,9 @@ import { useMemo, useRef } from "react";
 import type { RefObject } from "react";
 import type { BreadcrumbSegment } from "@/types";
 
+/** 主内容区区块间距（面包屑→列表、列表→README 等） */
+export const contentSectionSpacing = { xs: 1.5, sm: 2.25 };
+
 interface UseBreadcrumbLayoutOptions {
   breadcrumbSegments: BreadcrumbSegment[];
   isSmallScreen: boolean;

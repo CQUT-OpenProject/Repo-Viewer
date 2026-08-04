@@ -36,10 +36,9 @@ interface FilePreviewOverlayProps extends FilePreviewBaseProps {
 type FilePreviewProps = FilePreviewPageProps | FilePreviewOverlayProps;
 
 const previewAnimation: Variants = {
-  hidden: { opacity: 0, marginTop: 16 },
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    marginTop: 0,
     transition: {
       duration: 0.18,
       ease: [0.4, 0, 0.2, 1] as const,
@@ -48,10 +47,9 @@ const previewAnimation: Variants = {
 };
 
 const reducedMotionPreviewAnimation: Variants = {
-  hidden: { opacity: 1, marginTop: 0 },
+  hidden: { opacity: 1 },
   visible: {
     opacity: 1,
-    marginTop: 0,
     transition: { duration: 0 },
   },
 };
@@ -163,6 +161,7 @@ const FilePreview: React.FC<FilePreviewProps> = (props) => {
               lazyLoad={false}
               currentBranch={currentBranch}
               onClose={onClose}
+              withTopMargin={false}
             />
           ) : null}
 
