@@ -140,7 +140,8 @@
       "back": {
         "tooltip": {
           "canGoUp": "上の階層に戻る",
-          "atRoot": "ルートディレクトリにいます"
+          "atRoot": "ルートディレクトリにいます",
+          "closePreview": "プレビューを閉じる"
         },
         "aria": "上の階層に戻る"
       },
@@ -152,7 +153,6 @@
       }
     },
     "markdown": {
-      "closePreview": "プレビューを閉じる",
       "copy": {
         "button": "コードをコピー",
         "copied": "コピーしました",
@@ -182,7 +182,6 @@
       "downloadedWithProgress": "@@loaded@@ / @@total@@ (@@percent@@%) をダウンロード済み"
     },
     "text": {
-      "closePreview": "プレビューを閉じる",
       "title": "テキストプレビュー",
       "viewOnGitHub": "GitHub で表示",
       "enableWrap": "自動折り返しを有効化",

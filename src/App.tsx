@@ -177,6 +177,8 @@ const App = () => {
                       sx={{
                         flexGrow: 1,
                         overflow: "hidden",
+                        // 让 horizontal Collapse 的 wrapperInner 撑满，面包屑行与未上移时一致
+                        "& .MuiCollapse-wrapperInner": { flexGrow: 1, minWidth: 0 },
                       }}
                     >
                       <Box

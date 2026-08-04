@@ -12,6 +12,7 @@ import {
   HomeRounded as HomeIcon,
   ChevronRight as ChevronRightIcon,
   ArrowBack as ArrowBackIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import { useI18n } from "@/contexts/I18nContext";
 import type { FC, ReactNode, RefObject } from "react";
@@ -29,6 +30,8 @@ interface BreadcrumbNavigationProps {
   breadcrumbsContainerRef: RefObject<HTMLDivElement | null>;
   compact?: boolean; // 紧凑模式，用于顶部栏
   showBackButton?: boolean;
+  /** 提供时返回按钮改为调用此回调（如预览模式下关闭预览） */
+  onBack?: () => void;
 }
 
 /**
@@ -49,12 +52,19 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
   breadcrumbsContainerRef,
   compact = false,
   showBackButton = true,
+  onBack,
 }) => {
   const theme = useTheme();
   const { t } = useI18n();
 
   // 处理返回上一级
   const handleGoUp = (): void => {
+    // 预览模式下返回按钮仅关闭预览，不导航
+    if (typeof onBack === "function") {
+      onBack();
+      return;
+    }
+
     // 如果只有Home或者当前已经在Home，不执行操作
     if (breadcrumbSegments.length <= 1) {
       return;
@@ -73,7 +83,10 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
   };
 
   // 检查是否有上级目录可返回
-  const canGoUp = breadcrumbSegments.length > 1;
+  const canGoUp = breadcrumbSegments.length > 1 || onBack !== undefined;
+  // 预览模式下按钮为关闭(X)样式，不保留左移动画
+  const isPreviewClose = onBack !== undefined;
+  const animateLeft = canGoUp && !isPreviewClose;
 
   const renderHomeContent = (isLast: boolean): ReactNode => (
     <Box
@@ -298,20 +311,26 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
       </Breadcrumbs>
 
       {/* 返回上一级或占位按钮 */}
-      {!compact &&
+      {(!compact || onBack !== undefined) &&
         (showBackButton ? (
           <Tooltip
             title={
-              canGoUp
-                ? t("ui.breadcrumb.back.tooltip.canGoUp")
-                : t("ui.breadcrumb.back.tooltip.atRoot")
+              onBack !== undefined
+                ? t("ui.breadcrumb.back.tooltip.closePreview")
+                : canGoUp
+                  ? t("ui.breadcrumb.back.tooltip.canGoUp")
+                  : t("ui.breadcrumb.back.tooltip.atRoot")
             }
           >
             <span>
               <IconButton
                 onClick={handleGoUp}
                 disabled={!canGoUp}
-                aria-label={t("ui.breadcrumb.back.aria")}
+                aria-label={
+                  onBack !== undefined
+                    ? t("ui.breadcrumb.back.tooltip.closePreview")
+                    : t("ui.breadcrumb.back.aria")
+                }
                 size={isSmallScreen ? "small" : "medium"}
                 sx={{
                   bgcolor: "background.paper",
@@ -322,18 +341,18 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
                   "&:hover": canGoUp
                     ? {
                         bgcolor: alpha(theme.palette.primary.main, 0.08),
-                        transform: "translateX(-2px)",
+                        ...(animateLeft ? { transform: "translateX(-2px)" } : {}),
                         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                       }
                     : {},
                   "&:active": canGoUp
                     ? {
-                        transform: "translateX(-4px)",
+                        ...(animateLeft ? { transform: "translateX(-4px)" } : {}),
                         boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
                         transition: "all 0.18s cubic-bezier(0.3, 0, 0.5, 1)",
                       }
                     : {},
-                  "&:not(:active)": canGoUp
+                  "&:not(:active)": animateLeft
                     ? {
                         transition: "transform 0.25s cubic-bezier(0.2, 0, 0, 1.5)",
                       }
@@ -363,18 +382,22 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
                   transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                 }}
               >
-                <ArrowBackIcon
-                  fontSize={isSmallScreen ? "small" : "medium"}
-                  sx={{
-                    transition: "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                    ".MuiIconButton-root:active &": canGoUp
-                      ? {
-                          transform: "translateX(-1px)",
-                          transition: "transform 0.15s cubic-bezier(0.1, 0, 0.4, 1)",
-                        }
-                      : {},
-                  }}
-                />
+                {isPreviewClose ? (
+                  <CloseIcon fontSize={isSmallScreen ? "small" : "medium"} />
+                ) : (
+                  <ArrowBackIcon
+                    fontSize={isSmallScreen ? "small" : "medium"}
+                    sx={{
+                      transition: "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                      ".MuiIconButton-root:active &": animateLeft
+                        ? {
+                            transform: "translateX(-1px)",
+                            transition: "transform 0.15s cubic-bezier(0.1, 0, 0.4, 1)",
+                          }
+                        : {},
+                    }}
+                  />
+                )}
               </IconButton>
             </span>
           </Tooltip>

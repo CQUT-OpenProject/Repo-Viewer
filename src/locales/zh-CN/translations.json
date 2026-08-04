@@ -140,7 +140,8 @@
       "back": {
         "tooltip": {
           "canGoUp": "返回上一级",
-          "atRoot": "已位于根目录"
+          "atRoot": "已位于根目录",
+          "closePreview": "关闭预览"
         },
         "aria": "返回上一级目录"
       },
@@ -152,7 +153,6 @@
       }
     },
     "markdown": {
-      "closePreview": "关闭预览",
       "copy": {
         "button": "复制代码",
         "copied": "已复制",
@@ -182,7 +182,6 @@
       "downloadedWithProgress": "已下载 @@loaded@@ / @@total@@ (@@percent@@%)"
     },
     "text": {
-      "closePreview": "关闭预览",
       "title": "文本预览",
       "viewOnGitHub": "在 GitHub 中查看",
       "enableWrap": "开启自动换行",

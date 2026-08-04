@@ -183,6 +183,7 @@ const ToolbarButtons: React.FC<ToolbarButtonsProps> = ({
               color="inherit"
               onClick={openSearchDrawer}
               aria-label={t("ui.toolbar.searchFiles")}
+              sx={{ ml: { xs: 1, sm: 1.5 } }}
             >
               <SearchIcon />
             </IconButton>

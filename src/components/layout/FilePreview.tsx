@@ -138,7 +138,8 @@ const FilePreview: React.FC<FilePreviewProps> = (props) => {
             breadcrumbsMaxItems={breadcrumbsMaxItems}
             isSmallScreen={isSmallScreen}
             breadcrumbsContainerRef={breadcrumbsContainerRef}
-            showBackButton={false}
+            showBackButton={true}
+            onBack={onClose}
           />
         </Box>
 
