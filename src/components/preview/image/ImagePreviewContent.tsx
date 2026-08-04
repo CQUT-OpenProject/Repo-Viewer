@@ -1,13 +1,13 @@
 import React, { useRef } from "react";
-import { Box, Typography, IconButton, Tooltip, alpha, useTheme, GlobalStyles } from "@mui/material";
+import { Box, Typography, IconButton, alpha, useTheme, GlobalStyles } from "@mui/material";
 import {
   Replay as ReplayIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
-  Close as CloseIcon,
 } from "@mui/icons-material";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { ImagePreviewSkeleton } from "@/components/ui/skeletons";
+import PreviewCloseButton from "@/components/ui/PreviewCloseButton";
 import ImageToolbar from "./ImageToolbar";
 import type { ImagePreviewContentProps } from "./types";
 import { useAspectRatioTracker } from "./hooks/useAspectRatioTracker";
@@ -184,28 +184,13 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
         >
           {displayFileName}
         </Typography>
-        <Tooltip title={t("ui.breadcrumb.back.tooltip.closePreview")}>
-          <IconButton
-            onClick={toolbarProps.handleClosePreview}
-            aria-label={t("ui.image.close")}
-            size={isSmallScreen ? "small" : "medium"}
-            sx={{
-              bgcolor: "background.paper",
-              color: theme.palette.primary.main,
-              boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.05)",
-              width: { xs: 36, sm: 40 },
-              height: { xs: 36, sm: 40 },
-              justifySelf: "end",
-              "&:hover": {
-                bgcolor: alpha(theme.palette.primary.main, 0.08),
-                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-              },
-              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
-            <CloseIcon fontSize={isSmallScreen ? "small" : "medium"} />
-          </IconButton>
-        </Tooltip>
+        <PreviewCloseButton
+          onClick={toolbarProps.handleClosePreview}
+          isSmallScreen={isSmallScreen}
+          ariaLabel={t("ui.image.close")}
+          tooltip={t("ui.breadcrumb.back.tooltip.closePreview")}
+          sx={{ justifySelf: "end" }}
+        />
       </Box>
 
       {/* 主要内容区域 */}

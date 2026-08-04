@@ -27,7 +27,6 @@ export interface ImageToolbarProps {
   toggleFullScreen: () => void;
   handleClosePreview: () => void;
   setError?: React.Dispatch<React.SetStateAction<boolean>>;
-  variant?: "inline" | "floating" | "full-width";
 }
 
 export interface ImagePreviewContentProps {
