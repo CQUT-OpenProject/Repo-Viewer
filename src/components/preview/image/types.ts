@@ -62,7 +62,6 @@ export interface UseImagePreviewReturn {
   scale: number;
   shouldLoad: boolean;
   imgRef: React.RefObject<HTMLImageElement | null>;
-  handleReset: (resetFunc: () => void) => void;
   handleRotateLeft: () => void;
   handleRotateRight: () => void;
   toggleFullScreen: () => void;
