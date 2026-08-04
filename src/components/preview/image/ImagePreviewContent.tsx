@@ -91,6 +91,11 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
       hasNext,
     });
 
+  const leftNavActive =
+    activeNavSide === "left" || (isSmallScreen && isDragging && dragOffset > 30);
+  const rightNavActive =
+    activeNavSide === "right" || (isSmallScreen && isDragging && dragOffset < -30);
+
   useKeyboardNavigation({
     loading,
     hasError,
@@ -245,8 +250,8 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
           wheel={{ disabled: hasError }}
           pinch={{ disabled: hasError }}
           panning={{ disabled: hasError || (isSmallScreen && currentScale === 1) }}
-          onTransformed={(ref) => {
-            onTransformed(ref.state.scale);
+          onTransform={(ref, state) => {
+            onTransformed(state.scale);
           }}
         >
           {({ zoomIn, zoomOut, resetTransform }) => (
@@ -337,85 +342,8 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                 resetTransform={resetTransform}
               />
 
-              {/* 移动端拖动视觉反馈 */}
-              {isSmallScreen && isDragging && (
-                <>
-                  {/* 左侧提示（上一张） */}
-                  {hasPrevious && dragOffset > 30 && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        left: 16,
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        zIndex: 60,
-                        opacity: Math.min(dragOffset / 100, 0.8),
-                        transition: "opacity 0.2s ease",
-                        pointerEvents: "none",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          width: 48,
-                          height: 48,
-                          borderRadius: "50%",
-                          bgcolor: alpha(theme.palette.primary.main, 0.9),
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.3)}`,
-                        }}
-                      >
-                        <ChevronLeftIcon
-                          sx={{
-                            fontSize: "2rem",
-                            color: "#fff",
-                          }}
-                        />
-                      </Box>
-                    </Box>
-                  )}
-
-                  {/* 右侧提示（下一张） */}
-                  {hasNext && dragOffset < -30 && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        right: 16,
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        zIndex: 60,
-                        opacity: Math.min(Math.abs(dragOffset) / 100, 0.8),
-                        transition: "opacity 0.2s ease",
-                        pointerEvents: "none",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          width: 48,
-                          height: 48,
-                          borderRadius: "50%",
-                          bgcolor: alpha(theme.palette.primary.main, 0.9),
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.3)}`,
-                        }}
-                      >
-                        <ChevronRightIcon
-                          sx={{
-                            fontSize: "2rem",
-                            color: "#fff",
-                          }}
-                        />
-                      </Box>
-                    </Box>
-                  )}
-                </>
-              )}
-
-              {/* 左侧导航按钮（仅桌面端且有上一张图片时显示） */}
-              {!isSmallScreen && hasPrevious && onPrevious !== undefined && (
+              {/* 左侧导航按钮（桌面端悬停显示，移动端拖动时作为方向提示） */}
+              {hasPrevious && onPrevious !== undefined && (
                 <Box
                   sx={{
                     position: "absolute",
@@ -427,32 +355,29 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                     justifyContent: "flex-start",
                     paddingLeft: 2,
                     zIndex: 50,
-                    cursor: activeNavSide === "left" ? "pointer" : "default",
-                    pointerEvents: activeNavSide === "left" ? "auto" : "none",
+                    cursor: leftNavActive ? "pointer" : "default",
+                    pointerEvents: isSmallScreen ? "none" : leftNavActive ? "auto" : "none",
                   }}
                 >
                   <IconButton
                     onClick={onPrevious}
                     aria-label={t("ui.image.previous")}
                     sx={{
-                      bgcolor: alpha(
-                        theme.palette.background.paper,
-                        activeNavSide === "left" ? 0.95 : 0,
-                      ),
-                      backdropFilter: activeNavSide === "left" ? "blur(10px)" : "none",
+                      bgcolor: alpha(theme.palette.background.paper, leftNavActive ? 0.95 : 0),
+                      backdropFilter: leftNavActive ? "blur(10px)" : "none",
                       "&:hover": {
                         bgcolor: alpha(theme.palette.background.paper, 0.98),
                       },
-                      width: "56px",
-                      height: "56px",
-                      opacity: activeNavSide === "left" ? 1 : 0,
-                      transform: activeNavSide === "left" ? "translateX(0)" : "translateX(-20px)",
+                      width: isSmallScreen ? "44px" : "56px",
+                      height: isSmallScreen ? "44px" : "56px",
+                      opacity: leftNavActive ? 1 : 0,
+                      transform: leftNavActive ? "translateX(0)" : "translateX(-20px)",
                       transition: "all 0.3s ease",
-                      boxShadow:
-                        activeNavSide === "left"
-                          ? `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`
-                          : "none",
-                      pointerEvents: activeNavSide === "left" ? "auto" : "none",
+                      touchAction: "manipulation",
+                      boxShadow: leftNavActive
+                        ? `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`
+                        : "none",
+                      pointerEvents: isSmallScreen ? "none" : leftNavActive ? "auto" : "none",
                     }}
                   >
                     <ChevronLeftIcon
@@ -465,8 +390,8 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                 </Box>
               )}
 
-              {/* 右侧导航按钮（仅桌面端且有下一张图片时显示） */}
-              {!isSmallScreen && hasNext && onNext !== undefined && (
+              {/* 右侧导航按钮（桌面端悬停显示，移动端拖动时作为方向提示） */}
+              {hasNext && onNext !== undefined && (
                 <Box
                   sx={{
                     position: "absolute",
@@ -478,32 +403,29 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                     justifyContent: "flex-end",
                     paddingRight: 2,
                     zIndex: 50,
-                    cursor: activeNavSide === "right" ? "pointer" : "default",
-                    pointerEvents: activeNavSide === "right" ? "auto" : "none",
+                    cursor: rightNavActive ? "pointer" : "default",
+                    pointerEvents: isSmallScreen ? "none" : rightNavActive ? "auto" : "none",
                   }}
                 >
                   <IconButton
                     onClick={onNext}
                     aria-label={t("ui.image.next")}
                     sx={{
-                      bgcolor: alpha(
-                        theme.palette.background.paper,
-                        activeNavSide === "right" ? 0.95 : 0,
-                      ),
-                      backdropFilter: activeNavSide === "right" ? "blur(10px)" : "none",
+                      bgcolor: alpha(theme.palette.background.paper, rightNavActive ? 0.95 : 0),
+                      backdropFilter: rightNavActive ? "blur(10px)" : "none",
                       "&:hover": {
                         bgcolor: alpha(theme.palette.background.paper, 0.98),
                       },
-                      width: "56px",
-                      height: "56px",
-                      opacity: activeNavSide === "right" ? 1 : 0,
-                      transform: activeNavSide === "right" ? "translateX(0)" : "translateX(20px)",
+                      width: isSmallScreen ? "44px" : "56px",
+                      height: isSmallScreen ? "44px" : "56px",
+                      opacity: rightNavActive ? 1 : 0,
+                      transform: rightNavActive ? "translateX(0)" : "translateX(20px)",
                       transition: "all 0.3s ease",
-                      boxShadow:
-                        activeNavSide === "right"
-                          ? `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`
-                          : "none",
-                      pointerEvents: activeNavSide === "right" ? "auto" : "none",
+                      touchAction: "manipulation",
+                      boxShadow: rightNavActive
+                        ? `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`
+                        : "none",
+                      pointerEvents: isSmallScreen ? "none" : rightNavActive ? "auto" : "none",
                     }}
                   >
                     <ChevronRightIcon
