@@ -26,7 +26,6 @@ export interface ImageToolbarProps {
   handleRotateRight: () => void;
   toggleFullScreen: () => void;
   handleClosePreview: () => void;
-  closeButtonBorderRadius: string | number;
   setError?: React.Dispatch<React.SetStateAction<boolean>>;
   variant?: "inline" | "floating" | "full-width";
 }

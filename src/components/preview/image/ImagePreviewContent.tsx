@@ -1,9 +1,10 @@
-import React from "react";
-import { Box, Typography, IconButton, alpha, useTheme, GlobalStyles } from "@mui/material";
+import React, { useRef } from "react";
+import { Box, Typography, IconButton, Tooltip, alpha, useTheme, GlobalStyles } from "@mui/material";
 import {
   Replay as ReplayIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { ImagePreviewSkeleton } from "@/components/ui/skeletons";
@@ -105,6 +106,12 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
     ...(onNext !== undefined ? { onNext } : {}),
   });
 
+  const transformControlsRef = useRef<{
+    zoomIn: () => void;
+    zoomOut: () => void;
+    resetTransform: () => void;
+  } | null>(null);
+
   const rotationTransform = `rotate(${String(rotation)}deg)`;
   const containerClassName = [className, "image-preview-container"]
     .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
@@ -149,23 +156,57 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
         {!loading && !hasError && `图片已加载：${displayFileName}`}
       </Box>
 
-      {/* 文件名标题（仅在非小屏幕时显示） */}
-      {!isSmallScreen && (
+      {/* 标题栏：文件名 + 关闭按钮 */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "36px 1fr 36px", sm: "40px 1fr 40px" },
+          alignItems: "center",
+          py: 1.5,
+          px: 2,
+          flexShrink: 0,
+          bgcolor: theme.palette.mode === "dark" ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.8)",
+          backdropFilter: "blur(8px)",
+          borderBottom: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        <Box aria-hidden />
         <Typography
           variant="h6"
           sx={{
-            py: 1.5,
-            px: 2,
             textAlign: "center",
-            bgcolor: theme.palette.mode === "dark" ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.8)",
-            backdropFilter: "blur(8px)",
-            borderBottom: "1px solid",
-            borderColor: "divider",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            px: 1,
           }}
         >
           {displayFileName}
         </Typography>
-      )}
+        <Tooltip title={t("ui.breadcrumb.back.tooltip.closePreview")}>
+          <IconButton
+            onClick={toolbarProps.handleClosePreview}
+            aria-label={t("ui.image.close")}
+            size={isSmallScreen ? "small" : "medium"}
+            sx={{
+              bgcolor: "background.paper",
+              color: theme.palette.primary.main,
+              boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.05)",
+              width: { xs: 36, sm: 40 },
+              height: { xs: 36, sm: 40 },
+              justifySelf: "end",
+              "&:hover": {
+                bgcolor: alpha(theme.palette.primary.main, 0.08),
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              },
+              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
+            <CloseIcon fontSize={isSmallScreen ? "small" : "medium"} />
+          </IconButton>
+        </Tooltip>
+      </Box>
 
       {/* 主要内容区域 */}
       <Box
@@ -174,6 +215,7 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
         onMouseLeave={handleContainerMouseLeave}
         sx={{
           flex: 1,
+          minHeight: 0,
           overflow: "hidden",
           position: "relative",
         }}
@@ -254,60 +296,81 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
             onTransformed(state.scale);
           }}
         >
-          {({ zoomIn, zoomOut, resetTransform }) => (
-            <>
-              {/* 图片展示 */}
-              <TransformComponent
-                wrapperStyle={{
-                  width: "100%",
-                  height: "100%",
-                  boxSizing: "border-box",
-                }}
-                contentStyle={{
-                  width: "100%",
-                  height: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  transform:
-                    isSmallScreen && isDragging ? `translateX(${String(dragOffset)}px)` : undefined,
-                  transition: isDragging ? "none" : "transform 0.3s ease",
-                }}
-                wrapperProps={{
-                  onTouchStart: handleTouchStart,
-                  onTouchMove: handleTouchMove,
-                  onTouchEnd: handleTouchEnd,
-                  onTouchCancel: handleTouchEnd,
-                }}
-              >
-                {!hasError && !loading && (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      transform: rotationTransform,
-                      transition: "transform 0.3s ease, width 0.35s ease, height 0.35s ease",
-                      transformOrigin: "center center",
-                      width: stageWidth !== null ? `${stageWidth.toString()}px` : "auto",
-                      height: stageHeight !== null ? `${stageHeight.toString()}px` : "auto",
-                      maxWidth: stageMaxWidth !== null ? `${stageMaxWidth.toString()}px` : "100%",
-                      maxHeight:
-                        stageMaxHeight !== null ? `${stageMaxHeight.toString()}px` : "100%",
-                      position: "relative",
-                    }}
-                  >
+          {({ zoomIn, zoomOut, resetTransform }) => {
+            transformControlsRef.current = { zoomIn, zoomOut, resetTransform };
+
+            return (
+              <>
+                {/* 图片展示 */}
+                <TransformComponent
+                  wrapperStyle={{
+                    width: "100%",
+                    height: "100%",
+                    boxSizing: "border-box",
+                  }}
+                  contentStyle={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    transform:
+                      isSmallScreen && isDragging
+                        ? `translateX(${String(dragOffset)}px)`
+                        : undefined,
+                    transition: isDragging ? "none" : "transform 0.3s ease",
+                  }}
+                  wrapperProps={{
+                    onTouchStart: handleTouchStart,
+                    onTouchMove: handleTouchMove,
+                    onTouchEnd: handleTouchEnd,
+                    onTouchCancel: handleTouchEnd,
+                  }}
+                >
+                  {!hasError && !loading && (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        transform: rotationTransform,
+                        transition: "transform 0.3s ease, width 0.35s ease, height 0.35s ease",
+                        transformOrigin: "center center",
+                        width: stageWidth !== null ? `${stageWidth.toString()}px` : "auto",
+                        height: stageHeight !== null ? `${stageHeight.toString()}px` : "auto",
+                        maxWidth: stageMaxWidth !== null ? `${stageMaxWidth.toString()}px` : "100%",
+                        maxHeight:
+                          stageMaxHeight !== null ? `${stageMaxHeight.toString()}px` : "100%",
+                        position: "relative",
+                      }}
+                    >
+                      <img
+                        ref={handleImageRef}
+                        src={shouldLoad ? imageUrl : ""}
+                        alt={altText}
+                        className="loaded"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                          opacity: 1,
+                          transition: "opacity 0.3s ease",
+                        }}
+                        onLoad={(event) => {
+                          processAspectRatioFromImage(event.currentTarget);
+                          onLoad();
+                        }}
+                        onError={onError}
+                      />
+                    </div>
+                  )}
+                  {!hasError && loading && (
                     <img
                       ref={handleImageRef}
                       src={shouldLoad ? imageUrl : ""}
                       alt={altText}
-                      className="loaded"
                       style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                        opacity: 1,
-                        transition: "opacity 0.3s ease",
+                        display: "none",
                       }}
                       onLoad={(event) => {
                         processAspectRatioFromImage(event.currentTarget);
@@ -315,132 +378,122 @@ const ImagePreviewContent: React.FC<ImagePreviewContentProps> = ({
                       }}
                       onError={onError}
                     />
-                  </div>
-                )}
-                {!hasError && loading && (
-                  <img
-                    ref={handleImageRef}
-                    src={shouldLoad ? imageUrl : ""}
-                    alt={altText}
-                    style={{
-                      display: "none",
-                    }}
-                    onLoad={(event) => {
-                      processAspectRatioFromImage(event.currentTarget);
-                      onLoad();
-                    }}
-                    onError={onError}
-                  />
-                )}
-              </TransformComponent>
+                  )}
+                </TransformComponent>
 
-              {/* 工具栏 */}
-              <ImageToolbar
-                {...toolbarProps}
-                zoomIn={zoomIn}
-                zoomOut={zoomOut}
-                resetTransform={resetTransform}
-              />
-
-              {/* 左侧导航按钮（桌面端悬停显示，移动端拖动时作为方向提示） */}
-              {hasPrevious && onPrevious !== undefined && (
-                <Box
-                  sx={{
-                    position: "absolute",
-                    left: 0,
-                    top: 0,
-                    bottom: "72px", // 避开底部工具栏
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "flex-start",
-                    paddingLeft: 2,
-                    zIndex: 50,
-                    cursor: leftNavActive ? "pointer" : "default",
-                    pointerEvents: isSmallScreen ? "none" : leftNavActive ? "auto" : "none",
-                  }}
-                >
-                  <IconButton
-                    onClick={onPrevious}
-                    aria-label={t("ui.image.previous")}
+                {/* 左侧导航按钮（桌面端悬停显示，移动端拖动时作为方向提示） */}
+                {hasPrevious && onPrevious !== undefined && (
+                  <Box
                     sx={{
-                      bgcolor: alpha(theme.palette.background.paper, leftNavActive ? 0.95 : 0),
-                      backdropFilter: leftNavActive ? "blur(10px)" : "none",
-                      "&:hover": {
-                        bgcolor: alpha(theme.palette.background.paper, 0.98),
-                      },
-                      width: isSmallScreen ? "44px" : "56px",
-                      height: isSmallScreen ? "44px" : "56px",
-                      opacity: leftNavActive ? 1 : 0,
-                      transform: leftNavActive ? "translateX(0)" : "translateX(-20px)",
-                      transition: "all 0.3s ease",
-                      touchAction: "manipulation",
-                      boxShadow: leftNavActive
-                        ? `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`
-                        : "none",
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "flex-start",
+                      paddingLeft: 2,
+                      zIndex: 50,
+                      cursor: leftNavActive ? "pointer" : "default",
                       pointerEvents: isSmallScreen ? "none" : leftNavActive ? "auto" : "none",
                     }}
                   >
-                    <ChevronLeftIcon
+                    <IconButton
+                      onClick={onPrevious}
+                      aria-label={t("ui.image.previous")}
                       sx={{
-                        fontSize: "2rem",
-                        color: theme.palette.text.primary,
+                        bgcolor: alpha(theme.palette.background.paper, leftNavActive ? 0.95 : 0),
+                        backdropFilter: leftNavActive ? "blur(10px)" : "none",
+                        "&:hover": {
+                          bgcolor: alpha(theme.palette.background.paper, 0.98),
+                        },
+                        width: isSmallScreen ? "44px" : "56px",
+                        height: isSmallScreen ? "44px" : "56px",
+                        opacity: leftNavActive ? 1 : 0,
+                        transform: leftNavActive ? "translateX(0)" : "translateX(-20px)",
+                        transition: "all 0.3s ease",
+                        touchAction: "manipulation",
+                        boxShadow: leftNavActive
+                          ? `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`
+                          : "none",
+                        pointerEvents: isSmallScreen ? "none" : leftNavActive ? "auto" : "none",
                       }}
-                    />
-                  </IconButton>
-                </Box>
-              )}
+                    >
+                      <ChevronLeftIcon
+                        sx={{
+                          fontSize: "2rem",
+                          color: theme.palette.text.primary,
+                        }}
+                      />
+                    </IconButton>
+                  </Box>
+                )}
 
-              {/* 右侧导航按钮（桌面端悬停显示，移动端拖动时作为方向提示） */}
-              {hasNext && onNext !== undefined && (
-                <Box
-                  sx={{
-                    position: "absolute",
-                    right: 0,
-                    top: 0,
-                    bottom: "72px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "flex-end",
-                    paddingRight: 2,
-                    zIndex: 50,
-                    cursor: rightNavActive ? "pointer" : "default",
-                    pointerEvents: isSmallScreen ? "none" : rightNavActive ? "auto" : "none",
-                  }}
-                >
-                  <IconButton
-                    onClick={onNext}
-                    aria-label={t("ui.image.next")}
+                {/* 右侧导航按钮（桌面端悬停显示，移动端拖动时作为方向提示） */}
+                {hasNext && onNext !== undefined && (
+                  <Box
                     sx={{
-                      bgcolor: alpha(theme.palette.background.paper, rightNavActive ? 0.95 : 0),
-                      backdropFilter: rightNavActive ? "blur(10px)" : "none",
-                      "&:hover": {
-                        bgcolor: alpha(theme.palette.background.paper, 0.98),
-                      },
-                      width: isSmallScreen ? "44px" : "56px",
-                      height: isSmallScreen ? "44px" : "56px",
-                      opacity: rightNavActive ? 1 : 0,
-                      transform: rightNavActive ? "translateX(0)" : "translateX(20px)",
-                      transition: "all 0.3s ease",
-                      touchAction: "manipulation",
-                      boxShadow: rightNavActive
-                        ? `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`
-                        : "none",
+                      position: "absolute",
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "flex-end",
+                      paddingRight: 2,
+                      zIndex: 50,
+                      cursor: rightNavActive ? "pointer" : "default",
                       pointerEvents: isSmallScreen ? "none" : rightNavActive ? "auto" : "none",
                     }}
                   >
-                    <ChevronRightIcon
+                    <IconButton
+                      onClick={onNext}
+                      aria-label={t("ui.image.next")}
                       sx={{
-                        fontSize: "2rem",
-                        color: theme.palette.text.primary,
+                        bgcolor: alpha(theme.palette.background.paper, rightNavActive ? 0.95 : 0),
+                        backdropFilter: rightNavActive ? "blur(10px)" : "none",
+                        "&:hover": {
+                          bgcolor: alpha(theme.palette.background.paper, 0.98),
+                        },
+                        width: isSmallScreen ? "44px" : "56px",
+                        height: isSmallScreen ? "44px" : "56px",
+                        opacity: rightNavActive ? 1 : 0,
+                        transform: rightNavActive ? "translateX(0)" : "translateX(20px)",
+                        transition: "all 0.3s ease",
+                        touchAction: "manipulation",
+                        boxShadow: rightNavActive
+                          ? `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`
+                          : "none",
+                        pointerEvents: isSmallScreen ? "none" : rightNavActive ? "auto" : "none",
                       }}
-                    />
-                  </IconButton>
-                </Box>
-              )}
-            </>
-          )}
+                    >
+                      <ChevronRightIcon
+                        sx={{
+                          fontSize: "2rem",
+                          color: theme.palette.text.primary,
+                        }}
+                      />
+                    </IconButton>
+                  </Box>
+                )}
+              </>
+            );
+          }}
         </TransformWrapper>
       </Box>
+
+      <ImageToolbar
+        {...toolbarProps}
+        zoomIn={() => {
+          transformControlsRef.current?.zoomIn();
+        }}
+        zoomOut={() => {
+          transformControlsRef.current?.zoomOut();
+        }}
+        resetTransform={() => {
+          transformControlsRef.current?.resetTransform();
+        }}
+      />
     </Box>
   );
 };
