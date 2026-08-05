@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Skeleton, useTheme, List, ListItem, ListItemIcon } from "@mui/material";
 import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
 import { getSkeletonStyles, getContainerTransitionStyles, useSkeletonVisibility } from "./shared";
+import { contentSectionSpacing } from "@/components/layout/hooks";
 
 /**
  * 文件列表骨架屏组件属性接口
@@ -30,7 +31,7 @@ export const FileListSkeleton: React.FC<FileListSkeletonProps> = ({
       width: "100%",
       bgcolor: "background.paper",
       borderRadius: g3BorderRadius(G3_PRESETS.fileListContainer),
-      mb: 2,
+      mb: contentSectionSpacing,
       overflow: "hidden",
       boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
       border: "1px solid",

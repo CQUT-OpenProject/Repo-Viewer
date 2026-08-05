@@ -1,6 +1,6 @@
 import { logger } from "@/utils/logging/logger";
 import { getProxyConfig, getRuntimeConfig } from "@/config";
-import { USE_TOKEN_MODE, PROXY_SERVICES } from "./ProxyConfig";
+import { USE_TOKEN_MODE } from "./ProxyConfig";
 import { proxyHealthManager } from "./ProxyHealthManager";
 import { ProxyUrlTransformer } from "./ProxyUrlTransformer";
 
@@ -44,11 +44,20 @@ export function markProxyServiceFailed(proxyUrl: string): void {
 }
 
 /**
+ * 标记代理服务恢复成功
+ */
+export function markProxyServiceSucceeded(proxyUrl: string): void {
+  if (proxyUrl !== "") {
+    proxyHealthManager.recordSuccess(proxyUrl);
+    logger.debug(`标记代理服务恢复: ${proxyUrl}`);
+  }
+}
+
+/**
  * 获取当前代理服务
  */
 export function getCurrentProxyService(): string {
-  const bestProxy = proxyHealthManager.getBestProxy();
-  return bestProxy !== "" ? bestProxy : (PROXY_SERVICES[0] ?? "");
+  return proxyHealthManager.getBestProxy();
 }
 
 /**

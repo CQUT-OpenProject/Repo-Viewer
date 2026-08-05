@@ -8,17 +8,17 @@ import { g3BorderRadius, G3_PRESETS } from "../g3Curves";
 export const miscStyles = {
   MuiSwitch: {
     styleOverrides: {
-      switchBase: {
-        color: "#E6E1E5",
+      switchBase: ({ theme }: { theme: Theme }) => ({
+        color: theme.palette.mode === "light" ? "#D7E2EA" : theme.palette.divider,
         "&.Mui-checked": {
-          color: "#D0BCFF",
+          color: theme.palette.secondary.main,
         },
         "&.Mui-checked + .MuiSwitch-track": {
-          backgroundColor: "#9A82DB",
+          backgroundColor: theme.palette.secondary.main,
         },
-      },
+      }),
       track: ({ theme }: { theme: Theme }) => ({
-        backgroundColor: theme.palette.mode === "light" ? "#CAC4D0" : "#49454F",
+        backgroundColor: theme.palette.mode === "light" ? "#B5C5D1" : "#3D4E5D",
       }),
     },
   },

@@ -5,5 +5,4 @@ export interface TextPreviewProps {
   loading: boolean;
   isSmallScreen: boolean;
   previewingItem?: GitHubContent | null;
-  onClose?: () => void;
 }

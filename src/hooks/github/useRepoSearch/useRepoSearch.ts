@@ -188,7 +188,7 @@ export function useRepoSearch({
     setSearchError(null);
   };
 
-  const search = async (options) => {
+  const search = async (options?: RepoSearchExecuteOptions) => {
     const searchId = activeSearchIdRef.current + 1;
     activeSearchIdRef.current = searchId;
 

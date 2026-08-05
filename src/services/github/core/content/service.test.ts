@@ -2,13 +2,15 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { createAbortError } from "@/utils/network/abort";
 
-const { axiosGetMock, getCurrentProxyServiceMock, applyProxyToUrlMock } = vi.hoisted(() => ({
-  axiosGetMock: vi.fn(),
-  getCurrentProxyServiceMock: vi.fn(() => "https://proxy.example.com"),
-  applyProxyToUrlMock: vi.fn(
-    (url: string, proxyUrl: string) => `${proxyUrl}/${url.replace(/^https?:\/\//u, "")}`,
-  ),
-}));
+const { axiosGetMock, getCurrentProxyServiceMock, applyProxyToUrlMock, handleApiErrorMock } =
+  vi.hoisted(() => ({
+    axiosGetMock: vi.fn(),
+    getCurrentProxyServiceMock: vi.fn(() => "https://proxy.example.com"),
+    applyProxyToUrlMock: vi.fn(
+      (url: string, proxyUrl: string) => `${proxyUrl}/${url.replace(/^https?:\/\//u, "")}`,
+    ),
+    handleApiErrorMock: vi.fn((error: Response) => new Error(`HTTP ${error.status.toString()}`)),
+  }));
 
 vi.mock("axios", () => ({
   default: {
@@ -31,6 +33,7 @@ vi.mock("../../config/ProxyForceManager", () => ({
 
 vi.mock("../Auth", () => ({
   getAuthHeaders: vi.fn(() => ({ Authorization: "Bearer test-token" })),
+  handleApiError: handleApiErrorMock,
 }));
 
 vi.mock("../Config", () => ({
@@ -193,6 +196,24 @@ describe("content service abort handling", () => {
 
     await expect(promise).rejects.toMatchObject({ name: "AbortError" });
     expect(fetchSignal?.aborted).toBe(true);
+  });
+
+  it("routes API errors through handleApiError for token rotation", async () => {
+    handleApiErrorMock.mockClear();
+    const fetchMock = vi.fn(async () => ({
+      ok: false,
+      status: 401,
+      statusText: "Unauthorized",
+      headers: new Headers(),
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      getFileContent("https://raw.githubusercontent.com/test-owner/test-repo/main/docs/readme.md"),
+    ).rejects.toThrow("获取文件内容失败");
+
+    expect(handleApiErrorMock).toHaveBeenCalledTimes(1);
+    expect(handleApiErrorMock.mock.calls[0]?.[0].status).toBe(401);
   });
 
   it("prefers direct proxy URL for file content requests", async () => {

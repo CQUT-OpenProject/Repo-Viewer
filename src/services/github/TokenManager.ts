@@ -9,7 +9,6 @@ interface TokenState {
   token: string;
   rateLimitRemaining: number;
   rateLimitReset: number;
-  lastUsed: number;
   failureCount: number;
   lastFailure: number;
 }
@@ -19,7 +18,6 @@ interface TokenState {
  */
 export class GitHubTokenManager {
   private readonly rotator = new TokenRotator();
-  private usageCount = new Map<string, number>();
   private tokenStates = new Map<string, TokenState>();
   private static readonly BACKOFF_DURATION = 300000;
   private static readonly MIN_RATE_LIMIT = 10;
@@ -76,21 +74,11 @@ export class GitHubTokenManager {
     return this.rotator.getNextToken();
   }
 
-  public markTokenUsed(token: string): void {
-    const count = this.usageCount.get(token) ?? 0;
-    this.usageCount.set(token, count + 1);
-    if (count > 30) {
-      this.usageCount.set(token, 0);
-      this.getNextToken();
-    }
-  }
-
   public markTokenFailed(token: string): string {
     const state = this.tokenStates.get(token) ?? {
       token,
       rateLimitRemaining: 0,
       rateLimitReset: 0,
-      lastUsed: 0,
       failureCount: 0,
       lastFailure: 0,
     };
@@ -172,14 +160,12 @@ export class GitHubTokenManager {
       token,
       rateLimitRemaining: 5000,
       rateLimitReset: 0,
-      lastUsed: 0,
       failureCount: 0,
       lastFailure: 0,
     };
 
     state.rateLimitRemaining = remaining;
     state.rateLimitReset = reset;
-    state.lastUsed = Date.now();
     this.tokenStates.set(token, state);
 
     logger.debug(
@@ -188,11 +174,7 @@ export class GitHubTokenManager {
   }
 
   public getGitHubPAT(): string {
-    const token = this.selectBestToken();
-    if (token !== "") {
-      this.markTokenUsed(token);
-    }
-    return token;
+    return this.selectBestToken();
   }
 
   public handleApiError(error: Response): void {
@@ -226,6 +208,16 @@ export class GitHubTokenManager {
     if (error.status === 429) {
       if (currentToken !== "") {
         logger.warn(`令牌请求频率限制，尝试使用下一个令牌`);
+
+        // 无限速响应头时无法记录配额，将剩余配额置 0，避免 selectBestToken 再次选中该 token
+        const remaining = remainingHeader !== null ? parseInt(remainingHeader, 10) : 0;
+        const reset = resetHeader !== null ? parseInt(resetHeader, 10) : 0;
+        this.updateTokenRateLimit(
+          currentToken,
+          isNaN(remaining) ? 0 : remaining,
+          isNaN(reset) ? 0 : reset,
+        );
+
         this.getNextToken();
       }
     }

@@ -1,6 +1,7 @@
 import { resetFailedProxyServices } from "../proxy/ProxyService";
 import { clearBatcherCache } from "../core/content/service";
 import { clearBranchTreeCache } from "../core/search/trees";
+import { clearFallbackCache } from "../core/content/cacheState";
 import { CacheManager } from "./CacheManager";
 
 /**
@@ -8,6 +9,7 @@ import { CacheManager } from "./CacheManager";
  */
 export async function clearCaches(): Promise<void> {
   await CacheManager.clearAllCaches();
+  clearFallbackCache();
   clearBatcherCache();
   clearBranchTreeCache();
   resetFailedProxyServices();

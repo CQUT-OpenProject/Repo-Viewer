@@ -11,7 +11,7 @@ import {
   filterAndNormalizeGitHubContents,
   transformGitHubContentsResponse,
 } from "../../schemas/dataTransformers";
-import { getAuthHeaders } from "../Auth";
+import { getAuthHeaders, handleApiError } from "../Auth";
 import { getApiUrl, getCurrentBranch } from "../Config";
 import { getCurrentProxyService } from "../../proxy/ProxyService";
 import { ProxyUrlTransformer } from "../../proxy/ProxyUrlTransformer";
@@ -31,6 +31,11 @@ import {
   INITIAL_CONTENT_EXCLUDE_FILES,
 } from "./hydrationStore";
 import { buildServerApiUrlForGitHubResource } from "./serverApiUrls";
+import {
+  assertGitHubContentsPayload,
+  createOfflineContentError,
+  isOfflineEnvironment,
+} from "@/utils/network/apiResponseGuards";
 
 /**
  * 内容服务入口
@@ -91,6 +96,10 @@ export async function getContents(
     }
   }
 
+  if (isOfflineEnvironment()) {
+    throw createOfflineContentError("获取目录内容失败");
+  }
+
   try {
     let rawData: unknown;
 
@@ -121,7 +130,7 @@ export async function getContents(
           const result = await fetch(apiUrl, requestInit);
 
           if (!result.ok) {
-            throw new Error(`HTTP ${result.status.toString()}: ${result.statusText}`);
+            throw handleApiError(result, apiUrl);
           }
 
           const json: unknown = await result.json();
@@ -137,6 +146,8 @@ export async function getContents(
 
       logger.debug(`直接请求GitHub API获取内容: ${path}`);
     }
+
+    assertGitHubContentsPayload(rawData);
 
     const validation = safeValidateGitHubContentsResponse(rawData);
     if (!validation.success) {
@@ -193,11 +204,15 @@ export async function getFileContent(fileUrl: string, signal?: AbortSignal): Pro
     return hydratedContent;
   }
 
+  if (isOfflineEnvironment()) {
+    throw createOfflineContentError("获取文件内容失败");
+  }
+
   try {
     const fetchTextByUrl = async (targetUrl: string): Promise<string> => {
       const response = await fetch(targetUrl, { signal });
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status.toString()}: ${response.statusText}`);
+        throw handleApiError(response, targetUrl);
       }
       return response.text();
     };

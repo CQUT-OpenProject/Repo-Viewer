@@ -3,6 +3,7 @@
  */
 interface CacheEntry<T> {
   value: T;
+  createdAt: number;
   lastAccess: number;
   hitCount: number;
 }
@@ -32,6 +33,11 @@ export interface SmartCacheOptions {
   ttl?: number;
 
   /**
+   * TTL 计时基准：creation 从写入时刻计算（默认），sliding 从最近访问计算
+   */
+  ttlMode?: "creation" | "sliding";
+
+  /**
    * 时间权重 - 用于得分计算，越大则时间因素影响越大
    */
   timeWeight?: number;
@@ -54,6 +60,7 @@ export class SmartCache<K, V> {
   private readonly cleanupThreshold: number;
   private readonly cleanupRatio: number;
   private readonly ttl: number | undefined;
+  private readonly ttlMode: "creation" | "sliding";
   private readonly timeWeight: number;
   private readonly frequencyWeight: number;
 
@@ -62,8 +69,17 @@ export class SmartCache<K, V> {
     this.cleanupThreshold = options.cleanupThreshold ?? 0.8;
     this.cleanupRatio = options.cleanupRatio ?? 0.2;
     this.ttl = options.ttl;
+    this.ttlMode = options.ttlMode ?? "creation";
     this.timeWeight = options.timeWeight ?? 1;
     this.frequencyWeight = options.frequencyWeight ?? 1;
+  }
+
+  private isExpired(entry: CacheEntry<V>): boolean {
+    if (this.ttl === undefined) {
+      return false;
+    }
+    const base = this.ttlMode === "sliding" ? entry.lastAccess : entry.createdAt;
+    return Date.now() - base > this.ttl;
   }
 
   /**
@@ -79,7 +95,7 @@ export class SmartCache<K, V> {
     }
 
     // 检查是否过期
-    if (this.ttl !== undefined && Date.now() - entry.lastAccess > this.ttl) {
+    if (this.isExpired(entry)) {
       this.cache.delete(key);
       return null;
     }
@@ -104,9 +120,11 @@ export class SmartCache<K, V> {
 
     // 设置或更新缓存条目
     const existing = this.cache.get(key);
+    const now = Date.now();
     this.cache.set(key, {
       value,
-      lastAccess: Date.now(),
+      createdAt: now,
+      lastAccess: now,
       hitCount: existing !== undefined ? existing.hitCount + 1 : 1,
     });
   }
@@ -124,7 +142,7 @@ export class SmartCache<K, V> {
     }
 
     // 检查是否过期
-    if (this.ttl !== undefined && Date.now() - entry.lastAccess > this.ttl) {
+    if (this.isExpired(entry)) {
       this.cache.delete(key);
       return false;
     }

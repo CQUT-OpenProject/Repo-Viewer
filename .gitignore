@@ -20,6 +20,7 @@ coverage
 report
 src/generated/*.generated.ts
 public/initial-content/
+public/pwa/
 /.serena
 .vercel
 .env.backup

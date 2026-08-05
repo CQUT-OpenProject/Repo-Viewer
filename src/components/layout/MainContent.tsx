@@ -283,6 +283,8 @@ const MainContent: React.FC<MainContentProps> = ({ showBreadcrumbInToolbar }) =>
       isSmallScreen={isSmallScreen}
       breadcrumbsContainerRef={breadcrumbsContainerRef as React.RefObject<HTMLDivElement>}
       compact={true}
+      showBackButton={showPreviewPage}
+      onBack={showPreviewPage ? closePreview : undefined}
     />
   );
 

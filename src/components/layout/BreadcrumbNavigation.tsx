@@ -17,6 +17,8 @@ import { useI18n } from "@/contexts/I18nContext";
 import type { FC, ReactNode, RefObject } from "react";
 import type { NavigationDirection } from "@/contexts/unified";
 import { g3BorderRadius, G3_PRESETS } from "@/theme/g3Curves";
+import PreviewCloseButton, { navigationActionButtonSize } from "@/components/ui/PreviewCloseButton";
+import { contentSectionSpacing } from "@/components/layout/hooks";
 
 /**
  * 面包屑导航组件属性接口
@@ -29,6 +31,8 @@ interface BreadcrumbNavigationProps {
   breadcrumbsContainerRef: RefObject<HTMLDivElement | null>;
   compact?: boolean; // 紧凑模式，用于顶部栏
   showBackButton?: boolean;
+  /** 提供时返回按钮改为调用此回调（如预览模式下关闭预览） */
+  onBack?: () => void;
 }
 
 /**
@@ -36,11 +40,6 @@ interface BreadcrumbNavigationProps {
  *
  * 显示当前路径的层级导航，支持点击跳转和返回上级功能。
  */
-const actionButtonSize = {
-  width: { xs: 36, sm: 40 },
-  height: { xs: 36, sm: 40 },
-};
-
 const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
   breadcrumbSegments,
   handleBreadcrumbClick,
@@ -49,12 +48,19 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
   breadcrumbsContainerRef,
   compact = false,
   showBackButton = true,
+  onBack,
 }) => {
   const theme = useTheme();
   const { t } = useI18n();
 
   // 处理返回上一级
   const handleGoUp = (): void => {
+    // 预览模式下返回按钮仅关闭预览，不导航
+    if (typeof onBack === "function") {
+      onBack();
+      return;
+    }
+
     // 如果只有Home或者当前已经在Home，不执行操作
     if (breadcrumbSegments.length <= 1) {
       return;
@@ -73,7 +79,8 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
   };
 
   // 检查是否有上级目录可返回
-  const canGoUp = breadcrumbSegments.length > 1;
+  const canGoUp = breadcrumbSegments.length > 1 || onBack !== undefined;
+  const isPreviewClose = onBack !== undefined;
 
   const renderHomeContent = (isLast: boolean): ReactNode => (
     <Box
@@ -114,7 +121,7 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
     <Box
       ref={breadcrumbsContainerRef}
       sx={{
-        mb: compact ? 0 : { xs: 1.5, sm: 2.25 },
+        mb: compact ? 0 : contentSectionSpacing,
         position: "relative",
         display: "flex",
         alignItems: "center",
@@ -298,91 +305,96 @@ const BreadcrumbNavigationComponent: FC<BreadcrumbNavigationProps> = ({
       </Breadcrumbs>
 
       {/* 返回上一级或占位按钮 */}
-      {!compact &&
+      {(!compact || onBack !== undefined) &&
         (showBackButton ? (
-          <Tooltip
-            title={
-              canGoUp
-                ? t("ui.breadcrumb.back.tooltip.canGoUp")
-                : t("ui.breadcrumb.back.tooltip.atRoot")
-            }
-          >
-            <span>
-              <IconButton
-                onClick={handleGoUp}
-                disabled={!canGoUp}
-                aria-label={t("ui.breadcrumb.back.aria")}
-                size={isSmallScreen ? "small" : "medium"}
-                sx={{
-                  bgcolor: "background.paper",
-                  color: canGoUp ? theme.palette.primary.main : "text.disabled",
-                  boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.05)",
-                  ...actionButtonSize,
-                  position: "relative",
-                  "&:hover": canGoUp
-                    ? {
-                        bgcolor: alpha(theme.palette.primary.main, 0.08),
-                        transform: "translateX(-2px)",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                      }
-                    : {},
-                  "&:active": canGoUp
-                    ? {
-                        transform: "translateX(-4px)",
-                        boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
-                        transition: "all 0.18s cubic-bezier(0.3, 0, 0.5, 1)",
-                      }
-                    : {},
-                  "&:not(:active)": canGoUp
-                    ? {
-                        transition: "transform 0.25s cubic-bezier(0.2, 0, 0, 1.5)",
-                      }
-                    : {},
-                  "&::after": canGoUp
-                    ? {
-                        content: '""',
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        borderRadius: "50%",
-                        backgroundColor: theme.palette.primary.main,
-                        transition: "all 0.3s cubic-bezier(0.2, 0, 0.3, 1)",
-                        opacity: 0,
-                        zIndex: -1,
-                      }
-                    : {},
-                  "&:active::after": canGoUp
-                    ? {
-                        opacity: 0.18,
-                        transform: "scale(1.3)",
-                        transition: "all 0.2s cubic-bezier(0, 0, 0.2, 1)",
-                      }
-                    : {},
-                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                }}
-              >
-                <ArrowBackIcon
-                  fontSize={isSmallScreen ? "small" : "medium"}
+          isPreviewClose ? (
+            <PreviewCloseButton
+              onClick={handleGoUp}
+              isSmallScreen={isSmallScreen}
+              ariaLabel={t("ui.breadcrumb.back.tooltip.closePreview")}
+              tooltip={t("ui.breadcrumb.back.tooltip.closePreview")}
+            />
+          ) : (
+            <Tooltip
+              title={
+                canGoUp
+                  ? t("ui.breadcrumb.back.tooltip.canGoUp")
+                  : t("ui.breadcrumb.back.tooltip.atRoot")
+              }
+            >
+              <span>
+                <IconButton
+                  onClick={handleGoUp}
+                  disabled={!canGoUp}
+                  aria-label={t("ui.breadcrumb.back.aria")}
+                  size={isSmallScreen ? "small" : "medium"}
                   sx={{
-                    transition: "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                    ".MuiIconButton-root:active &": canGoUp
+                    bgcolor: "background.paper",
+                    color: canGoUp ? theme.palette.primary.main : "text.disabled",
+                    boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.05)",
+                    ...navigationActionButtonSize,
+                    position: "relative",
+                    "&:hover": canGoUp
                       ? {
-                          transform: "translateX(-1px)",
-                          transition: "transform 0.15s cubic-bezier(0.1, 0, 0.4, 1)",
+                          bgcolor: alpha(theme.palette.primary.main, 0.08),
+                          transform: "translateX(-2px)",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                         }
                       : {},
+                    "&:active": canGoUp
+                      ? {
+                          transform: "translateX(-4px)",
+                          boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+                          transition: "all 0.18s cubic-bezier(0.3, 0, 0.5, 1)",
+                        }
+                      : {},
+                    "&:not(:active)": {
+                      transition: "transform 0.25s cubic-bezier(0.2, 0, 0, 1.5)",
+                    },
+                    "&::after": canGoUp
+                      ? {
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: "50%",
+                          backgroundColor: theme.palette.primary.main,
+                          transition: "all 0.3s cubic-bezier(0.2, 0, 0.3, 1)",
+                          opacity: 0,
+                          zIndex: -1,
+                        }
+                      : {},
+                    "&:active::after": canGoUp
+                      ? {
+                          opacity: 0.18,
+                          transform: "scale(1.3)",
+                          transition: "all 0.2s cubic-bezier(0, 0, 0.2, 1)",
+                        }
+                      : {},
+                    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                   }}
-                />
-              </IconButton>
-            </span>
-          </Tooltip>
+                >
+                  <ArrowBackIcon
+                    fontSize={isSmallScreen ? "small" : "medium"}
+                    sx={{
+                      transition: "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                      ".MuiIconButton-root:active &": {
+                        transform: "translateX(-1px)",
+                        transition: "transform 0.15s cubic-bezier(0.1, 0, 0.4, 1)",
+                      },
+                    }}
+                  />
+                </IconButton>
+              </span>
+            </Tooltip>
+          )
         ) : (
           <Box
             aria-hidden
             sx={{
-              ...actionButtonSize,
+              ...navigationActionButtonSize,
               borderRadius: "50%",
               flexShrink: 0,
               bgcolor: theme.palette.background.paper,

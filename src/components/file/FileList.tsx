@@ -10,6 +10,7 @@ import type { VirtualListItemData, FileListLayoutMetrics } from "./utils/types";
 import type { GitHubContent } from "@/types";
 import { responsiveG3Styles } from "@/theme/g3Curves";
 import { useOptimizedScroll } from "@/hooks/useOptimizedScroll";
+import { contentSectionSpacing } from "@/components/layout/hooks";
 
 /**
  * 文件列表组件属性接口
@@ -248,7 +249,7 @@ const FileList: React.FC<FileListProps> = ({
     width: "100%",
     bgcolor: "background.paper",
     borderRadius: responsiveG3Styles.fileListContainer(isSmallScreen),
-    mb: 2,
+    mb: contentSectionSpacing,
     overflow: "hidden",
     boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
     border: "1px solid",

@@ -50,7 +50,12 @@ function applyProxyToUrl(url: string, proxyUrl: string): string {
       if (decodedUrl === url) {
         const needsEncoding = /[\u4e00-\u9fa5]|[^\w./:-]/g.test(url);
         if (needsEncoding) {
-          const urlParts = url.split("/");
+          // 先分离 query/hash，只对路径段编码，避免 ? 与 # 被编入路径
+          const queryHashIndex = url.search(/[?#]/u);
+          const pathUrl = queryHashIndex === -1 ? url : url.slice(0, queryHashIndex);
+          const suffix = queryHashIndex === -1 ? "" : url.slice(queryHashIndex);
+
+          const urlParts = pathUrl.split("/");
           if (urlParts.length >= 3) {
             const protocol = urlParts[0] ?? "";
             const domain = urlParts[2] ?? "";
@@ -58,7 +63,7 @@ function applyProxyToUrl(url: string, proxyUrl: string): string {
               const pathParts = urlParts
                 .slice(3)
                 .map((part) => (shouldEncodePart(part) ? encodeURIComponent(part) : part));
-              processedUrl = `${protocol}//${domain}/${pathParts.join("/")}`;
+              processedUrl = `${protocol}//${domain}/${pathParts.join("/")}${suffix}`;
               logger.debug("编码后的URL:", processedUrl);
             }
           }

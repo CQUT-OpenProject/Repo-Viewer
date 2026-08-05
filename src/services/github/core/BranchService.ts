@@ -1,7 +1,7 @@
 import axios from "axios";
 import { logger } from "@/utils/logging/logger";
 import { getForceServerProxy } from "../config/ProxyForceManager";
-import { getAuthHeaders } from "./Auth";
+import { getAuthHeaders, handleApiError } from "./Auth";
 import {
   GITHUB_API_BASE,
   GITHUB_REPO_OWNER,
@@ -115,7 +115,7 @@ async function fetchBranchesDirect(): Promise<string[]> {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status.toString()}: ${response.statusText}`);
+      throw handleApiError(response, url);
     }
 
     const raw = (await response.json()) as unknown;

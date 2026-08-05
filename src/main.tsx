@@ -10,6 +10,7 @@ import ThemeProvider from "@/providers/ThemeProvider";
 import { GitHub } from "@/services/github";
 import { setupLatexOptimization } from "@/utils/rendering/latexOptimizer";
 import { ResponsiveSnackbarProvider } from "@/components/ui/ResponsiveSnackbarProvider";
+import { PwaUpdateNotifier } from "@/components/ui/PwaUpdateNotifier";
 import { getDeveloperConfig } from "@/config";
 import { ErrorManager, setupGlobalErrorHandlers } from "@/utils/error";
 import { loadInitialContentPayload } from "@/services/github/core/content/initialContentLoader";
@@ -77,6 +78,7 @@ async function bootstrap(): Promise<void> {
     <React.StrictMode>
       <ThemeProvider>
         <ResponsiveSnackbarProvider>
+          <PwaUpdateNotifier enabled={import.meta.env.PROD && !developerConfig.mode} />
           <App />
           <Analytics />
           <SpeedInsights />

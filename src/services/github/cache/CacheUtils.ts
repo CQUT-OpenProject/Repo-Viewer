@@ -19,19 +19,3 @@ export function calculateTTL(config: CacheConfig, item: CacheItemMeta): number {
   }
   return Math.min(Math.max(ttl, config.minTTL), config.maxTTL);
 }
-
-/**
- * 估算对象大小
- *
- * 通过JSON序列化估算对象占用的字节数。
- *
- * @param obj - 要估算的对象
- * @returns 估算的字节数
- */
-export function estimateSize(obj: unknown): number {
-  try {
-    return new Blob([JSON.stringify(obj)]).size;
-  } catch {
-    return 1024;
-  }
-}

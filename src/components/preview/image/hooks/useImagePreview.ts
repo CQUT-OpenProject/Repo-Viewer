@@ -52,14 +52,6 @@ export const useImagePreview = ({
     };
   }, [lazyLoad]);
 
-  const handleReset = (resetFunc: () => void) => {
-    resetFunc();
-    setRotation(0);
-    setError(false);
-    setLoading(true);
-    setScale(1);
-  };
-
   return {
     loading,
     error,
@@ -68,7 +60,6 @@ export const useImagePreview = ({
     scale,
     shouldLoad,
     imgRef,
-    handleReset,
     handleRotateLeft: () => {
       setRotation((prev) => prev - 90);
     },

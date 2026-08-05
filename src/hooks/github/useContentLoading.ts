@@ -4,6 +4,10 @@ import { GitHub } from "@/services/github";
 import { logger } from "@/utils/logging/logger";
 import { requestManager } from "@/utils/request/requestManager";
 import { handleError } from "@/utils/error/errorHandler";
+import {
+  getNetworkAwareErrorMessage,
+  isOfflineEnvironment,
+} from "@/utils/network/apiResponseGuards";
 import { processContents } from "@/utils/content";
 import { getFeaturesConfig } from "@/config";
 import { useThemeTransitionFlag } from "@/hooks/useThemeTransition";
@@ -124,7 +128,10 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
         logger.debug(`获取到 ${filteredData.length.toString()} 个文件/目录`);
 
         const shouldRevalidate =
-          !forceRefresh && sourceTracker.value !== "network" && currentPathRef.current === "";
+          !forceRefresh &&
+          sourceTracker.value !== "network" &&
+          currentPathRef.current === "" &&
+          !isOfflineEnvironment();
 
         if (shouldRevalidate) {
           const revalidateKey = `${currentBranchRef.current}:${currentPathRef.current}`;
@@ -153,7 +160,7 @@ export function useContentLoading(path: string, branch: string): ContentLoadingS
 
         const shouldSurfaceError = !silent || contentsRef.current.length === 0;
         if (shouldSurfaceError) {
-          displayError(`获取目录内容失败: ${e instanceof Error ? e.message : "未知错误"}`);
+          displayError(getNetworkAwareErrorMessage(e, "获取目录内容失败"));
           setContents([]);
         }
       } finally {

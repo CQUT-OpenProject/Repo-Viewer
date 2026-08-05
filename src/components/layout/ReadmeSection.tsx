@@ -227,7 +227,7 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
             />
 
             {shouldShowReadmeSkeleton ? (
-              <MarkdownPreviewSkeleton isSmallScreen={isSmallScreen} />
+              <MarkdownPreviewSkeleton isSmallScreen={isSmallScreen} withTopMargin={false} />
             ) : hasReadmeContent ? (
               <LazyMarkdownPreview
                 readmeContent={readmeContent}
@@ -238,6 +238,7 @@ const ReadmeSection: React.FC<ReadmeSectionProps> = ({
                 previewingItem={readmeFileItem}
                 onInternalLinkClick={handleInternalLinkClick}
                 onRenderComplete={handleReadmeRenderComplete}
+                withTopMargin={false}
               />
             ) : readmeLoaded ? (
               <Typography

@@ -16,7 +16,8 @@ const colors = {
 class TokenRotator {
   private tokens: string[] = [];
   private currentIndex = 0;
-  private failedTokens = new Set<string>();
+  private failedTokens = new Map<string, number>();
+  private static readonly FAILURE_BACKOFF_MS = 300000;
 
   public setTokens(tokens: string[]): void {
     this.tokens = [...new Set(tokens.map((t) => t.trim()).filter((t) => t.length > 0))];
@@ -31,6 +32,18 @@ class TokenRotator {
     return this.tokens[this.currentIndex] ?? "";
   }
 
+  public isFailed(token: string): boolean {
+    const failedAt = this.failedTokens.get(token);
+    if (failedAt === undefined) {
+      return false;
+    }
+    if (Date.now() - failedAt >= TokenRotator.FAILURE_BACKOFF_MS) {
+      this.failedTokens.delete(token);
+      return false;
+    }
+    return true;
+  }
+
   public getNextToken(): string {
     if (this.tokens.length === 0) {
       return "";
@@ -40,7 +53,7 @@ class TokenRotator {
     while (attempts < this.tokens.length) {
       this.currentIndex = (this.currentIndex + 1) % this.tokens.length;
       const token = this.tokens[this.currentIndex];
-      if (token === undefined || token.length === 0 || this.failedTokens.has(token)) {
+      if (token === undefined || token.length === 0 || this.isFailed(token)) {
         attempts += 1;
         continue;
       }
@@ -52,7 +65,7 @@ class TokenRotator {
 
   public markTokenFailed(token: string): void {
     if (token.length > 0) {
-      this.failedTokens.add(token);
+      this.failedTokens.set(token, Date.now());
     }
   }
 
@@ -706,8 +719,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       const branchToUse = branchOverride ?? (repoBranch.length > 0 ? repoBranch : "main");
       const encodedBranch = encodeURIComponent(branchToUse);
 
-      // 处理空路径
-      const pathSegment = path === "" ? "" : `/${path}`;
+      // 目录路径需段级编码（与直连路径 getApiUrl 及 getFileContent 保持一致），
+      // 否则含空格/中文等特殊字符的目录在代理模式下无法访问
+      const encodedPath = encodePathSegments(path);
+      const pathSegment = path === "" ? "" : `/${encodedPath}`;
       const apiPath = `/repos/${repoOwner}/${repoName}/contents${pathSegment}?ref=${encodedBranch}`;
 
       try {

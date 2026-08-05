@@ -26,9 +26,7 @@ export interface ImageToolbarProps {
   handleRotateRight: () => void;
   toggleFullScreen: () => void;
   handleClosePreview: () => void;
-  closeButtonBorderRadius: string | number;
   setError?: React.Dispatch<React.SetStateAction<boolean>>;
-  variant?: "inline" | "floating" | "full-width";
 }
 
 export interface ImagePreviewContentProps {
@@ -62,7 +60,6 @@ export interface UseImagePreviewReturn {
   scale: number;
   shouldLoad: boolean;
   imgRef: React.RefObject<HTMLImageElement | null>;
-  handleReset: (resetFunc: () => void) => void;
   handleRotateLeft: () => void;
   handleRotateRight: () => void;
   toggleFullScreen: () => void;

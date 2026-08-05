@@ -3,6 +3,7 @@ import { Box, Typography, Link, Container, useTheme } from "@mui/material";
 import { BranchSwitcher } from "@/components/ui";
 import { getFeaturesConfig } from "@/config";
 import { useI18n } from "@/contexts/I18nContext";
+import { usePreviewContext } from "@/contexts/unified";
 
 declare const __APP_VERSION__: string;
 
@@ -51,12 +52,17 @@ const Footer: React.FC = () => {
   const version = __APP_VERSION__;
   const theme = useTheme();
   const { t } = useI18n();
+  const { previewState } = usePreviewContext();
   const featuresConfig = getFeaturesConfig();
   const footerLeftConfig = useMemo(
     () => parseFooterLeftText(featuresConfig.footer.leftText),
     [featuresConfig.footer.leftText],
   );
   const showFooterLeftElement = footerLeftConfig.type !== "empty";
+
+  if (previewState.previewingImageItem !== null) {
+    return null;
+  }
 
   return (
     <Box
@@ -67,7 +73,7 @@ const Footer: React.FC = () => {
         mt: "auto",
         borderTop: "1px solid",
         borderColor: "divider",
-        backgroundColor: theme.palette.mode === "light" ? "#FFFBFE" : "#1C1B1F",
+        backgroundColor: theme.palette.background.default,
         transition: "background-color 0.3s, border-color 0.3s",
       }}
     >

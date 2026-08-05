@@ -9,6 +9,7 @@
  */
 
 /// <reference types="vite/client" />
+/// <reference types="vite-plugin-pwa/client" />
 
 /**
  * Vite环境变量接口

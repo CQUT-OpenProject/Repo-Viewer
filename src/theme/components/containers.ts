@@ -11,7 +11,7 @@ export const containerStyles = {
         borderRadius: g3BorderRadius(G3_PRESETS.card),
         padding: 16,
         boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.1)",
-        backgroundColor: theme.palette.mode === "light" ? "#FFFFFF" : "#2D2C34",
+        backgroundColor: theme.palette.background.paper,
         "@media (max-width:600px)": {
           padding: 12,
           borderRadius: g3BorderRadius({ ...G3_PRESETS.card, radius: 16 }),

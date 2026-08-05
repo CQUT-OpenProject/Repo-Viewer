@@ -148,4 +148,34 @@ describe("getBranchTree", () => {
       signal: controller.signal,
     });
   });
+
+  it("does not cache a malformed response as an empty tree", async () => {
+    axiosGet.mockImplementation((url: string) => {
+      if (url.includes("action=getGitRef")) {
+        return Promise.resolve({
+          data: {
+            object: {
+              sha: "commit-1",
+            },
+          },
+        });
+      }
+
+      if (url.includes("action=getTree")) {
+        return Promise.resolve({ data: {} });
+      }
+
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    const first = await getBranchTree("main");
+    expect(first).toBeNull();
+
+    const second = await getBranchTree("main");
+
+    expect(second).toBeNull();
+    expect(
+      axiosGet.mock.calls.filter(([url]) => String(url).includes("action=getTree")),
+    ).toHaveLength(2);
+  });
 });

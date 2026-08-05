@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTheme, useMediaQuery } from "@mui/material";
 import FullScreenPreview from "@/components/file/FullScreenPreview";
 import ImagePreviewContent from "./ImagePreviewContent";
@@ -58,18 +58,6 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
     }
   }, [imageUrl, resetLoadingState, resetStateForCachedImage]);
 
-  const closeButtonBorderRadius = useMemo(() => {
-    const radius = theme.shape.borderRadius;
-    if (typeof radius === "number") {
-      return radius * 2;
-    }
-    const trimmedRadius = radius.trim();
-    if (trimmedRadius.length > 0) {
-      return `calc(${trimmedRadius} * 2)`;
-    }
-    return radius;
-  }, [theme.shape.borderRadius]);
-
   // zoomIn/Out/reset are overridden by TransformWrapper children in ImagePreviewContent
   const toolbarProps: ImageToolbarProps = {
     error,
@@ -83,7 +71,6 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
     handleRotateRight,
     toggleFullScreen,
     handleClosePreview,
-    closeButtonBorderRadius,
   };
 
   const previewContentProps = {

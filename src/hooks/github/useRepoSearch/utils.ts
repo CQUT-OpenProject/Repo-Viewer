@@ -89,9 +89,16 @@ export function resolveBranchSelection({
   const trimmedCurrentBranch = currentBranch.trim();
   const trimmedDefaultBranch = defaultBranch.trim();
 
-  if (trimmedCurrentBranch.length > 0) {
+  // currentBranch 可能已失效（如分支被删除），此时回退到默认分支，
+  // 避免搜索在空分支集上返回空结果
+  const currentBranchAvailable =
+    trimmedCurrentBranch.length > 0 && availableBranches.has(trimmedCurrentBranch);
+  const defaultBranchAvailable =
+    trimmedDefaultBranch.length > 0 && availableBranches.has(trimmedDefaultBranch);
+
+  if (currentBranchAvailable) {
     fallbackCandidates.push(trimmedCurrentBranch);
-  } else if (trimmedDefaultBranch.length > 0) {
+  } else if (defaultBranchAvailable) {
     fallbackCandidates.push(trimmedDefaultBranch);
   }
 

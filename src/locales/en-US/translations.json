@@ -152,7 +152,8 @@
       "back": {
         "tooltip": {
           "canGoUp": "Go up one level",
-          "atRoot": "At repository root"
+          "atRoot": "At repository root",
+          "closePreview": "Close preview"
         },
         "aria": "Go up one level"
       },
@@ -164,7 +165,6 @@
       }
     },
     "markdown": {
-      "closePreview": "Close preview",
       "copy": {
         "button": "Copy code",
         "copied": "Copied",
@@ -194,7 +194,6 @@
       "downloadedWithProgress": "Downloaded @@loaded@@ / @@total@@ (@@percent@@%)"
     },
     "text": {
-      "closePreview": "Close preview",
       "title": "Text Preview",
       "viewOnGitHub": "View on GitHub",
       "enableWrap": "Enable word wrap",

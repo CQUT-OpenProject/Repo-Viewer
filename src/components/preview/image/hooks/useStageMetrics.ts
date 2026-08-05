@@ -36,7 +36,7 @@ export function useStageMetrics({
     }
 
     const widthPadding = isSmallScreen ? 0.94 : 0.9;
-    const heightPadding = isSmallScreen ? 0.85 : 0.8;
+    const heightPadding = isSmallScreen ? 0.94 : 0.9;
 
     const availableWidth = containerSize.width * widthPadding;
     const availableHeight = containerSize.height * heightPadding;

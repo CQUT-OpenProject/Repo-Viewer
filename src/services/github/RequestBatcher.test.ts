@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { createAbortError } from "@/utils/network/abort";
 
 vi.mock("@/utils", () => ({
@@ -23,6 +23,10 @@ beforeEach(() => {
   if (typeof window === "undefined") {
     vi.stubGlobal("window", globalThis);
   }
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("RequestBatcher", () => {
@@ -133,5 +137,60 @@ describe("RequestBatcher", () => {
     ).rejects.toMatchObject({ name: "AbortError" });
 
     expect(executeRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not retry definitive 4xx errors (e.g. 404)", async () => {
+    vi.useFakeTimers();
+    const batcher = new RequestBatcher();
+    const executeRequest = vi.fn(async () => {
+      throw { statusCode: 404, message: "Not Found" };
+    });
+
+    const promise = batcher.enqueue("https://example.com/missing", executeRequest, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+    const assertion = expect(promise).rejects.toMatchObject({ statusCode: 404 });
+
+    await vi.advanceTimersByTimeAsync(60_000);
+    await assertion;
+    expect(executeRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries transient errors (429 rate limit and network failures)", async () => {
+    vi.useFakeTimers();
+    const batcher = new RequestBatcher();
+    const executeRequest = vi
+      .fn<() => Promise<{ value: number }>>()
+      .mockRejectedValueOnce({ statusCode: 429, message: "Too Many Requests" })
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockResolvedValueOnce({ value: 1 });
+
+    const promise = batcher.enqueue("https://example.com/repos", executeRequest, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+
+    await vi.advanceTimersByTimeAsync(60_000);
+    await expect(promise).resolves.toEqual({ value: 1 });
+    expect(executeRequest).toHaveBeenCalledTimes(3);
+  });
+
+  it("still retries 401 so a rotated token can succeed", async () => {
+    vi.useFakeTimers();
+    const batcher = new RequestBatcher();
+    const executeRequest = vi
+      .fn<() => Promise<{ value: number }>>()
+      .mockRejectedValueOnce({ statusCode: 401, message: "Unauthorized" })
+      .mockResolvedValueOnce({ value: 1 });
+
+    const promise = batcher.enqueue("https://example.com/repos", executeRequest, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+
+    await vi.advanceTimersByTimeAsync(60_000);
+    await expect(promise).resolves.toEqual({ value: 1 });
+    expect(executeRequest).toHaveBeenCalledTimes(2);
   });
 });

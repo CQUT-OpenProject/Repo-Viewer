@@ -157,6 +157,34 @@ describe("api/github handler security hardening", () => {
     expect(Buffer.isBuffer(state.sentBody)).toBe(true);
   });
 
+  it("encodes special characters in the getContents directory path", async () => {
+    const handler = await loadHandler();
+    const { res, state } = createMockRes();
+
+    mockedAxiosGet.mockResolvedValueOnce({
+      data: [{ name: "a.md" }],
+      headers: {},
+    } as never);
+
+    await handler(
+      {
+        query: {
+          action: "getContents",
+          path: "docs 文档",
+          branch: "main",
+        },
+      },
+      res,
+    );
+
+    expect(state.statusCode).toBe(200);
+    expect(mockedAxiosGet).toHaveBeenCalledTimes(1);
+    const [calledUrl] = mockedAxiosGet.mock.calls[0] ?? [];
+    expect(calledUrl).toBe(
+      `https://api.github.com/repos/test-owner/test-repo/contents/docs%20%E6%96%87%E6%A1%A3?ref=main`,
+    );
+  });
+
   it("rejects getGitHubAsset non-https url", async () => {
     const handler = await loadHandler();
     const { res, state } = createMockRes();
@@ -274,5 +302,41 @@ describe("api/github handler security hardening", () => {
 
     expect(state.statusCode).toBe(401);
     expect(mockedAxiosGet.mock.calls.length).toBeLessThanOrEqual(2);
+  });
+
+  it("recovers a failed token after the backoff window", async () => {
+    process.env["GITHUB_PAT1"] = "pat-a";
+    process.env["GITHUB_PAT2"] = "pat-b";
+    vi.useFakeTimers();
+    const handler = await loadHandler();
+    const mockOk = {
+      data: [{ name: "a.md" }],
+      headers: {},
+    } as never;
+
+    // 第一次请求：pat-a 返回 403，轮换到 pat-b 后重试成功
+    mockedAxiosGet
+      .mockRejectedValueOnce({ response: { status: 403 }, message: "Forbidden" })
+      .mockResolvedValueOnce(mockOk);
+    const { res: res1, state: state1 } = createMockRes();
+    await handler({ query: { action: "getContents", path: "" } }, res1);
+    expect(state1.statusCode).toBe(200);
+
+    // 第二次请求：pat-b 也返回 403，两个 token 均失败，无法重试
+    mockedAxiosGet.mockRejectedValueOnce({ response: { status: 403 }, message: "Forbidden" });
+    const { res: res2, state: state2 } = createMockRes();
+    await handler({ query: { action: "getContents", path: "" } }, res2);
+    expect(state2.statusCode).toBe(403);
+
+    // 超过退避窗口后，pat-a 应恢复并再次参与轮换
+    vi.advanceTimersByTime(5 * 60 * 1000 + 1000);
+    mockedAxiosGet
+      .mockRejectedValueOnce({ response: { status: 403 }, message: "Forbidden" })
+      .mockResolvedValueOnce(mockOk);
+    const { res: res3, state: state3 } = createMockRes();
+    await handler({ query: { action: "getContents", path: "" } }, res3);
+
+    expect(state3.statusCode).toBe(200);
+    vi.useRealTimers();
   });
 });

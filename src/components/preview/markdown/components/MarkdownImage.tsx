@@ -105,7 +105,7 @@ export const MarkdownImage: React.FC<MarkdownImageProps> = ({
       onLoad={(event) => {
         event.currentTarget.classList.add("loaded");
         event.currentTarget.style.opacity = "1";
-        handleImageLoad(stateKey, imageState, setIsImageLoaded);
+        handleImageLoad(event.currentTarget.src, imageState, setIsImageLoaded);
       }}
       onError={(event) => {
         const newSrc = handleImageError(stateKey, originalSrc, imageState, setIsImageFailed);

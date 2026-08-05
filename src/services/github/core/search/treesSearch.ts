@@ -113,14 +113,18 @@ async function searchBranchWithTreesApi(
         }
       }
 
+      const safeBranchSegments = branch.split("/").map(encodeURIComponent).join("/");
+      const normalizedPath = itemPath.replace(/^\/+/u, "");
+      const encodedPath = normalizedPath.split("/").map(encodeURIComponent).join("/");
+
       const result: GitHubContent = {
         name: fileName,
         path: itemPath,
         type: "file",
         sha: item.sha ?? "",
         url: item.url ?? "",
-        html_url: `https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/blob/${branch}/${itemPath}`,
-        download_url: `https://raw.githubusercontent.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/${branch}/${itemPath}`,
+        html_url: `https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/blob/${safeBranchSegments}/${encodedPath}`,
+        download_url: `https://raw.githubusercontent.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/${safeBranchSegments}/${encodedPath}`,
       };
 
       if (item.size !== undefined) {

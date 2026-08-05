@@ -5,9 +5,7 @@ import remarkMath from "remark-math";
 import { remarkAlert } from "remark-github-blockquote-alert";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
-import { Box, Paper, CircularProgress, useTheme, IconButton, Tooltip } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import { useI18n } from "@/contexts/I18nContext";
+import { Box, Paper, CircularProgress, useTheme } from "@mui/material";
 import type { MarkdownPreviewProps } from "./types";
 import { katexOptions } from "./config/katex";
 import { loadKatexStyles } from "@/utils/lazy-loading";
@@ -48,14 +46,13 @@ const MarkdownPreview = ({
   loadingReadme,
   isSmallScreen,
   previewingItem,
-  onClose,
   lazyLoad = true,
   currentBranch,
+  withTopMargin = true,
   onInternalLinkClick,
   onRenderComplete,
 }: ExtendedMarkdownPreviewProps) => {
   const theme = useTheme();
-  const { t } = useI18n();
 
   // 懒加载状态
   const [shouldRender, setShouldRender] = useState<boolean>(!lazyLoad);
@@ -229,7 +226,7 @@ const MarkdownPreview = ({
   };
 
   if (loadingReadme) {
-    return <MarkdownPreviewSkeleton isSmallScreen={isSmallScreen} />;
+    return <MarkdownPreviewSkeleton isSmallScreen={isSmallScreen} withTopMargin={withTopMargin} />;
   }
 
   if (!hasReadmeContent) {
@@ -241,46 +238,11 @@ const MarkdownPreview = ({
       {/* 添加全局样式组件 */}
       {markdownGlobalStyles}
 
-      {/* 关闭按钮 */}
-      {typeof onClose === "function" ? (
-        <Tooltip title={t("ui.markdown.closePreview")} placement="bottom">
-          <IconButton
-            onClick={onClose}
-            aria-label={t("ui.markdown.closePreview")}
-            sx={{
-              position: "fixed",
-              top: { xs: 34, sm: 38 },
-              right: { xs: 16, sm: 24 },
-              zIndex: theme.zIndex.modal + 10,
-              bgcolor: "background.paper",
-              boxShadow: theme.shadows[4],
-              width: { xs: 36, sm: 40 },
-              height: { xs: 36, sm: 40 },
-              "&:hover": {
-                bgcolor: "action.hover",
-                boxShadow: theme.shadows[6],
-              },
-              "&:active": {
-                boxShadow: theme.shadows[8],
-              },
-              transition: theme.transitions.create(
-                ["background-color", "box-shadow", "transform"],
-                {
-                  duration: theme.transitions.duration.short,
-                },
-              ),
-            }}
-          >
-            <CloseIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
-          </IconButton>
-        </Tooltip>
-      ) : null}
-
       <Paper
         square
         elevation={0}
         className={isThemeChanging ? "theme-transition-katex" : ""}
-        sx={createMarkdownStyles(theme, latexCount, isSmallScreen)}
+        sx={createMarkdownStyles(theme, latexCount, isSmallScreen, withTopMargin)}
       >
         {shouldRender && !isThemeChanging && (
           <Box

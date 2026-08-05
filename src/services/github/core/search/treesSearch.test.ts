@@ -100,4 +100,27 @@ describe("searchMultipleBranchesWithTreesApi", () => {
       "src/components/button/index.tsx",
     ]);
   });
+
+  it("URL-encodes branch and path segments in result links", async () => {
+    mockedGetBranchTree.mockResolvedValue([
+      {
+        path: "docs/指南#v1.md",
+        type: "blob",
+        sha: "1",
+        url: "https://example.com/1",
+      },
+    ]);
+
+    const results = await searchMultipleBranchesWithTreesApi("指南", ["main"]);
+
+    const item = results[0]?.results[0];
+    expect(item).toBeDefined();
+    expect(item?.download_url?.endsWith(`/main/docs/${encodeURIComponent("指南#v1.md")}`)).toBe(
+      true,
+    );
+    expect(item?.html_url?.endsWith(`/blob/main/docs/${encodeURIComponent("指南#v1.md")}`)).toBe(
+      true,
+    );
+    expect(item?.download_url).not.toContain("#");
+  });
 });

@@ -18,7 +18,6 @@ import {
 } from "@mui/material";
 import { List as VirtualList, type RowComponentProps, useDynamicRowHeight } from "react-window";
 import { alpha } from "@mui/material/styles";
-import CloseIcon from "@mui/icons-material/Close";
 import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import WrapTextIcon from "@mui/icons-material/WrapText";
@@ -164,7 +163,6 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
   content,
   isSmallScreen,
   previewingItem,
-  onClose,
 }) => {
   const theme = useTheme();
   const { t } = useI18n();
@@ -461,24 +459,6 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
     };
   }, [theme.palette.mode, theme.palette.background.paper]);
 
-  const handleCloseOptimized = () => {
-    if (containerRef.current !== null) {
-      const container = containerRef.current;
-      container.textContent = "";
-      container.style.display = "none";
-      container.style.visibility = "hidden";
-      container.style.opacity = "0";
-    }
-
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        if (typeof onClose === "function") {
-          onClose();
-        }
-      }, 0);
-    });
-  };
-
   useEffect(() => {
     const container = containerRef.current;
     if (container !== null) {
@@ -610,39 +590,6 @@ const TextPreviewContent: React.FC<TextPreviewContentProps> = ({
           },
         }}
       />
-
-      {typeof onClose === "function" ? (
-        <Tooltip title={t("ui.text.closePreview")} placement="bottom">
-          <IconButton
-            onClick={handleCloseOptimized}
-            sx={{
-              position: "fixed",
-              top: { xs: 34, sm: 38 },
-              right: { xs: 16, sm: 24 },
-              zIndex: theme.zIndex.modal + 10,
-              bgcolor: "background.paper",
-              boxShadow: theme.shadows[4],
-              width: { xs: 36, sm: 40 },
-              height: { xs: 36, sm: 40 },
-              "&:hover": {
-                bgcolor: "action.hover",
-                boxShadow: theme.shadows[6],
-              },
-              "&:active": {
-                boxShadow: theme.shadows[8],
-              },
-              transition: theme.transitions.create(
-                ["background-color", "box-shadow", "transform"],
-                {
-                  duration: theme.transitions.duration.short,
-                },
-              ),
-            }}
-          >
-            <CloseIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
-          </IconButton>
-        </Tooltip>
-      ) : null}
 
       <Paper
         square
@@ -812,7 +759,6 @@ const TextPreview: React.FC<TextPreviewProps> = ({
   loading,
   isSmallScreen,
   previewingItem,
-  onClose,
 }) => {
   const contentKey = useMemo(() => {
     const safeContent = typeof content === "string" ? content : "";
@@ -847,7 +793,6 @@ const TextPreview: React.FC<TextPreviewProps> = ({
       content={content}
       isSmallScreen={isSmallScreen}
       previewingItem={previewingItem ?? null}
-      {...(onClose !== undefined ? { onClose } : {})}
     />
   );
 };

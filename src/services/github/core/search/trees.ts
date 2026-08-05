@@ -13,7 +13,7 @@ import { createAbortError, isAbortError } from "@/utils/network/abort";
 
 import { GITHUB_API_BASE, GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "../Config";
 import { getForceServerProxy } from "../../config/ProxyForceManager";
-import { getAuthHeaders } from "../Auth";
+import { getAuthHeaders, handleApiError } from "../Auth";
 
 /**
  * Git 树节点项接口
@@ -49,6 +49,7 @@ const TREE_CACHE_MAX_SIZE = 24;
 const branchTreeCache = new SmartCache<string, CachedBranchTree>({
   maxSize: TREE_CACHE_MAX_SIZE,
   ttl: TREE_CACHE_TTL,
+  ttlMode: "sliding",
   cleanupThreshold: 0.75,
   cleanupRatio: 0.25,
 });
@@ -101,7 +102,7 @@ async function fetchBranchHeadShaDirectly(
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status.toString()}: ${response.statusText}`);
+    throw handleApiError(response, apiUrl);
   }
 
   const data = (await response.json()) as GitRefResponse;
@@ -156,7 +157,7 @@ async function fetchTreeDirectly(
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status.toString()}: ${response.statusText}`);
+    throw handleApiError(response, apiUrl);
   }
 
   const data = (await response.json()) as { tree?: GitTreeItem[] };
@@ -225,7 +226,10 @@ export async function getBranchTree(
   )
     .then((tree) => {
       throwIfAborted(signal);
-      branchTreeCache.set(cacheKey, { tree });
+      // 仅缓存有效结果；malformed 响应（无 tree 数组）不缓存，避免暂时性故障被持久化为空搜索
+      if (tree !== null) {
+        branchTreeCache.set(cacheKey, { tree });
+      }
       return tree;
     })
     .catch((error: unknown) => {

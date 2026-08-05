@@ -12,7 +12,8 @@ export const MarkdownPreviewSkeleton: React.FC<{
   isSmallScreen?: boolean;
   visible?: boolean;
   onExited?: () => void;
-}> = ({ isSmallScreen = false, visible = true, onExited }) => {
+  withTopMargin?: boolean;
+}> = ({ isSmallScreen = false, visible = true, onExited, withTopMargin = true }) => {
   const theme = useTheme();
   const skeletonStyles = getSkeletonStyles(theme);
   const isExiting = useSkeletonVisibility(visible, onExited);
@@ -33,7 +34,7 @@ export const MarkdownPreviewSkeleton: React.FC<{
         sx={{
           py: 2,
           px: { xs: 2, sm: 3, md: 4 },
-          mt: 2,
+          ...(withTopMargin ? { mt: 2 } : {}),
           mb: 3,
           borderRadius: containerBorderRadius,
           bgcolor: "background.paper",
