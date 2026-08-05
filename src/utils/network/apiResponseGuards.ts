@@ -36,7 +36,7 @@ export function assertGitHubContentsPayload(data: unknown): void {
 }
 
 export function isOfflineEnvironment(): boolean {
-  return typeof navigator !== "undefined" && navigator.onLine === false;
+  return navigator.onLine === false;
 }
 
 export function createOfflineContentError(action: string): Error {
