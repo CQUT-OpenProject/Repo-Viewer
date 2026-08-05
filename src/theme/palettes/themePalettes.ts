@@ -1,18 +1,12 @@
 /**
- * 主题调色板配置模块
+ * 品牌主题调色板
  *
- * 提供基于主题配色方案生成MUI调色板配置的功能，
- * 包括浅色模式和深色模式的完整调色板定义。
  */
 
 import { alpha } from "@mui/material/styles";
 import type { ThemeColorConfig } from "./themeColors";
+import { BRAND_COLORS } from "./brandColors";
 
-/**
- * 调色板配置接口
- *
- * 定义MUI主题所需的完整调色板结构，包括主色、次色、错误色、背景和文字颜色。
- */
 export interface PaletteConfig {
   primary: {
     main: string;
@@ -32,6 +26,12 @@ export interface PaletteConfig {
     dark: string;
     contrastText: string;
   };
+  success: {
+    main: string;
+    light: string;
+    dark: string;
+    contrastText: string;
+  };
   background: {
     default: string;
     paper: string;
@@ -41,45 +41,53 @@ export interface PaletteConfig {
     secondary: string;
     disabled: string;
   };
+  divider: string;
 }
 
-/**
- * 浅色模式调色板配置
- */
 export function getLightPalette(themeConfig: ThemeColorConfig): PaletteConfig {
   return {
     primary: themeConfig.light.primary,
     secondary: themeConfig.light.secondary,
     error: {
-      main: "#B3261E",
-      light: "#F9DEDC",
-      dark: "#601410",
-      contrastText: "#FFFFFF",
+      main: BRAND_COLORS.statusDanger,
+      light: "#FEE4E2",
+      dark: "#912018",
+      contrastText: BRAND_COLORS.neutral0,
+    },
+    success: {
+      main: BRAND_COLORS.statusSuccess,
+      light: "#D1FADF",
+      dark: "#05603A",
+      contrastText: BRAND_COLORS.neutral0,
     },
     background: {
-      default: "#FFFBFE",
-      paper: "#FFFFFF",
+      default: BRAND_COLORS.neutral50,
+      paper: BRAND_COLORS.neutral0,
     },
     text: {
-      primary: "#1C1B1F",
-      secondary: "#49454F",
-      disabled: alpha("#1C1B1F", 0.38),
+      primary: BRAND_COLORS.neutral900,
+      secondary: BRAND_COLORS.neutral600,
+      disabled: alpha(BRAND_COLORS.neutral900, 0.38),
     },
+    divider: BRAND_COLORS.neutral200,
   };
 }
 
-/**
- * 深色模式调色板配置
- */
 export function getDarkPalette(themeConfig: ThemeColorConfig): PaletteConfig {
   return {
     primary: themeConfig.dark.primary,
     secondary: themeConfig.dark.secondary,
     error: {
-      main: "#F2B8B5",
-      light: "#F9DEDC",
-      dark: "#B3261E",
-      contrastText: "#601410",
+      main: BRAND_COLORS.statusDangerDark,
+      light: "#FEE4E2",
+      dark: BRAND_COLORS.statusDanger,
+      contrastText: BRAND_COLORS.neutral900,
+    },
+    success: {
+      main: BRAND_COLORS.statusSuccessDark,
+      light: "#D1FADF",
+      dark: BRAND_COLORS.statusSuccess,
+      contrastText: BRAND_COLORS.neutral900,
     },
     background: {
       default: "#1C1B1F",
@@ -90,5 +98,6 @@ export function getDarkPalette(themeConfig: ThemeColorConfig): PaletteConfig {
       secondary: "#CAC4D0",
       disabled: alpha("#E6E1E5", 0.38),
     },
+    divider: "#49454F",
   };
 }

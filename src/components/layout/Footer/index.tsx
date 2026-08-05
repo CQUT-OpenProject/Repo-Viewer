@@ -73,7 +73,7 @@ const Footer: React.FC = () => {
         mt: "auto",
         borderTop: "1px solid",
         borderColor: "divider",
-        backgroundColor: theme.palette.mode === "light" ? "#FFFBFE" : "#1C1B1F",
+        backgroundColor: theme.palette.background.default,
         transition: "background-color 0.3s, border-color 0.3s",
       }}
     >

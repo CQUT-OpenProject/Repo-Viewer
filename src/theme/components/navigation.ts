@@ -8,8 +8,8 @@ export const navigationStyles = {
     styleOverrides: {
       root: ({ theme }: { theme: Theme }) => ({
         boxShadow: "none",
-        backgroundColor: theme.palette.mode === "light" ? "#FFFBFE" : "#1C1B1F",
-        color: theme.palette.mode === "light" ? "#1C1B1F" : "#E6E1E5",
+        backgroundColor: theme.palette.background.default,
+        color: theme.palette.text.primary,
       }),
     },
   },

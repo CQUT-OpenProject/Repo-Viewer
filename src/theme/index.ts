@@ -10,9 +10,9 @@ import { listStyles } from "./components/lists";
 import { miscStyles } from "./components/misc";
 
 /**
- * 创建Material You主题
+ * 创建 CQUT-OSP 品牌主题
  *
- * 根据指定的模式（明/暗）创建完整的Material-UI主题配置。
+ * 根据指定的模式（明/暗）创建完整的 Material-UI 主题配置。
  *
  * @param mode - 主题模式（'light'或'dark'）
  * @returns Material-UI主题对象

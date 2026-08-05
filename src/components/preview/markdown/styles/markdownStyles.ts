@@ -35,7 +35,8 @@ export const createMarkdownStyles = (
     isDark ? theme.palette.common.white : theme.palette.common.black,
     isDark ? 0.2 : 0.15,
   );
-  const tableHeaderBackground = alpha(primary, isDark ? 0.2 : 0.1);
+  const tableHeaderBackground = theme.palette.primary.main;
+  const tableHeaderTextColor = theme.palette.primary.contrastText;
   const tableStripeBackground = alpha(
     isDark ? theme.palette.common.white : theme.palette.common.black,
     isDark ? 0.08 : 0.05,
@@ -186,9 +187,18 @@ export const createMarkdownStyles = (
       backgroundColor: `${theme.palette.background.paper} !important`,
     },
 
-    "& .markdown-body table th": {
+    "& .markdown-body table thead th": {
       fontWeight: 600,
+      color: `${tableHeaderTextColor} !important`,
       backgroundColor: `${tableHeaderBackground} !important`,
+    },
+
+    "& .markdown-body table thead tr": {
+      backgroundColor: `${tableHeaderBackground} !important`,
+    },
+
+    "& .markdown-body table thead th :where(a, strong, em)": {
+      color: "inherit !important",
     },
 
     "& .markdown-body table tbody tr": {
