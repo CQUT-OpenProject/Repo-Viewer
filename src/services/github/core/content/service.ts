@@ -31,6 +31,11 @@ import {
   INITIAL_CONTENT_EXCLUDE_FILES,
 } from "./hydrationStore";
 import { buildServerApiUrlForGitHubResource } from "./serverApiUrls";
+import {
+  assertGitHubContentsPayload,
+  createOfflineContentError,
+  isOfflineEnvironment,
+} from "@/utils/network/apiResponseGuards";
 
 /**
  * 内容服务入口
@@ -91,6 +96,10 @@ export async function getContents(
     }
   }
 
+  if (isOfflineEnvironment()) {
+    throw createOfflineContentError("获取目录内容失败");
+  }
+
   try {
     let rawData: unknown;
 
@@ -137,6 +146,8 @@ export async function getContents(
 
       logger.debug(`直接请求GitHub API获取内容: ${path}`);
     }
+
+    assertGitHubContentsPayload(rawData);
 
     const validation = safeValidateGitHubContentsResponse(rawData);
     if (!validation.success) {
@@ -191,6 +202,10 @@ export async function getFileContent(fileUrl: string, signal?: AbortSignal): Pro
   const hydratedContent = await consumeHydratedFile(fileUrl, branch, cacheKey);
   if (hydratedContent !== null) {
     return hydratedContent;
+  }
+
+  if (isOfflineEnvironment()) {
+    throw createOfflineContentError("获取文件内容失败");
   }
 
   try {

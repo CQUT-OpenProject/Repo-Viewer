@@ -9,8 +9,8 @@ import { GitHub } from "@/services/github";
 import { logger } from "@/utils/logging/logger";
 import { useScrollVisibility } from "@/hooks/useScrollVisibility";
 import Footer from "@/components/layout/Footer";
-import { FaviconManager } from "@/components/ui/DynamicIcon";
 import { PageErrorBoundary, FeatureErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { OfflineStatusBanner } from "@/components/ui/OfflineStatusBanner";
 
 /**
  * 应用主组件
@@ -93,7 +93,7 @@ const App = () => {
 
   return (
     <>
-      <FaviconManager />
+      <OfflineStatusBanner />
 
       <style>
         {`
