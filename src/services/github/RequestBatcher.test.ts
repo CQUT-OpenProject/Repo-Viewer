@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { createAbortError } from "@/utils/network/abort";
 
 vi.mock("@/utils", () => ({
@@ -23,6 +23,10 @@ beforeEach(() => {
   if (typeof window === "undefined") {
     vi.stubGlobal("window", globalThis);
   }
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("RequestBatcher", () => {
@@ -146,9 +150,10 @@ describe("RequestBatcher", () => {
       method: "GET",
       headers: { Accept: "application/json" },
     });
+    const assertion = expect(promise).rejects.toMatchObject({ statusCode: 404 });
 
     await vi.advanceTimersByTimeAsync(60_000);
-    await expect(promise).rejects.toMatchObject({ statusCode: 404 });
+    await assertion;
     expect(executeRequest).toHaveBeenCalledTimes(1);
   });
 
