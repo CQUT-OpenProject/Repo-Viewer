@@ -10,7 +10,35 @@
       "destination": "/index.html"
     }
   ],
-  "headers": [],
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/workbox-:hash.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ],
   "buildCommand": "npx --yes -p vite-plus vp build",
   "installCommand": "npx --yes -p vite-plus vp install",
   "ignoreCommand": "[ \"$VERCEL_GIT_COMMIT_REF\" != \"master\" ]"

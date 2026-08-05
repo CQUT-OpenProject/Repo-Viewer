@@ -3,14 +3,29 @@ import autoprefixer from "autoprefixer";
 import tailwindcss from "@tailwindcss/postcss";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import babel from "@rolldown/plugin-babel";
+import { VitePWA } from "vite-plugin-pwa";
 import * as path from "path";
 import * as http from "http";
 import { fileURLToPath } from "url";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
+import { createHash } from "crypto";
 import { spawn } from "child_process";
 import { ENV_MAPPING } from "./src/config/constants/index.ts";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
+const iconSvgPath = path.join(rootDir, "public", "icon.svg");
+
+/** Content hash for busting PWA icon / manifest caches when icon.svg changes. */
+const getPwaIconVersion = (): string => {
+  if (!existsSync(iconSvgPath)) {
+    return "missing";
+  }
+
+  return createHash("sha256").update(readFileSync(iconSvgPath)).digest("hex").slice(0, 8);
+};
+
+const PWA_ICON_VERSION = getPwaIconVersion();
+const pwaIconSrc = (fileName: string): string => `pwa/${fileName}?v=${PWA_ICON_VERSION}`;
 
 const colors = {
   reset: "\x1b[0m",
@@ -236,11 +251,96 @@ const generateBuildArtifacts = async (logger: Logger): Promise<void> => {
     [path.resolve(rootDir, "node_modules/typescript/bin/tsc"), "-p", "scripts/tsconfig.json"],
     "TypeScript prebuild",
   );
+  await runNodeCommand([path.resolve(rootDir, "scripts/generateIcons.mjs")], "generateIcons");
   await runNodeCommand(
     [path.resolve(rootDir, "scripts/dist/generateInitialContent.js")],
     "generateInitialContent",
   );
 };
+
+const createPwaPlugin = (siteTitle: string, siteDescription: string, baseUrl: string) =>
+  VitePWA({
+    registerType: "prompt",
+    injectRegister: false,
+    includeAssets: [
+      "icon.svg",
+      "pwa/apple-touch-icon.png",
+      "pwa/pwa-192x192.png",
+      "pwa/pwa-512x512.png",
+    ],
+    manifest: {
+      name: siteTitle,
+      short_name: siteTitle.length > 12 ? siteTitle.slice(0, 12) : siteTitle,
+      description: siteDescription,
+      theme_color: "#055088",
+      background_color: "#F7FAFC",
+      display: "standalone",
+      start_url: baseUrl,
+      scope: baseUrl,
+      icons: [
+        {
+          src: pwaIconSrc("pwa-192x192.png"),
+          sizes: "192x192",
+          type: "image/png",
+        },
+        {
+          src: pwaIconSrc("pwa-512x512.png"),
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "any",
+        },
+        {
+          src: pwaIconSrc("pwa-512x512.png"),
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "maskable",
+        },
+      ],
+    },
+    workbox: {
+      globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,json,webmanifest}"],
+      globIgnores: ["**/initial-content/manifest.json"],
+      navigateFallback: "index.html",
+      navigateFallbackDenylist: [/^\/api\//],
+      runtimeCaching: [
+        {
+          urlPattern: /^\/api\//,
+          handler: "NetworkOnly",
+        },
+        {
+          urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+          handler: "StaleWhileRevalidate",
+          options: {
+            cacheName: "google-fonts-stylesheets",
+            expiration: {
+              maxEntries: 10,
+              maxAgeSeconds: 60 * 60 * 24 * 365,
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
+          },
+        },
+        {
+          urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+          handler: "CacheFirst",
+          options: {
+            cacheName: "google-fonts-webfonts",
+            expiration: {
+              maxEntries: 30,
+              maxAgeSeconds: 60 * 60 * 24 * 365,
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
+          },
+        },
+      ],
+    },
+    devOptions: {
+      enabled: false,
+    },
+  });
 
 const createProxyConfig = (requestLogger: ReturnType<typeof createRequestLoggerMiddleware>) => ({
   "/github-api": {
@@ -360,95 +460,129 @@ const createRuntimeConfigPlugin = (
   },
 });
 
+const createGithubApiMiddleware = (logger: Logger) => {
+  return async (req: any, res: any, next: () => void): Promise<void> => {
+    if (!req.url?.startsWith("/api/github")) {
+      next();
+      return;
+    }
+
+    try {
+      logger.log(
+        `${colors.brightWhite}Processing API request:${colors.reset}`,
+        `${colors.gray}${decodeURIComponent(req.url)}${colors.reset}`,
+      );
+
+      const module = await import("./api/github");
+      const handler = module.default;
+
+      const urlParts = req.url.split("?");
+      const query: Record<string, string | string[]> = {};
+
+      if (urlParts.length > 1) {
+        const params = new URLSearchParams(urlParts[1]);
+        params.forEach((value, key) => {
+          const existing = query[key];
+          if (existing) {
+            query[key] = Array.isArray(existing) ? [...existing, value] : [existing, value];
+          } else {
+            query[key] = value;
+          }
+        });
+      }
+
+      const vercelReq = {
+        query,
+        body: undefined,
+        headers: req.headers,
+        method: req.method,
+      } as any;
+
+      const vercelRes = {
+        status: (code: number) => {
+          res.statusCode = code;
+          return vercelRes;
+        },
+        json: (data: any) => {
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify(data));
+          return vercelRes;
+        },
+        send: (data: any) => {
+          if (Buffer.isBuffer(data)) {
+            res.end(data);
+          } else {
+            res.end(data);
+          }
+          return vercelRes;
+        },
+        setHeader: (name: string, value: string | number) => {
+          res.setHeader(name, value);
+          return vercelRes;
+        },
+      } as any;
+
+      await handler(vercelReq, vercelRes);
+      logger.log(`${colors.green}API request completed${colors.reset}`);
+    } catch (error) {
+      logger.error(`${colors.red}API handler error:${colors.reset}`, error);
+      if (!res.headersSent) {
+        res.statusCode = 500;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({
+            error: "Internal server error",
+            message: error instanceof Error ? error.message : "Unknown error",
+          }),
+        );
+      }
+    }
+  };
+};
+
 const createVercelApiHandlerPlugin = (logger: Logger) => ({
   name: "vercel-api-handler",
   configureServer(server: any) {
-    server.middlewares.use(async (req: any, res: any, next: () => void) => {
-      if (req.url?.startsWith("/api/github")) {
-        try {
-          logger.log(
-            `${colors.brightWhite}Processing API request:${colors.reset}`,
-            `${colors.gray}${decodeURIComponent(req.url)}${colors.reset}`,
-          );
+    server.middlewares.use(createGithubApiMiddleware(logger));
+  },
+  configurePreviewServer(server: any) {
+    server.middlewares.use(createGithubApiMiddleware(logger));
+  },
+});
 
-          const module = await import("./api/github");
-          const handler = module.default;
+const createPwaIconVersionHtmlPlugin = () => ({
+  name: "inject-pwa-icon-version",
+  transformIndexHtml: {
+    order: "pre" as const,
+    handler(html: string) {
+      return html.replaceAll("__PWA_ICON_VERSION__", PWA_ICON_VERSION);
+    },
+  },
+});
 
-          const urlParts = req.url.split("?");
-          const query: Record<string, string | string[]> = {};
+const createBuildArtifactsPlugin = (logger: Logger) => {
+  let artifactTask: Promise<void> | null = null;
 
-          if (urlParts.length > 1) {
-            const params = new URLSearchParams(urlParts[1]);
-            params.forEach((value, key) => {
-              const existing = query[key];
-              if (existing) {
-                query[key] = Array.isArray(existing) ? [...existing, value] : [existing, value];
-              } else {
-                query[key] = value;
-              }
-            });
-          }
-
-          const vercelReq = {
-            query,
-            body: undefined,
-            headers: req.headers,
-            method: req.method,
-          } as any;
-
-          const vercelRes = {
-            status: (code: number) => {
-              res.statusCode = code;
-              return vercelRes;
-            },
-            json: (data: any) => {
-              res.setHeader("Content-Type", "application/json");
-              res.end(JSON.stringify(data));
-              return vercelRes;
-            },
-            send: (data: any) => {
-              if (Buffer.isBuffer(data)) {
-                res.end(data);
-              } else {
-                res.end(data);
-              }
-              return vercelRes;
-            },
-            setHeader: (name: string, value: string | number) => {
-              res.setHeader(name, value);
-              return vercelRes;
-            },
-          } as any;
-
-          await handler(vercelReq, vercelRes);
-          logger.log(`${colors.green}API request completed${colors.reset}`);
-        } catch (error) {
-          logger.error(`${colors.red}API handler error:${colors.reset}`, error);
-          if (!res.headersSent) {
-            res.statusCode = 500;
-            res.setHeader("Content-Type", "application/json");
-            res.end(
-              JSON.stringify({
-                error: "Internal server error",
-                message: error instanceof Error ? error.message : "Unknown error",
-              }),
-            );
-          }
-        }
-      } else {
-        next();
-      }
+  const ensureBuildArtifacts = (): Promise<void> => {
+    artifactTask ??= generateBuildArtifacts(logger).finally(() => {
+      artifactTask = null;
     });
-  },
-});
+    return artifactTask;
+  };
 
-const createBuildArtifactsPlugin = (logger: Logger) => ({
-  name: "repo-build-artifacts",
-  apply: "build" as const,
-  async buildStart() {
-    await generateBuildArtifacts(logger);
-  },
-});
+  return {
+    name: "repo-build-artifacts",
+    async buildStart() {
+      await ensureBuildArtifacts();
+    },
+    async configureServer() {
+      await ensureBuildArtifacts();
+    },
+    async configurePreviewServer() {
+      await ensureBuildArtifacts();
+    },
+  };
+};
 
 const mode = process.env.MODE ?? process.env.NODE_ENV ?? "development";
 const env = loadEnv(mode, process.cwd(), "");
@@ -458,6 +592,10 @@ applyEnvMappingForVite(env, isProdLike);
 
 const DEVELOPER_MODE = (env.VITE_DEVELOPER_MODE || env.DEVELOPER_MODE) === "true";
 const APP_BASE_URL = normalizeBaseUrl(env.VITE_BASE_PATH ?? process.env.VITE_BASE_PATH);
+const PWA_SITE_TITLE = normalizeEnvValue(env.VITE_SITE_TITLE ?? env.SITE_TITLE) ?? "Repo-Viewer";
+const PWA_SITE_DESCRIPTION =
+  normalizeEnvValue(env.VITE_SITE_DESCRIPTION ?? env.SITE_DESCRIPTION) ??
+  "基于MD3设计语言的GitHub仓库浏览应用";
 const logger = createLogger(DEVELOPER_MODE);
 const requestLogger = createRequestLoggerMiddleware(logger);
 export default defineConfig({
@@ -524,9 +662,11 @@ export default defineConfig({
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] }),
+    createPwaIconVersionHtmlPlugin(),
     createBuildArtifactsPlugin(logger),
     createRuntimeConfigPlugin(requestLogger),
     createVercelApiHandlerPlugin(logger),
+    createPwaPlugin(PWA_SITE_TITLE, PWA_SITE_DESCRIPTION, APP_BASE_URL),
   ],
   build: {
     chunkSizeWarningLimit: 2000,
